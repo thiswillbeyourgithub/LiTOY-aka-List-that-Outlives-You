@@ -1,10 +1,11 @@
+#!/usr/bin/env python3
+
 import logging
 
+# This file contains ELO ratings related functions :
 
-###################### Elo related :
 
-# tested : not tested but probably OK
-def expected(elo_A, elo_B, Rp=100):
+def expected(elo_A, elo_B, Rp=100): # tested : not tested but probably OK
       '''Calculate expected score of A in a best of 3 match against B
        Expected score of B in a best of 3 match against A is given by 1-expected(A,B,Rp)
       For each Rp rating points of advantage over the opponent, the expected score is magnified ten times   in comparison to the opponent's expected score '''

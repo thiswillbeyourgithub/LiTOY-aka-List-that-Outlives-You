@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# This file contains the user settings
+
 user_age = "23"
 user_life_expected = "75"
 

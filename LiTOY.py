@@ -7,10 +7,10 @@ import sqlite3
 import logging
 logging.basicConfig(level=logging.INFO, filename = 'debug.log', filemode='a', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-import src.settings
 import src.sql
 import src.elo
 import src.functions
+import settings
 
 
 

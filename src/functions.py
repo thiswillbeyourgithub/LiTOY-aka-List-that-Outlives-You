@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+
+import logging
+
+# This file contains general functions used in the main loop :
+
 def print_entry(entry_id):
     entry_fields = get_sql_value("*","id = " + str(entry_id))
     print ("Category : " + str(entry_fields[4]))

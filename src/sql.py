@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# This file contains functions related to the SQL db :
+
 import sqlite3
 import logging
 
