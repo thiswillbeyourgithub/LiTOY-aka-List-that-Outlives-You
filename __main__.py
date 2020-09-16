@@ -6,9 +6,9 @@ import pyfiglet
 import sqlite3
 import logging
 
-import src.sql
-import src.elo
-import src.functions
+import src.LiTOY.sql
+import src.LiTOY.elo
+import src.LiTOY.functions
 import settings
 
 
