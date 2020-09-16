@@ -8,9 +8,11 @@ user_life_expected = "75"
 #question_importance = "What steps will actually make you likely to achieve your goals?\n* Which is more important?\n* If you had one hour to spend, which would bring you more in your life?"
 #question_time = "Which task takes the less time to complete?"
 #question_ranking = "Which task should be done first?"
-questions = {"importance" : "What steps will make you likely to achieve your goals?\n* Which is more important?\n* If you had one hour to spend, which would bring you more in your life?",
+questions = {
+        "importance" : "What steps will make you likely to achieve your goals?\n* Which is more important?\n* If you had one hour to spend, which would bring you more in your life?",
         "time" : "Which task takes the less time to complete?",
-        "ranking" : "Which task should be done first?",}
+        "ranking" : "Which task should be done first?"
+        }
 
 shortcut = {
         "skip_fight"                 :  ["s","-"],
