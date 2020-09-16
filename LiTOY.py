@@ -7,7 +7,6 @@ import sqlite3
 import logging
 logging.basicConfig(level=logging.INFO, filename = 'debug.log', filemode='a', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-
 import src.settings
 import src.sql
 import src.elo
@@ -15,15 +14,7 @@ import src.functions
 
 
 
-
-
-
-
-
-
-
 ##################################### Main :
-
 ###################### initialization :
 
 db = sqlite3.connect('LiTOY.db')
@@ -79,6 +70,8 @@ print("#######################################################")
 print("#######################################################")
 print("\n\n\n\n\n\n\n\n\n\n\n")
 
+
+
 ###################### main loop :
 
 while 1==1:
@@ -102,7 +95,7 @@ while 1==1:
 
 
 
-################################################################# GRAVEYARD
+################################################################# CODE GRAVEYARD
 '''
 
 
