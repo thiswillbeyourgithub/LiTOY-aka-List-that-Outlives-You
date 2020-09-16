@@ -59,12 +59,15 @@ The idea behing LiTOY is simple :
 ## How to use?
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY/ `
 * `cd LiTOY`
-* `python3 ./LiTOY.py`
+* edit the settings in `settings.py`
+* `python3 ./__main__.py`
+
 ### Features 
 * Automatically retrieves video length, video size, article reading time duration, pdf reading time duration
 * Designed with flexibility in mind. You just have to specify a question.
 
 ## Code explanation
+### Settings
 ### Data structure of the db
 
 ## TODO :
