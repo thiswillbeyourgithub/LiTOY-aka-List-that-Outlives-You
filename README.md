@@ -1,13 +1,65 @@
-# LiTOY
+# LiTOY : the List That Outlives You.
 
 ## What is LiTOY?
+There are several ways to look at it :
+* LiTOY is a python script using sqlite to create and manage a list of your goals, be it short, medium or long term but more importantly : it ranks them in a smart and very flexible way using pairwise comparisons and several [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
+* An organizer aiming at centralizing all your goals in a single place while quickly ranking them in an order reflecting user preferences
+* A way for me to practice my Python (very rusty, still a long way to go, don't hesitate to do PRs or open issue, they will be greately appreciated)
+
+
+The idea behing LiTOY is simple : 
+1. get items in a sqlite database
+2. pick 2 items and prompt the user for which is better according to a user-specified question
+3. adjust the ELO score of each item accordingly
+4. When enough pairwise comparisons are done, rank the items according to a user-specified formula, for example the ranking could reflect `Books I want to read ordered by importance and time to read (I want the most important short books first)`
+
+
+
+## Examples of use :
+
+### Managing a reading queue 
+* the items can at least contain : URL ; details
+* the user will only have to compare the importance of each article/book, the reading time will be automatically retrieved from the url
+* the pairwise comparison of the reading time will correspond to the question "Which is shorter to read" and will be done automatically without user input.
+* The final ranking can be something like `reading_time_ELO + importance_ELO`
+* This should help the user read in order of what is most important AND shorter to read.
+
+
+### Managing a movie Watchlist
+* The item could only contain a file path
+* the code will, all by itself, retrieve the duration of the movie, the size of the file
+* the user will be prompted for which movie is the most important for him
+* The final ranking could be a weighed sum : `importance_ELO + duration_ELO + 1.2*size_ELO`
+* This should allow the user to watch film that are taking the most space but are also important and don't last 4 hours.
+
+### Managing a list where items have to be done in a specific order (example : errands, diy builiding)
+* The item could only contain a goal in text form
+* The user will be prompted with the question : "Which item should be done first" 
+* The answer will change the ELO score of each item
+* The final ranking should quickly converge towards the correct order for steps. Probably works for finding the shorted path if you have errands
+
+
 
 ## FAQ
-* Where does the idea come from? From Gwern's [media resorted](https://www.gwern.net/Resorter).
-* Do you have any idea it will work or at least converge towards something useful without doing thousands of fights a day? Lol no.
+**Where does the idea come from?** From Gwern's [media resorted](https://www.gwern.net/Resorter).
 
+**Do you have any idea it will work or at least converge towards something useful without doing thousands of fights a day?** Lol no.
+
+**What does LiTOY stand for?** See top of this file
+
+**Can you give examples of uses for LiTOY?** I plan to use it to manage my personnal short, medium and long term goals. To Manage my  
+
+**Do you accept criticism and/or contribution?** Hell Yeah!
+
+**What are ELO scores?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each oponnent that can then be used to compare opponents that have never met each other. A strength of ELO is that it still behaves well even if some players underperform (or overperform). In the case of LiTOY, you can have some wrong comparisons in your db and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to have a complete understanding of my code.
+
+
+## Features :
+* Automatically retrieves video length, video size, article reading time duration, pdf reading time duration
+* Designed with flexibility in mind. You just have to specify a question.
 
 ## Code explanation
+### Data structure of the db
 
 ## TODO :
 * utiliser plusieurs fichiers pour coder, antoine t'a convaincu
@@ -30,7 +82,7 @@
 * si importé a partir d'un fichier : bouger le fichier dans un dossier ./imported/+date
 * les tupple sont plus rapides que les listes, les priviléger
 * dans l'url : au cas ou : changer ` en '    ' `
-* il faut en fait rajouter genre 5 fois des fields qui soit score1/2/3/4/5, score_name et l'utiliser pour faire des trucs plus cmoplexes genre noter des films rapidement, car prendre en compte la taille de fichier video serait ouf
+* il faut en fait rajouter genre 5 fois des fields qui soit score1/2/3/4/5, score_name, score_question et l'utiliser pour faire des trucs plus cmoplexes genre noter des films rapidement, car prendre en compte la taille de fichier video serait ouf
 * il faut rajouter une valeur "average" dans les scores qui serait automatiquement transformée en la moyenne des scores correspondant, par exemple pour si tu as un dvd dans une liste de fichier films, tu auras pas la taille du dvd mais tu auras sa longueur et son importance donc ca ferait foirer la formule
 * function that automatically checks fields consistency :
 *      estimated time to read
@@ -73,12 +125,13 @@
 
 
 
-## SQL tutorials for future reference :
+# None of your business :
+## SQL tutorials for future reference
 * https://pynative.com/python-sqlite-select-from-table/
 * http://www.easypythondocs.com/SQL.html
 * https://cheatography.com/explore/search/?q=sqlite
 
-## map of fields in order for reference :
+## map of fields in order for reference
 * 1 date added
 * 2 entry
 * 3 details
