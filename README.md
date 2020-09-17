@@ -124,7 +124,6 @@ The idea behing LiTOY is simple :
 * rajouter un champs winAgainst et loseAainst, on rajoute l'id de l'adversaire dans le field a chaque combat, ca semble utile pour "refaire" des tris" apres coups ; pas encore sur d'a quoi ca sert mais il faut compter les draws aussi
 * idée d'antoine pour l'interface : permettre des command line command genre : litoy set ID --category "truc" ou litoy list --time ou litoy fight -n=50  ou litoy import file  ou   litoy backup    ou    litoy status   ou    litoy testrun 
 * noter quelque part que si litoy marche bien il faudra le compatibiliser avec Polar, soit le rendre ineractif (genre qu'il recup des data de polar) soit carrement en le recodant a l'interieur
-* verifier que LiTOY marche a l'installe meme si il y a pas de database deja presente ou de fichier texte d'import
 
 ### formerly in the TODO but still thinking about it 
 * 
