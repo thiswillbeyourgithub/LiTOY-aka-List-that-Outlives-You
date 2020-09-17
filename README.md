@@ -3,8 +3,8 @@
 ## What is LiTOY?
 There are several ways to look at it :
 * LiTOY is a python script using sqlite to create and manage a list of your goals, be it short, medium or long term but more importantly : it ranks them in a smart and very flexible way using pairwise comparisons and several [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
-* An organizer aiming at centralizing all your goals in a single place while quickly ranking them in an order reflecting user preferences
-* A way for me to practice my Python (very rusty, still a long way to go, don't hesitate to do PRs or open issue, they will be greately appreciated)
+* An organizer aiming at centralizing all your goals in a single place while quickly ranking them in an order reflecting user preferences.
+* A way for me to practice my Python (very rusty, still a long way to go, don't hesitate to do PRs or open issue, they will be greately appreciated).
 
 
 The idea behing LiTOY is simple : 
