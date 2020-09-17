@@ -22,7 +22,26 @@ def main() :
 
     logging.info("\n ## Openning db \n")
     logging.info("\n ## Creating table if not found \n")
-    query_create_table = 'CREATE TABLE IF NOT EXISTS LiTOY(ID INTEGER, date_added INTEGER, entry TEXT, details TEXT, category TEXT, starred INTEGER, progress TEXT, importance_elo TEXT, date_importance_elo TEXT, time_elo TEXT, date_time_elo TEXT, delta_imp INTEGER, delta_time INTEGER, global_score, time_spent_comparing INTEGER, number_of_comparison INTEGER, disabled INTEGER, done INTEGER, K_value INTEGER)'
+    query_create_table = 'CREATE TABLE IF NOT EXISTS LiTOY(ID INTEGER,\
+            date_added INTEGER,\
+            entry TEXT,\
+            details TEXT,\
+            category TEXT,\
+            starred INTEGER,\
+            progress TEXT,\
+            importance_elo TEXT,\
+            date_importance_elo TEXT,\
+            time_elo TEXT,\
+            date_time_elo TEXT,\
+            delta_imp INTEGER,\
+            delta_time INTEGER,\
+            global_score,\
+            time_spent_comparing INTEGER,\
+            number_of_comparison INTEGER,\
+            disabled INTEGER,\
+            done INTEGER,\
+            K_value INTEGER\
+            )'
     logging.info("SQL CREATE REQUEST : " + query_create_table)
     cursor.execute(query_create_table)
 
