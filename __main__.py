@@ -51,7 +51,7 @@ def main() :
     cursor.execute(query_create_table)
 
 
-    while 1==1 :
+    while True :
         import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
         if import_bool == "y":
             category_list = get_category()
