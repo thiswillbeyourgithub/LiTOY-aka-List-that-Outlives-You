@@ -6,6 +6,7 @@ import pyfiglet
 import sqlite3
 import logging
 import os
+import sys
 
 import src.litoy.sql
 import src.litoy.elo
