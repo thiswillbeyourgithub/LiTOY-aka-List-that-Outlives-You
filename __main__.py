@@ -19,6 +19,7 @@ import settings
 
 def main() :
     if os.path.exists('databases.db'):
+        logging.info("\n## db found\n")
         db = sqlite3.connect('database.db')
     else:
         break
