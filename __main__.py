@@ -27,7 +27,9 @@ def main() :
 
     logging.info("\n ## Openning db \n")
     logging.info("\n ## Creating table if not found \n")
-    query_create_table = 'CREATE TABLE IF NOT EXISTS LiTOY(ID INTEGER,\
+    query_create_table = '\
+            CREATE TABLE IF NOT EXISTS LiTOY(\
+            ID INTEGER,\
             date_added INTEGER,\
             entry TEXT,\
             details TEXT,\
