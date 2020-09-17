@@ -55,23 +55,23 @@ def main() :
     cursor.execute(query_create_table)
 
 
-    while True :
-        import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
-        if import_bool == "y":
-            category_list = get_category()
-            cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + category_list + "\n=> ")
-            if cat_choice == "" :
-                cat_choice = "None"
-            filename = input("\nWhat is the name of the file containing the new entries? Press Enter to use default file (new_entry.txt)\n(remember to put it in the same folder!)\n=> ")
-            if filename == "" :
-                filename = "new_entry.txt"
-            print("\n ## Importing from " + filename + "...\n")
-            logging.info("\n ## Importing from " + filename + "...\n")
-            import_from_txt(filename, cat_choice)
-        else :
-            print("\n ## No importation to do\n")
-            logging.info("\n ## No importation to do\n")
-            break
+#    while True :
+#        import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
+#        if import_bool == "y":
+#            category_list = get_category()
+#            cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + category_list + "\n=> ")
+#            if cat_choice == "" :
+#                cat_choice = "None"
+#            filename = input("\nWhat is the name of the file containing the new entries? Press Enter to use default file (new_entry.txt)\n(remember to put it in the same folder!)\n=> ")
+#            if filename == "" :
+#                filename = "new_entry.txt"
+#            print("\n ## Importing from " + filename + "...\n")
+#            logging.info("\n ## Importing from " + filename + "...\n")
+#            import_from_txt(filename, cat_choice)
+#        else :
+#            print("\n ## No importation to do\n")
+#            logging.info("\n ## No importation to do\n")
+#            break
 
     set_db_defaults_value()
 
