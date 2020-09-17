@@ -46,7 +46,7 @@ def import_from_txt(filename, category) :
 
 def get_category() : # tested OK
     logging.info("Getting category list...")
-    db = sqlite3.connect('LiTOY.db') ; cursor = db.cursor()
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
     query_get_cat = "SELECT category FROM LiTOY"
     cursor.execute(query_get_cat)
     categories = cursor.fetchall()
@@ -60,7 +60,7 @@ def get_category() : # tested OK
     return ' '.join(new_list)
 
 def get_sql_value(variable="*", condition="") : # tested OK
-    db = sqlite3.connect('LiTOY.db') ; cursor = db.cursor()
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
     if condition == "" : query_ending = ""
     else : query_ending = " WHERE " + condition
     query_get = "SELECT " + variable + " FROM LiTOY" + query_ending
@@ -75,7 +75,7 @@ def get_sql_value(variable="*", condition="") : # tested OK
     return result
 
 def put_sql_value(which, variable, new_value) : #tested OK
-    db = sqlite3.connect('LiTOY.db') ; cursor = db.cursor()
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
     query_put = "UPDATE LiTOY SET "+ variable + " = '" + new_value + "' WHERE " + which
     cursor.execute(query_put)
     logging.info(str("SQL PUT REQUEST : " + query_put))
@@ -84,7 +84,7 @@ def put_sql_value(which, variable, new_value) : #tested OK
 
 def update_delta(entry_id) : # Tested OK
     logging.info("Updating delta for entry id "+entry_id)
-#    db = sqlite3.connect('LiTOY.db') ; cursor = db.cursor()
+#    db = sqlite3.connect('database.db') ; cursor = db.cursor()
 #    cursor.execute("SELECT id, importance_elo, time_elo from LiTOY WHERE id =" + str(entry_id))
 #    result = cursor.fetchall()[0]
     result = get_sql_value("id, importance_elo, time_elo","id = " + str(entry_id[0]))
