@@ -5,6 +5,7 @@ import random
 import pyfiglet
 import sqlite3
 import logging
+import os
 
 import src.litoy.sql
 import src.litoy.elo
@@ -17,7 +18,10 @@ import settings
 ###################### initialization :
 
 def main() :
-    db = sqlite3.connect('database.db')
+    if os.path.exists('databases.db'):
+        db = sqlite3.connect('database.db')
+    else:
+        break
     cursor = db.cursor()
 
     logging.info("\n ## Openning db \n")
