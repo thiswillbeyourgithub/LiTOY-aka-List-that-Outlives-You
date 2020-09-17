@@ -27,15 +27,14 @@ The idea behing LiTOY is simple :
 ### Managing a movie Watchlist
 * in this example : the items could only contain : a movie file path
 * the code will, all by itself, retrieve the duration of the movie, the size of the file
-* the user will be prompted for which movie is the most important for him
+* the user could be prompted with the question : "Which movie is the most important for you?", the answer will impact the respective ELO scores of the items
 * The final ranking could be a weighted sum : `importance_ELO + duration_ELO + 1.2*size_ELO`
 * This should allow the user to watch movies that are taking the most space but are also important while not lasting 4 hours.
 
-### Managing a list where items have to be done in a specific order (example : errands, diy builiding)
+### Managing a list where tasks have to be done in a specific order (example : errands, diy builiding)
 * in this example : the items could only contain : a goal in text format
-* The user will be prompted with the question : "Which item should be done first" 
-* The answer will change the ELO score of each item
-* The final ranking should quickly converge towards the correct order for steps. Probably works for finding the shorted path if you have errands
+* The user could be prompted with the question : "Which task should be done first?", the answer will change the ELO score of each items
+* The final ranking should quickly converge towards the correct order for steps. Probably works for finding the shorted path if you have errands too!
 
 
 
@@ -44,13 +43,12 @@ The idea behing LiTOY is simple :
 
 **Do you have any idea it will work or at least converge towards something useful without doing thousands of fights a day?** Lol no.
 
-**What does LiTOY stand for?** See top of this file
+**What does LiTOY stand for?** It's about the List that Outlives You. It is used as a [memento mori](https://en.wikipedia.org/wiki/Memento_mori)
 
-**Can you give examples of uses for LiTOY?** I plan to use it to manage my personnal short, medium and long term goals. To Manage my  
 
-**Do you accept criticism and/or contribution?** Hell Yeah!
+**Do you accept criticism and/or contribution?** Hell Yeah! All help and criticisms are welcome.
 
-**What are ELO scores?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each oponnent that can then be used to compare opponents that have never met each other. A strength of ELO is that it still behaves well even if some players underperform (or overperform). In the case of LiTOY, you can have some wrong comparisons in your db and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to have a complete understanding of my code.
+**What are ELO scores? Why did you choose this algorithm?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each oponnent that can then be used to compare opponents that have never met each other. A strength of ELO is that it still behaves well even if some players underperform (or overperform). In the case of LiTOY, you can have some wrong comparisons in your db and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to have a complete understanding of my code.
 
 **What platform does it run on?** Try to make it agnostic but I'm on Linux and I might occasionnaly use unix only exec without paying attention. Don't hesitate to tell me if you run into any issue.
 
