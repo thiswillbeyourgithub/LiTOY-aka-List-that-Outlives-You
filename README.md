@@ -50,11 +50,12 @@ The idea behing LiTOY is simple :
 
 **What are ELO scores? Why did you choose this algorithm?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each oponnent that can then be used to compare opponents that have never met each other. A strength of ELO is that it still behaves well even if some players underperform (or overperform). In the case of LiTOY, you can have some wrong comparisons in your db and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to have a complete understanding of my code.
 
-**What platform does it run on?** Try to make it agnostic but I'm on Linux and I might occasionnaly use unix only exec without paying attention. Don't hesitate to tell me if you run into any issue.
+**What platform does it run on?** Try to make it as agnostic as possible but I'm on Linux and I might occasionnaly use unix only exec without paying attention. Don't hesitate to tell me if you run into an issue.
 
 
 
 ## How to use?
+* Read this page thoroughly. Don't be afraid to ask questions.
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY/ `
 * `cd LiTOY`
 * edit the settings in `settings.py`
@@ -69,9 +70,6 @@ The idea behing LiTOY is simple :
 ### Data structure of the db
 
 ## TODO :
-* utiliser plusieurs fichiers pour coder, antoine t'a convaincu
-* poster sur github en mode privé, ca t'aidera a t'organiser
-* comprendre ce que c'est que le locking d'une db, l'interet etc
 * rajouter un champs type (text / video / audio / manual) 
         * le time to read doit etre time to watch si il s'agit d'une video, utiliser youtube-dl pour trouver la durée si url, ou ffmpeg si c'est un fichier local
         * si c'est un pdf : utiliser pdftotext puis le code pour estimer le temps pour lire une page web
