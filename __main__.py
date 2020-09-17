@@ -8,7 +8,7 @@ import logging
 import os
 import sys
 
-import src.litoy.sql
+from src.litoy.sql import *
 import src.litoy.elo
 import src.litoy.functions
 import settings
@@ -84,7 +84,7 @@ def main() :
     logging.info("Done batch updating all deltas\n")
 
 
-    print(" ## End of initialization\n\n")
+    logging.info(" ## End of initialization\n\n")
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     print("#######################################################")
     print("#######################################################")
