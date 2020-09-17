@@ -22,7 +22,8 @@ def main() :
         logging.info("\n## db found\n")
         db = sqlite3.connect('database.db')
     else:
-        break
+        logging.info("\n## db NOT found\n")
+        sys.exit()
     cursor = db.cursor()
 
     logging.info("\n ## Openning db \n")
