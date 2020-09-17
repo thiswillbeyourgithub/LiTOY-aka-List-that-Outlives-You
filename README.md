@@ -17,7 +17,7 @@ The idea behing LiTOY is simple :
 
 ## Examples of use :
 ### Managing a reading queue 
-* the items can at least contain : URL ; details
+* in this example : the items could only contain : URL ; details
 * the user will only have to compare the importance of each article/book, the reading time will be automatically retrieved from the url
 * the pairwise comparison of the reading time will correspond to the question "Which is shorter to read" and will be done automatically without user input.
 * The final ranking can be something like `reading_time_ELO + importance_ELO`
@@ -25,14 +25,14 @@ The idea behing LiTOY is simple :
 
 
 ### Managing a movie Watchlist
-* The item could only contain a file path
+* in this example : the items could only contain : a movie file path
 * the code will, all by itself, retrieve the duration of the movie, the size of the file
 * the user will be prompted for which movie is the most important for him
-* The final ranking could be a weighed sum : `importance_ELO + duration_ELO + 1.2*size_ELO`
-* This should allow the user to watch film that are taking the most space but are also important and don't last 4 hours.
+* The final ranking could be a weighted sum : `importance_ELO + duration_ELO + 1.2*size_ELO`
+* This should allow the user to watch movies that are taking the most space but are also important while not lasting 4 hours.
 
 ### Managing a list where items have to be done in a specific order (example : errands, diy builiding)
-* The item could only contain a goal in text form
+* in this example : the items could only contain : a goal in text format
 * The user will be prompted with the question : "Which item should be done first" 
 * The answer will change the ELO score of each item
 * The final ranking should quickly converge towards the correct order for steps. Probably works for finding the shorted path if you have errands
