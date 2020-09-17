@@ -8,10 +8,10 @@ There are several ways to look at it :
 
 
 The idea behing LiTOY is simple : 
-1. get items in a sqlite database
-2. pick 2 items and prompt the user for which is better according to a user-specified question
+1. have all items in the same sqlite database
+2. automatically pick 2 items and prompt the user for which is better according to a user-specified question
 3. adjust the ELO score of each item accordingly
-4. When enough pairwise comparisons are done, rank the items according to a user-specified formula, for example the ranking could reflect `Books I want to read ordered by importance and time to read (I want the most important short books first)`
+4. When enough pairwise comparisons are done, rank the items according to a user-specified formula, for example the ranking could reflect `Books I want to read ordered by importance and by shortest time to read (i.e. "I want the most important short books first")`
 
 
 
