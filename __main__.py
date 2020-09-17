@@ -17,7 +17,7 @@ import settings
 ###################### initialization :
 
 def main() :
-    db = sqlite3.connect('LiTOY.db')
+    db = sqlite3.connect('database.db')
     cursor = db.cursor()
 
     logging.info("\n ## Openning db \n")
