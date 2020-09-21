@@ -85,6 +85,8 @@ def main() :
 
 
     logging.info(" ## End of initialization\n\n")
+
+def print_banner():
     print("\n\n\n\n\n\n\n\n\n\n\n")
     print("#######################################################")
     print("#######################################################")
