@@ -106,7 +106,6 @@ def main() :
     set_db_defaults_value()
 
     # sets all deltas just in case
-    #all_ids = get_sql_value("id")
     logging.info("Updating all deltas")
     all_IDs = fetch_entry("ID >=0")
     for i in range(len(all_IDs)):
@@ -117,8 +116,6 @@ def main() :
 
 
 ###################### main loop :
-
-
 #    while 1==1:
 #        type_of_fight = input("Select mode:\nt = Compare time\ni = Compare importance\n\n\nYour choice => ")
 #        if type_of_fight !="i" and type_of_fight != "t" :
@@ -179,32 +176,3 @@ if __name__ == "__main__" :
 
 
 
-
-################################################################# CODE GRAVEYARD
-'''
-
-
-#query_create = "IF NOT EXISTS (SELECT 1 FROM LiTOY WHERE entry = \"" + entry + "\") BEGIN (INSERT INTO LiTOY(ID, date_added, entry, time_spent_comparing, number_of_comparison, starred, delta) VALUES (" + newID + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, " + delta_0 + ")) END"
-#query_create = "INSERT OR IGNORE INTO LiTOY(ID, date_added, entry, time_spent_comparing, number_of_comparison, starred, category) VALUES (" + newID + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, 'None' )"
-#query_create = str("INSERT INTO LiTOY(ID, date_added, entry, time_spent_comparing, number_of_comparison, starred, delta) VALUES (") + newID + ", " + unixtime + ", \'" + str(entry) + "\', 0, 0, 0, " + delta_0 + ")) END"
-#query_create = "'INSERT INTO LiTOY (entry) VALUES ('" + entry + "') EXCEPT (SELECT 1 FROM LiTOY WHERE entry = '" + entry + "')' "
-#query_create = "INSERT INTO LiTOY(entry) VALUES ('" + entry + "')"
-
-
-
-#real_score =
-#3 si rep positive +
-#2 si rep positive
-#1.5 si match nul
-#1 si rep negative
-#0 si rep negative +
-
-
-
-
-#cursor.execute('CREATE TABLE IF NOT EXISTS LiTOY(ID INTEGER, date_added INTEGER, entry TEXT, details TEXT, category TEXT, starred INTEGER, progress TEXT, importance_elo TEXT, date_importance_elo TEXT, time_elo TEXT, date_time_elo TEXT, delta_imp INTEGER, delta_time INTEGER, global_score, time_spent_comparing INTEGER, number_of_comparison INTEGER, disabled INTEGER, done INTEGER, UNIQUE(ID, entry))')
-# "unique" doesn't seem to work well so I added the workaround to check wether an entry exists
-
-
-
-'''
