@@ -52,14 +52,27 @@ The idea behing LiTOY is simple :
 
 **What platform does it run on?** Try to make it as agnostic as possible but I'm on Linux and I might occasionnaly use unix only exec without paying attention. Don't hesitate to tell me if you run into an issue.
 
+** What is manual mode ?** It launches python in a special way that allows yourself to launch script functions directly, very useful for debugging as well as undoing stuffo
+
+**How can I undo X?** It is not really possible for now. But you can access the logs and see what you did wrong. Hopefully this can help you repair damage. Rollback features might be added sometime in the future. If you have any issue feel free to open one, especially if you think your action was not recorded in the log.
 
 
-## How to use?
+
+## How can I use this?
 * Read this page thoroughly. Don't be afraid to ask questions.
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY/ `
 * `cd LiTOY`
 * edit the settings in `settings.py`
 * `python3 ./__main__.py`
+
+### Syntax example :
+* adds a new entry to category todo with the tag diy  `python3 __main__.py --add 'repair the tires __c=todo __t="diy"'`
+* shows the rank `python3 __main__.py --rank --category="diy" -n 20`
+* shows all entries `python3 __main__.py --list="rank" --category="*"`
+* shows all entries, by date added (can be any other sql field), in reverse order `python3 __main__.py --list="date_added --reversed=1"`
+* compare 10 cards in a row from the folder called diy `python3 __main__.py --compare --category="diy" -n 10`
+* get history `python3 __main__.py --history`
+* turn on manual mode `python3 __main__.py --manual`
 
 ### Features 
 * Automatically retrieves video length, video size, article reading time duration, pdf reading time duration
@@ -70,6 +83,7 @@ The idea behing LiTOY is simple :
 ### Data structure of the db
 
 ## TODO :
+* recuperer unen entree sous forme de dictionnaire puis le reintroduire, ca a l'air d'etre BY FAR le plus simple a maintenir
 * rajouter un champs type (text / video / audio / manual) 
         * le time to read doit etre time to watch si il s'agit d'une video, utiliser youtube-dl pour trouver la durée si url, ou ffmpeg si c'est un fichier local
         * si c'est un pdf : utiliser pdftotext puis le code pour estimer le temps pour lire une page web
@@ -86,6 +100,7 @@ The idea behing LiTOY is simple :
         * faut que ca marche aussi si plusieurs url sont données
 * verifier que chaque message important est dans le log
 * si importé a partir d'un fichier : bouger le fichier dans un dossier ./imported/+date
+* aléatoirement rajouté un message TU VAS MOURIR sometimes
 * les tupple sont plus rapides que les listes, les priviléger
 * dans l'url : au cas ou : changer ` en '    ' `
 * il faut en fait rajouter genre 5 fois des fields qui soit score1/2/3/4/5, score_name, score_question et l'utiliser pour faire des trucs plus cmoplexes genre noter des films rapidement, car prendre en compte la taille de fichier video serait ouf

@@ -2,30 +2,60 @@
 
 import time
 import random
-import pyfiglet
 import sqlite3
 import logging
 import os
 import sys
+import argparse
 
-from src.litoy.sql import *
+from   src.litoy.sql        import *
+from   src.litoy.settings   import *
 import src.litoy.elo
 import src.litoy.functions
-import settings
 
 
 
-##################################### Main :
+###################################################################
+###################################################################
+#                                                                 #
+#     __    _ ____________  __                                    #
+#    / /   (_)_  __/ __ \ \/ /                                    #
+#   / /   / / / / / / / /\  /                                     #
+#  / /___/ / / / / /_/ / / /                                      # 
+# /_____/_/ /_/  \____/ /_/                                       #
+#                                                                 #
+#                                                                 #
+#   ________            __    _      __     ________          __  #
+#  /_  __/ /_  ___     / /   (_)____/ /_   /_  __/ /_  ____ _/ /_ #
+#   / / / __ \/ _ \   / /   / / ___/ __/    / / / __ \/ __ `/ __/ #
+#  / / / / / /  __/  / /___/ (__  ) /_     / / / / / / /_/ / /_   #
+# /_/ /_/ /_/\___/  /_____/_/____/\__/    /_/ /_/ /_/\__,_/\__/   #
+#                                                                 #
+#    ____        __  ___                    __  __                #
+#   / __ \__  __/ /_/ (_)   _____  _____    \ \/ /___  __  __     #
+#  / / / / / / / __/ / / | / / _ \/ ___/     \  / __ \/ / / /     #
+# / /_/ / /_/ / /_/ / /| |/ /  __(__  )      / / /_/ / /_/ /      #
+# \____/\__,_/\__/_/_/ |___/\___/____/      /_/\____/\__,_(_)     #
+#                                                                 #
+#                                                                 #
+#                                                                 #
+###################################################################
+###################################################################
+
+
+
+
+
 ###################### initialization :
 
 def main() :
     if os.path.exists('database.db'):
         logging.info("\n## db found\n")
         db = sqlite3.connect('database.db')
+        cursor = db.cursor()
     else:
         logging.info("\n## db NOT found\n")
         sys.exit()
-    cursor = db.cursor()
 
     logging.info("\n ## Openning db \n")
     logging.info("\n ## Creating table if not found \n")
@@ -76,51 +106,71 @@ def main() :
     set_db_defaults_value()
 
     # sets all deltas just in case
-    all_ids = get_sql_value("id")
-    logging.info("Batch updating all deltas")
-    for i in all_ids:
-        i = list(i)[0]
-        update_delta(str(i))
+    #all_ids = get_sql_value("id")
+    logging.info("Updating all deltas")
+    all_IDs = fetch_entry("ID >=0")
+    for i in range(len(all_IDs)):
+        update_delta(str(all_IDs[i]["ID"]))
     logging.info("Done batch updating all deltas\n")
-
 
     logging.info(" ## End of initialization\n\n")
 
-def print_banner():
-    print("\n\n\n\n\n\n\n\n\n\n\n")
-    print("#######################################################")
-    print("#######################################################")
-    print("                                                       ")
-    #print(pyfiglet.figlet_format("LiTOY",font = "slant"))
-    #print("~List That Outlives You.~                ")
-    print(pyfiglet.figlet_format("List That Outlives You.",font = "slant"))
-    print("                                                       ")
-    print("#######################################################")
-    print("#######################################################")
-    print("\n\n\n\n\n\n\n")
+
+###################### main loop :
 
 
+#    while 1==1:
+#        type_of_fight = input("Select mode:\nt = Compare time\ni = Compare importance\n\n\nYour choice => ")
+#        if type_of_fight !="i" and type_of_fight != "t" :
+#            print("Incorrect choice\n\n")
+#            continue
+#        fighters = choose_fighting_entries(type_of_fight)
+#        print("\n")
+#        print("#######################")
+#        print_entry(fighters[0])
+#        print("#######################")
+#        print_entry(fighters[1])
+#        print("\n\n")
+#        if type_of_fight == "t":
+#            user_input = input(question_time + "\n=>")
+#        if type_of_fight == "i":
+#            user_input = input(question_importance + "\n=>")
+#        shortcut_reaction(user_input,type_of_fight, fighters)
+#        break
 
-    ###################### main loop :
 
-    while 1==1:
-        type_of_fight = input("Select mode:\nt = Compare time\ni = Compare importance\n\n\nYour choice => ")
-        if type_of_fight !="i" and type_of_fight != "t" :
-            print("Incorrect choice\n\n")
-            continue
-        fighters = choose_fighting_entries(type_of_fight)
-        print("\n")
-        print("#######################")
-        print_entry(fighters[0])
-        print("#######################")
-        print_entry(fighters[1])
-        print("\n\n")
-        if type_of_fight == "t":
-            user_input = input(question_time + "\n=>")
-        if type_of_fight == "i":
-            user_input = input(question_importance + "\n=>")
-        shortcut_reaction(user_input,type_of_fight, fighters)
-        break
+###################### script arguments :
+# links I used :
+# https://docs.python.org/3/howto/argparse.html
+# https://cmsdk.com/python/how-to-add-multiple-argument-options-in-python-using-argparse.html
+# https://docs.python.org/3/library/argparse.html
+parser = argparse.ArgumentParser()
+# mutually exclusive arguments :
+group_exclusive = parser.add_mutually_exclusive_group()
+group_exclusive.add_argument("--add",
+        nargs = "*",
+        type = str,
+        help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py add \"do x\"")
+group_exclusive.add_argument("--import_from_txt",
+        nargs = "*",
+        type = str,
+        help = "import from a textfile")
+group_exclusive.add_argument("--rank",
+        nargs = "*",
+        type = str,
+        help = "display ranked entries according to the right formulae")
+group_exclusive.add_argument("--settings",
+        nargs = "?",
+        type = str,
+        help = "set user settings")
+# actually useful arguments :
+#parser.add_argument(dest="import_from_txt", help="import from txt file that has to be specified", type=str)
+# parse the arguments :
+args = parser.parse_args()
+
+#print(args.add)
+#print(args.import_from_txt)
+
 
 
 if __name__ == "__main__" :

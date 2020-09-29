@@ -5,18 +5,21 @@ import logging
 # This file contains general functions used in the main loop :
 
 def print_entry(entry_id):
-    entry_fields = get_sql_value("*","id = " + str(entry_id))
-    print ("Category : " + str(entry_fields[4]))
-    print ("Entry : " + str(entry_fields[2]))
-    if entry_fields[3] != "None" : print ("Details : " + str(entry_fields[3]))
-    if entry_fields[6] != "None" :     print ("Progress : " + str(entry_fields[6]))
-    #print ("Importance Elo : " + str(entry_fields[7]))
-    #print ("Time Elo : " + str(entry_fields[9]))
+    #entry_fields = get_sql_value("*","id = " + str(entry_id))
+    entry_fields = fetch_entry("ID = " + entry_id)
+    print ("Category : " + str(entry_fields['category']))
+    print ("Entry : " + str(entry_fields['entry']))
+    if entry_fields['details'] != "None" : print ("Details : " + str(entry_fields['details']))
+    if entry_fields['progress'] != "None" :     print ("Progress : " + str(entry_fields['progress']))
+    #print ("Importance Elo : " + str(entry_fields['importance_elo']))
+    #print ("Time Elo : " + str(entry_fields['time_elo']))
 
 def print_entry_all_fields(entry_id):
-    entry_fields = get_sql_value("*","id = " + str(entry_id))
-    for i,f in enumerate(entry_fields):
-        print(str(i) + " ___ " + str(f))
+    #entry_fields = get_sql_value("*","id = " + str(entry_id))
+    entry_fields = fetch_entry("ID = " + entry_id)
+    print(entry_fields)
+#    for i,f in enumerate(entry_fields):
+#        print(str(i) + " ___ " + str(f))
 
 
 def choose_fighting_entries(mode, condition=""): # tested seems OK
