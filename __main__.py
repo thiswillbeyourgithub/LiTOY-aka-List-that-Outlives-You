@@ -139,29 +139,18 @@ def main() :
     #print(args)
 
     if args.filepath:
-        #print(args.filepath)
-        #while True :
-           #import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
-           #if import_bool == "y":
-               cat_choice = ""
-               if len(args.filepath) == 1 :
-                   cat_list = get_category()
-                   cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + str(cat_list) + "\n=> ")
-               else :
-                   cat_choice = args.filepath[1]
-               if cat_choice == "" : # if empty user input
-                   cat_choice == "None"
-               #filename = input("\nWhat is the name of the file containing the new entries? Press Enter to use default file (new_entry.txt)\n(remember to put it in the same folder!)\n=> ")
-               filename=args.filepath[0]
-#               if filename == "" :
-#                   filename = "new_entry.txt"
-               print("\n#Importing from " + filename + "...\n")
-               logging.info("\n#Importing from " + filename + "...\n")
-               fun_import_from_txt(filename, cat_choice)
-#           else :
-#               print("\n ## No importation to do\n")
-#               logging.info("\n ## No importation to do\n")
-#               #break
+       cat_choice = ""
+       if len(args.filepath) == 1 :
+           cat_list = get_category()
+           cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + str(cat_list) + "\n=> ")
+       else :
+           cat_choice = args.filepath[1]
+       if cat_choice == "" : # if empty user input
+           cat_choice == "None"
+       filename=args.filepath[0]
+       print("\n#Importing from " + filename + "...\n")
+       logging.info("\n#Importing from " + filename + "...\n")
+       fun_import_from_txt(filename, cat_choice)
 
 
 
