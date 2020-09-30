@@ -73,6 +73,7 @@ The idea behing LiTOY is simple :
 * compare 10 cards in a row from the folder called diy `python3 __main__.py --compare --category="diy" -n 10`
 * get history `python3 __main__.py --history`
 * turn on manual mode `python3 __main__.py --manual`
+* check database (do this after major import) `python3 __main__.py --check-db`
 
 ### Features 
 * Automatically retrieves video length, video size, article reading time duration, pdf reading time duration
@@ -93,6 +94,7 @@ The idea behing LiTOY is simple :
 * rajouter une syntaxe pour importer avec directement des infos : __length=37pages   __length=17minutes __category=audio etc et surtout __1/2/3/4 indique ____ si on lui donne par défaut le score du premier 2e 3e ou 4e cinquieme du classement
 * il faut qu'un raccourci permette d'ouvrir automatiquement les url dans un navigateur + que ca soit configurable
 * organiser un autre fichier contenant la todo list, dont une section "long term ideas", ex :
+* check db should happen periodically and after every import
         * penser a rajouter un mode "court terme" qui permet simplement de trier des trucs selon lequel doit etre fait en premier
 * rewrite the long SQL request so that it's on multiple lines
 * verifier par le calcul que l'ordre dans lequel on fait les combats n'a pas d'importance, ca conditionne la maniere dont tu stockes les resultats
@@ -143,32 +145,4 @@ The idea behing LiTOY is simple :
 
 ### formerly in the TODO but still thinking about it 
 * 
-
-
-
-# None of your business :
-### SQL tutorials for future reference
-* https://pynative.com/python-sqlite-select-from-table/
-* http://www.easypythondocs.com/SQL.html
-* https://cheatography.com/explore/search/?q=sqlite
-
-### map of fields in order for reference
-* 1 date added
-* 2 entry
-* 3 details
-* 4 category
-* 5 starred
-* 6 progress
-* 7 importance elo
-* 8 date importance elo
-* 9 time_elo
-* 10 date time elo
-* 11 delta importance
-* 12 delta time
-* 13 global score
-* 14 time spent comparing
-* 15 number of comparison
-* 16 disabled
-* 17 done
-* 18 K_value
 
