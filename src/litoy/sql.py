@@ -44,7 +44,7 @@ def create_table_in_db():
 
 
 
-def import_from_txt(filename, category) :
+def fun_import_from_txt(filename, category) :
         db = sqlite3.connect('database.db') ; cursor = db.cursor()
 
         with open(filename) as f: # reads line by line
