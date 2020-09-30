@@ -34,6 +34,7 @@ def print_2_entries(entry_id, all_fields="no"):
             b = b[width:]
 
     entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
+    random.shuffle(entries)
     if all_fields != "all":
         cat = ["Category :", str(entries[0]['category']), str(entries[1]['category'])]
         content = ["Entry :", str(entries[0]['entry']), str(entries[1]['entry'])]
@@ -90,7 +91,8 @@ def pick_2_entries(mode, condition=""): # tested seems OK
                 choice1 = random.choice(highest_5_deltas)
             break
     logging.info("Chose those fighters : " + str(choice1['ID']) + " and " + str(choice2['ID']))
-    return [choice1['ID'], choice2['ID']]
+    result = [choice1['ID'], choice2['ID']]
+    return result
 
 def shortcut_reaction(key, mode, fighters):
     def get_key(val): 

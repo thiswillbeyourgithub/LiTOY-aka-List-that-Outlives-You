@@ -115,31 +115,35 @@ def main() :
 parser = argparse.ArgumentParser()
 # mutually exclusive arguments :
 group_exclusive = parser.add_mutually_exclusive_group()
-group_exclusive.add_argument("-a",
-        "--add",
-        nargs = "*",
+group_exclusive.add_argument("a",
+        "add",
+        nargs = "1",
         type = str,
         metavar='formated_entry',
         dest='newentry',
+        required=False,
         help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py add \"do x\"")
-group_exclusive.add_argument("-i",
-        "--import_from_txt",
+group_exclusive.add_argument("i",
+        "import_from_txt",
         nargs = "*",
         type = str,
         metavar='filepath',
         dest='filepath',
+        required=False,
         help = "import from a textfile")
-group_exclusive.add_argument("-s",
-        "--settings",
+group_exclusive.add_argument("s",
+        "settings",
         nargs = "3",
         type = str,
         metavar='var newvalue',
         dest='change_settings',
+        required=False,
         help = "set user settings")
 group_exclusive.add_argument("-r",
-        "--rank",
+        "rank",
         nargs = "*",
         type = str,
+        required=False,
         help = "display ranked entries according to the right formulae")
 # actually useful arguments :
 #parser.add_argument(dest="import_from_txt", help="import from txt file that has to be specified", type=str)

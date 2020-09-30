@@ -7,6 +7,43 @@ import logging
 import time
 
 
+def create_table_in_db():
+    logging.info("\n ## Creating table if not found in db \n")
+    query_create_table = '\
+            CREATE TABLE IF NOT EXISTS LiTOY(\
+            ID INTEGER,\
+            date_added INTEGER,\
+            entry TEXT,\
+            details TEXT,\
+            category TEXT,\
+            starred INTEGER,\
+            progress TEXT,\
+            importance_elo TEXT,\
+            date_importance_elo TEXT,\
+            time_elo TEXT,\
+            date_time_elo TEXT,\
+            delta_imp INTEGER,\
+            delta_time INTEGER,\
+            global_score,\
+            time_spent_comparing INTEGER,\
+            number_of_comparison INTEGER,\
+            disabled INTEGER,\
+            done INTEGER,\
+            K_value INTEGER\
+            )'
+    logging.info("SQL CREATE REQUEST : " + query_create_table)
+    db = sqlite3.connect('database.db')
+    cursor = db.cursor()
+    cursor.execute(query_create_table)
+    db.commit(); db.close()
+
+
+
+
+
+
+
+
 def import_from_txt(filename, category) :
         db = sqlite3.connect('database.db') ; cursor = db.cursor()
 
