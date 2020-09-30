@@ -139,18 +139,22 @@ def main() :
     #print(args)
 
     if args.filepath:
-       cat_choice = ""
-       if len(args.filepath) == 1 :
-           cat_list = get_category()
-           cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + str(cat_list) + "\n=> ")
-       else :
-           cat_choice = args.filepath[1]
-       if cat_choice == "" : # if empty user input
-           cat_choice == "None"
-       filename=args.filepath[0]
-       print("\n#Importing from " + filename + "...\n")
-       logging.info("\n#Importing from " + filename + "...\n")
-       fun_import_from_txt(filename, cat_choice)
+        if len(args.filepath) >2:
+            print("ERROR : too many arguments!" + str(args.filepath[2:]))
+            logging.info("ERROR : too many arguments!" + str(args.filepath[2:]))
+            sys.exit()
+        cat_choice = ""
+        if len(args.filepath) == 1 :
+            cat_list = get_category()
+            cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + str(cat_list) + "\n=> ")
+        else :
+            cat_choice = args.filepath[1]
+        if cat_choice == "" : # if empty user input
+            cat_choice == "None"
+        filename=args.filepath[0]
+        print("\n#Importing from " + filename + "...\n")
+        logging.info("\n#Importing from " + filename + "...\n")
+        fun_import_from_txt(filename, cat_choice)
 
 
 
