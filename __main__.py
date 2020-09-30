@@ -143,9 +143,10 @@ def main() :
         #while True :
            #import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
            #if import_bool == "y":
-               if not args.filepath[1] :
+               cat_choice = ""
+               if len(args.filepath) == 1 :
                    cat_list = get_category()
-                   cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + cat_list + "\n=> ")
+                   cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + str(cat_list) + "\n=> ")
                else :
                    cat_choice = args.filepath[1]
                if cat_choice == "" : # if empty user input
@@ -154,9 +155,8 @@ def main() :
                filename=args.filepath[0]
 #               if filename == "" :
 #                   filename = "new_entry.txt"
-               print("\n ## Importing from " + filename + "...\n")
-               logging.info("\n ## Importing from " + filename + "...\n")
-               print(cat_choice)
+               print("\n#Importing from " + filename + "...\n")
+               logging.info("\n#Importing from " + filename + "...\n")
                fun_import_from_txt(filename, cat_choice)
 #           else :
 #               print("\n ## No importation to do\n")
