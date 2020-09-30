@@ -34,19 +34,20 @@ def print_2_entries(entry_id, all_fields="no"):
             b = b[width:]
 
     entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
-    cat = ["Category :", str(entries[0]['category']), str(entries[1]['category'])]
-    content = ["Entry :", str(entries[0]['entry']), str(entries[1]['entry'])]
-    side_by_side(content[0], content[1], content[2])
-    if str(entries[0]['details']) != "None" or str(entries[1]['details']) != "None" :
-        details = ["Details :", str(entries[0]['details']), str(entries[1]['details'])]
-        side_by_side(details[0], details[1], details[2])
-    if str(entries[0]['progress']) != "None" or str(entries[1]['progress']) != "None" :
-        progress = ["Progress :", str(entries[0]['progress']), str(entries[1]['progress'])]
-        side_by_side(progress[0], progress[1], progress[2])
-    importance = ["Importance :", str(entries[0]['importance_elo']).split("_")[-1], str(entries[1]['importance_elo']).split("_")[-1]]
-    side_by_side(importance[0], importance[1], importance[2])
-    time = ["Time (high is short) :", str(entries[0]['time_elo']).split("_")[-1], str(entries[1]['time_elo']).split("_")[-1]]
-    side_by_side(time[0], time[1], time[2])
+    if all_fields != "all":
+        cat = ["Category :", str(entries[0]['category']), str(entries[1]['category'])]
+        content = ["Entry :", str(entries[0]['entry']), str(entries[1]['entry'])]
+        side_by_side(content[0], content[1], content[2])
+        if str(entries[0]['details']) != "None" or str(entries[1]['details']) != "None" :
+            details = ["Details :", str(entries[0]['details']), str(entries[1]['details'])]
+            side_by_side(details[0], details[1], details[2])
+        if str(entries[0]['progress']) != "None" or str(entries[1]['progress']) != "None" :
+            progress = ["Progress :", str(entries[0]['progress']), str(entries[1]['progress'])]
+            side_by_side(progress[0], progress[1], progress[2])
+        importance = ["Importance :", str(entries[0]['importance_elo']).split("_")[-1], str(entries[1]['importance_elo']).split("_")[-1]]
+        side_by_side(importance[0], importance[1], importance[2])
+        time = ["Time (high is short) :", str(entries[0]['time_elo']).split("_")[-1], str(entries[1]['time_elo']).split("_")[-1]]
+        side_by_side(time[0], time[1], time[2])
 
     if all_fields=="all":
        for i in get_field_names():
