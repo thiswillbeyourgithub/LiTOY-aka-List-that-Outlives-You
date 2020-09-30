@@ -10,8 +10,8 @@ import argparse
 
 from   src.litoy.sql        import *
 from   src.litoy.settings   import *
-import src.litoy.elo
-import src.litoy.functions
+from   src.litoy.elo        import *
+from   src.litoy.functions  import *
 
 
 
@@ -85,6 +85,7 @@ def main() :
     cursor.execute(query_create_table)
 
 
+# IMPORT SCENARIO
 #    while True :
 #        import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
 #        if import_bool == "y":
@@ -111,27 +112,21 @@ def main() :
     for i in range(len(all_IDs)):
         update_delta(str(all_IDs[i]["ID"]))
     logging.info("Done batch updating all deltas\n")
-
     logging.info(" ## End of initialization\n\n")
 
 
 ###################### main loop :
-#    while 1==1:
-#        type_of_fight = input("Select mode:\nt = Compare time\ni = Compare importance\n\n\nYour choice => ")
-#        if type_of_fight !="i" and type_of_fight != "t" :
-#            print("Incorrect choice\n\n")
-#            continue
-#        fighters = choose_fighting_entries(type_of_fight)
-#        print("\n")
-#        print("#######################")
-#        print_entry(fighters[0])
-#        print("#######################")
-#        print_entry(fighters[1])
-#        print("\n\n")
-#        if type_of_fight == "t":
-#            user_input = input(question_time + "\n=>")
+    while 1==1:
+        type_of_fight = input("Select mode:\nt = Compare time\ni = Compare importance\n\n\nYour choice => ")
+        if type_of_fight !="i" and type_of_fight != "t" :
+            print("Incorrect choice\n\n")
+            continue
+        fighters = choose_fighting_entries(type_of_fight)
+        print_2_entries(fighters)
 #        if type_of_fight == "i":
-#            user_input = input(question_importance + "\n=>")
+#            user_input = input(questions['importance'] + "\n=>")
+#        if type_of_fight == "t":
+#            user_input = input(questions['time'] + "\n=>")
 #        shortcut_reaction(user_input,type_of_fight, fighters)
 #        break
 

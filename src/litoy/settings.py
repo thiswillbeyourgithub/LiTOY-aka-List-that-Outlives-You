@@ -31,6 +31,5 @@ shortcut = {
 K_values           =  [100,50,25,15,10]
 default_score      =  "1000"
 adjustment_factor  =  "1"                #  used  in  the  global  score  formula
-choice_threshold   =  0.25               #  X%    of  the  time    :      the      card  used  the  least  recently  will  be  picked
-
-
+#choice_threshold   =  0.25               #  X%    of  the  time    :      the      card  used  the  least  recently  will  be  picked
+choice_threshold   =  0.5               #debug

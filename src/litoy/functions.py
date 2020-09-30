@@ -1,42 +1,94 @@
 #!/usr/bin/env python3
 
 import logging
+import random
+from   .sql         import *
+from   .settings    import *
+
+# to get the terminal size on all OS :
+import os
+import shlex
+import struct
+import platform
+import subprocess
+ 
 
 # This file contains general functions used in the main loop :
 
-def print_entry(entry_id):
-    #entry_fields = get_sql_value("*","id = " + str(entry_id))
-    entry_fields = fetch_entry("ID = " + entry_id)
-    print ("Category : " + str(entry_fields['category']))
-    print ("Entry : " + str(entry_fields['entry']))
-    if entry_fields['details'] != "None" : print ("Details : " + str(entry_fields['details']))
-    if entry_fields['progress'] != "None" :     print ("Progress : " + str(entry_fields['progress']))
-    #print ("Importance Elo : " + str(entry_fields['importance_elo']))
-    #print ("Time Elo : " + str(entry_fields['time_elo']))
+def print_2_entries(entry_id):
 
-def print_entry_all_fields(entry_id):
-    #entry_fields = get_sql_value("*","id = " + str(entry_id))
-    entry_fields = fetch_entry("ID = " + entry_id)
-    print(entry_fields)
-#    for i,f in enumerate(entry_fields):
-#        print(str(i) + " ___ " + str(f))
+    def side_by_side(rowname, a, b, space=4):
+        #https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
+        rowname = rowname.ljust(20)
+        sizex = get_terminal_size()
+        width=int((sizex-len(rowname))/2-space*2)
+        inc = 0
+        while a or b:
+            inc+=1
+            if inc == 1:
+                print(rowname + " "*space + a[:width] + " "*space + b[:width])
+            else :
+                print(" "*(len(rowname)+space) + a[:width].ljust(width) + " "*space + b[:width])
+            a = a[width:]
+            b = b[width:]
+
+
+    entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
+    print("\n\n")
+
+    cat = ["Category : ", str(entries[0]['category']), str(entries[1]['category'])]
+    content = ["Entry : ", str(entries[0]['entry']), str(entries[1]['entry'])]
+    print("\n")
+    side_by_side(content[0], content[1], content[2])
+    if str(entries[0]['details']) != "None" or str(entries[1]['details']) != "None" :
+        details = ["Details : ", str(entries[0]['details']), str(entries[1]['details'])]
+        side_by_side(details[0], details[1], details[2])
+    if str(entries[0]['progress']) != "None" or str(entries[1]['progress']) != "None" :
+        progress = ["Progress : ", str(entries[0]['progress']), str(entries[1]['progress'])]
+        side_by_side(progress[0], progress[1], progress[2])
+    importance = ["Importance : ", str(entries[0]['importance_elo']), str(entries[1]['importance_elo'])]
+    side_by_side(importance[0], importance[1], importance[2])
+    time = ["Time (high is short) : ", str(entries[0]['time_elo']), str(entries[1]['time_elo'])]
+    side_by_side(time[0], time[1], time[2])
+
+    print("\n\n")
+
+#def print_entry_all_fields(entry_id):
+#    #entry_fields = get_sql_value("*","id = " + str(entry_id))
+#    entry_fields = fetch_entry("ID = " + entry_id)[0]
+#    print(entry_fields)
+##    for i,f in enumerate(entry_fields):
+##        print(str(i) + " ___ " + str(f))
 
 
 def choose_fighting_entries(mode, condition=""): # tested seems OK
-    condition = "disabled IS 0 AND " + condition
-    all_ids_deltas_dates = get_sql_value("id, delta_imp, delta_time, date_importance_elo, date_time_elo, disabled",condition)
-    if mode == "i" : mode = 1
-    if mode == "t" : mode = 2
-    all_ids_deltas_dates = list(all_ids_deltas_dates)
+    #condition = "disabled IS 0 AND " + condition
+    #all_ids_deltas_dates = get_sql_value("id, delta_imp, delta_time, date_importance_elo, date_time_elo, disabled",condition)
+    col = fetch_entry('ID >= 0 AND DISABLED IS 0' + condition)
+    random.shuffle(col)  # helps when all entries are the same
+#    col2 = [] #only ID and delta
+#    for i in range(len(col)):
+#        col2.append({"ID":col[i]['ID'], 'date_time_elo':col[i]['date_time_elo'], 'delta_time':col[i]['delta_time'], 'date_importance_elo':col[i]['date_importance_elo'], 'delta_imp':col[i]['delta_imp']})
+#    col2.sort(key=lambda x : int(x['delta_time']))
+
+    if mode == "i" : 
+        col.sort(reverse=True, key=lambda x : int(x['delta_imp']))
+        col_deltas_dates = col
+    if mode == "t" :
+        col.sort(reverse=True, key=lambda x : int(x['delta_time']))
+        col_deltas_dates = col
+    #all_ids_deltas_dates = list(all_ids_deltas_dates)
     #print(all_ids_deltas_dates)
-    all_ids_deltas_dates.sort(reverse=True, key=lambda x : x[mode])
-    highest_5_deltas = all_ids_deltas_dates[0:5]
-    choice1 = random.choice(highest_5_deltas)
+    #all_ids_deltas_dates.sort(reverse=True, key=lambda x : x[mode])
+    highest_5_deltas = col_deltas_dates[0:5]
+    choice1 = random.choice(highest_5_deltas) # first opponent
+    #print(choice1['ID'])
+
     randomness = random.random()
     if randomness > choice_threshold :
         while 1==1 :
-            choice2 = random.choice(all_ids_deltas_dates)
-            if choice2[0] == choice1[0]:
+            choice2 = random.choice(col_deltas_dates)
+            if choice2['ID'] == choice1['ID']:
                 print("Re choosing : selected the same entry")
                 continue
             break
@@ -44,13 +96,18 @@ def choose_fighting_entries(mode, condition=""): # tested seems OK
         print("Choosing the oldest seen entry")
         logging.info("Choosing the oldest seen entry")
         while 1==1 :
-            all_ids_deltas_dates.sort(reverse=False, key=lambda x : str(x[mode+2]).split(sep="_")[-1])
-            choice2 = all_ids_deltas_dates[0]
-            while choice2[0] == choice1[0]:
+            #col_deltas_dates.sort(reverse=False, key=lambda x : str(x[mode+2]).split(sep="_")[-1])
+            if mode == "i":
+                col_deltas_dates.sort(reverse=False, key=lambda x : str(x['delta_imp']).split(sep="_")[-1])
+            if mode == "t":
+                col_deltas_dates.sort(reverse=False, key=lambda x : str(x['delta_time']).split(sep="_")[-1])
+            choice2 = col_deltas_dates[0]
+            print("\n\n\n")
+            while choice2['ID'] == choice1['ID']:
                 print("Re choosing : selected the same entry")
                 choice1 = random.choice(highest_5_deltas)
             break
-    return [choice1[0], choice2[0]]
+    return [choice1['ID'], choice2['ID']]
 
 def shortcut_reaction(key, mode, fighters):
     def get_key(val): 
@@ -77,3 +134,83 @@ def shortcut_reaction(key, mode, fighters):
             new_elo2 = update_elo(cur_elo2, expected(cur_elo2, cur_elo1), int(key), cur_K_2)
         break
 
+
+
+
+
+# from here : https://gist.github.com/jtriley/1108174
+# used to get terminal size
+def get_terminal_size():
+    """ getTerminalSize()
+     - get width and height of console
+     - works on linux,os x,windows,cygwin(windows)
+     originally retrieved from:
+     http://stackoverflow.com/questions/566746/how-to-get-console-window-width-in-python
+    """
+    current_os = platform.system()
+    tuple_xy = None
+    if current_os == 'Windows':
+        tuple_xy = _get_terminal_size_windows()
+        if tuple_xy is None:
+            tuple_xy = _get_terminal_size_tput()
+            # needed for window's python in cygwin's xterm!
+    if current_os in ['Linux', 'Darwin'] or current_os.startswith('CYGWIN'):
+        tuple_xy = _get_terminal_size_linux()
+    if tuple_xy is None:
+        print("default")
+        tuple_xy = (80, 25)      # default value
+    return tuple_xy[0]
+def _get_terminal_size_windows():
+    try:
+        from ctypes import windll, create_string_buffer
+        # stdin handle is -10
+        # stdout handle is -11
+        # stderr handle is -12
+        h = windll.kernel32.GetStdHandle(-12)
+        csbi = create_string_buffer(22)
+        res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
+        if res:
+            (bufx, bufy, curx, cury, wattr,
+             left, top, right, bottom,
+             maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+            sizex = right - left + 1
+            sizey = bottom - top + 1
+            return sizex, sizey
+    except:
+        pass
+def _get_terminal_size_tput():
+    # get terminal width
+    # src: http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window
+    try:
+        cols = int(subprocess.check_call(shlex.split('tput cols')))
+        rows = int(subprocess.check_call(shlex.split('tput lines')))
+        return (cols, rows)
+    except:
+        pass
+def _get_terminal_size_linux():
+    def ioctl_GWINSZ(fd):
+        try:
+            import fcntl
+            import termios
+            cr = struct.unpack('hh',
+                               fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+            return cr
+        except:
+            pass
+    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+    if not cr:
+        try:
+            fd = os.open(os.ctermid(), os.O_RDONLY)
+            cr = ioctl_GWINSZ(fd)
+            os.close(fd)
+        except:
+            pass
+    if not cr:
+        try:
+            cr = (os.environ['LINES'], os.environ['COLUMNS'])
+        except:
+            return None
+    return int(cr[1]), int(cr[0])
+ 
+global sizex
+sizex = get_terminal_size()
