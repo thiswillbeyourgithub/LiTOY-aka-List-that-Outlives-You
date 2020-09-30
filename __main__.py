@@ -70,35 +70,19 @@ def main() :
 
 
 
-# IMPORT SCENARIO
-#    while True :
-#        import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
-#        if import_bool == "y":
-#            category_list = get_category()
-#            cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + category_list + "\n=> ")
-#            if cat_choice == "" :
-#                cat_choice = "None"
-#            filename = input("\nWhat is the name of the file containing the new entries? Press Enter to use default file (new_entry.txt)\n(remember to put it in the same folder!)\n=> ")
-#            if filename == "" :
-#                filename = "new_entry.txt"
-#            print("\n ## Importing from " + filename + "...\n")
-#            logging.info("\n ## Importing from " + filename + "...\n")
-#            import_from_txt(filename, cat_choice)
-#        else :
-#            print("\n ## No importation to do\n")
-#            logging.info("\n ## No importation to do\n")
-#            break
-
 
 ###################### main loop :
-    while 1==1:
-        type_of_fight = input("\nSelect mode:    t = Compare time     i = Compare importance\nYour choice => ")
-        if type_of_fight !="i" and type_of_fight != "t" :
-            print("Incorrect choice\n\n")
-            continue
-        fighters = pick_2_entries(type_of_fight)
-        print_2_entries(fighters, "all")
-        print("\n")
+
+
+
+#    while 1==1:
+#        type_of_fight = input("\nSelect mode:    t = Compare time     i = Compare importance\nYour choice => ")
+#        if type_of_fight !="i" and type_of_fight != "t" :
+#            print("Incorrect choice\n\n")
+#            continue
+#        fighters = pick_2_entries(type_of_fight)
+#        print_2_entries(fighters, "all")
+#        print("\n")
 #        if type_of_fight == "i":
 #            user_input = input(questions['importance'] + "\n=>")
 #        if type_of_fight == "t":
@@ -107,51 +91,79 @@ def main() :
 #        break
 
 
-###################### script arguments :
-# links I used :
-# https://docs.python.org/3/howto/argparse.html
-# https://cmsdk.com/python/how-to-add-multiple-argument-options-in-python-using-argparse.html
-# https://docs.python.org/3/library/argparse.html
-parser = argparse.ArgumentParser()
-# mutually exclusive arguments :
-group_exclusive = parser.add_mutually_exclusive_group()
-group_exclusive.add_argument("a",
-        "add",
-        nargs = "1",
-        type = str,
-        metavar='formated_entry',
-        dest='newentry',
-        required=False,
-        help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py add \"do x\"")
-group_exclusive.add_argument("i",
-        "import_from_txt",
-        nargs = "*",
-        type = str,
-        metavar='filepath',
-        dest='filepath',
-        required=False,
-        help = "import from a textfile")
-group_exclusive.add_argument("s",
-        "settings",
-        nargs = "3",
-        type = str,
-        metavar='var newvalue',
-        dest='change_settings',
-        required=False,
-        help = "set user settings")
-group_exclusive.add_argument("-r",
-        "rank",
-        nargs = "*",
-        type = str,
-        required=False,
-        help = "display ranked entries according to the right formulae")
-# actually useful arguments :
-#parser.add_argument(dest="import_from_txt", help="import from txt file that has to be specified", type=str)
-# parse the arguments :
-args = parser.parse_args()
+    ###################### script arguments :
+    # links I used :
+    # https://docs.python.org/3/howto/argparse.html
+    # https://cmsdk.com/python/how-to-add-multiple-argument-options-in-python-using-argparse.html
+    # https://docs.python.org/3/library/argparse.html
+    parser = argparse.ArgumentParser()
+    # mutually exclusive arguments :
+    group_exclusive = parser.add_mutually_exclusive_group()
+    group_exclusive.add_argument("-a",
+            "--add",
+            nargs = "1",
+            type = str,
+            metavar='formated_entry',
+            dest='newentry',
+            required=False,
+            help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py add \"do x\"")
+    group_exclusive.add_argument("-i",
+            "--import_from_txt",
+            nargs = "*",
+            type = str,
+            metavar='db_path category',
+            dest='filepath',
+            default='new_entry.txt',
+            required=False,
+            help = "import from a textfile")
+    group_exclusive.add_argument("-s",
+            "--settings",
+            nargs = "3",
+            type = str,
+            metavar='var newvalue',
+            dest='change_settings',
+            required=False,
+            help = "set user settings")
+    group_exclusive.add_argument("-r",
+            "--rank",
+            nargs = "*",
+            type = str,
+            required=False,
+            help = "display ranked entries according to the right formulae")
 
-#print(args.add)
-#print(args.import_from_txt)
+    # actually useful arguments :
+    #parser.add_argument(dest="import_from_txt", help="import from txt file that has to be specified", type=str)
+
+    # parse the arguments :
+    args = parser.parse_args()
+    #print(args)
+
+    if args.filepath:
+        #print(args.filepath)
+        #while True :
+           #import_bool =  input("\nDo you want to import new entries from a file? (y/n)\n=> ")
+           #if import_bool == "y":
+               if not args.filepath[1] :
+                   cat_list = get_category()
+                   cat_choice = input("Specify category for the new entries? (default is 'None')\nCategories already found in db : " + cat_list + "\n=> ")
+               else :
+                   cat_choice = args.filepath[1]
+               if cat_choice == "" : # if empty user input
+                   cat_choice == "None"
+               #filename = input("\nWhat is the name of the file containing the new entries? Press Enter to use default file (new_entry.txt)\n(remember to put it in the same folder!)\n=> ")
+               filename=args.filepath[0]
+#               if filename == "" :
+#                   filename = "new_entry.txt"
+               print("\n ## Importing from " + filename + "...\n")
+               logging.info("\n ## Importing from " + filename + "...\n")
+               print(cat_choice)
+               fun_import_from_txt(filename, cat_choice)
+#           else :
+#               print("\n ## No importation to do\n")
+#               logging.info("\n ## No importation to do\n")
+#               #break
+
+
 
 
 
