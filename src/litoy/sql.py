@@ -67,7 +67,8 @@ def get_category() :
     cat_list = []
     for i in range(len(all_entries)):
         cat_list.append(all_entries[i]['category'])
-    cat_list = list(set(cat_list)).sort()
+    cat_list = list(set(cat_list))
+    cat_list.sort()
     db.commit() ;   db.close()
     return cat_list
 

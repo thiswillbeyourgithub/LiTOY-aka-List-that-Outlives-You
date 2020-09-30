@@ -116,7 +116,6 @@ def main() :
 
 
 ###################### main loop :
-    print(get_category())
     while 1==1:
         type_of_fight = input("\nSelect mode:    t = Compare time     i = Compare importance\nYour choice => ")
         if type_of_fight !="i" and type_of_fight != "t" :
