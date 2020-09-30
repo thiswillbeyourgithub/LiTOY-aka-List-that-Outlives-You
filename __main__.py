@@ -51,38 +51,23 @@ from   src.litoy.functions  import *
 def main() :
     if os.path.exists('database.db'):
         logging.info("\n## db found\n")
-        db = sqlite3.connect('database.db')
-        cursor = db.cursor()
     else:
         logging.info("\n## db NOT found\n")
+        print("NO DB FOUND (database.db), creating one...")
         sys.exit()
 
-    logging.info("\n ## Openning db \n")
-    logging.info("\n ## Creating table if not found \n")
-    query_create_table = '\
-            CREATE TABLE IF NOT EXISTS LiTOY(\
-            ID INTEGER,\
-            date_added INTEGER,\
-            entry TEXT,\
-            details TEXT,\
-            category TEXT,\
-            starred INTEGER,\
-            progress TEXT,\
-            importance_elo TEXT,\
-            date_importance_elo TEXT,\
-            time_elo TEXT,\
-            date_time_elo TEXT,\
-            delta_imp INTEGER,\
-            delta_time INTEGER,\
-            global_score,\
-            time_spent_comparing INTEGER,\
-            number_of_comparison INTEGER,\
-            disabled INTEGER,\
-            done INTEGER,\
-            K_value INTEGER\
-            )'
-    logging.info("SQL CREATE REQUEST : " + query_create_table)
-    cursor.execute(query_create_table)
+    create_table_in_db()
+
+    # sets all deltas just in case
+    logging.info("Updating all deltas")
+    all_IDs = fetch_entry("ID >=0")
+    for i in range(len(all_IDs)):
+        update_delta(str(all_IDs[i]["ID"]))
+    logging.info("Done batch updating all deltas\n")
+    logging.info(" ## End of initialization\n\n")
+
+    set_db_defaults_value()
+
 
 
 # IMPORT SCENARIO
@@ -103,16 +88,6 @@ def main() :
 #            print("\n ## No importation to do\n")
 #            logging.info("\n ## No importation to do\n")
 #            break
-
-    set_db_defaults_value()
-
-    # sets all deltas just in case
-    logging.info("Updating all deltas")
-    all_IDs = fetch_entry("ID >=0")
-    for i in range(len(all_IDs)):
-        update_delta(str(all_IDs[i]["ID"]))
-    logging.info("Done batch updating all deltas\n")
-    logging.info(" ## End of initialization\n\n")
 
 
 ###################### main loop :
@@ -140,22 +115,32 @@ def main() :
 parser = argparse.ArgumentParser()
 # mutually exclusive arguments :
 group_exclusive = parser.add_mutually_exclusive_group()
-group_exclusive.add_argument("--add",
+group_exclusive.add_argument("-a",
+        "--add",
         nargs = "*",
         type = str,
+        metavar='formated_entry',
+        dest='newentry',
         help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py add \"do x\"")
-group_exclusive.add_argument("--import_from_txt",
+group_exclusive.add_argument("-i",
+        "--import_from_txt",
         nargs = "*",
         type = str,
+        metavar='filepath',
+        dest='filepath',
         help = "import from a textfile")
-group_exclusive.add_argument("--rank",
+group_exclusive.add_argument("-s",
+        "--settings",
+        nargs = "3",
+        type = str,
+        metavar='var newvalue',
+        dest='change_settings',
+        help = "set user settings")
+group_exclusive.add_argument("-r",
+        "--rank",
         nargs = "*",
         type = str,
         help = "display ranked entries according to the right formulae")
-group_exclusive.add_argument("--settings",
-        nargs = "?",
-        type = str,
-        help = "set user settings")
 # actually useful arguments :
 #parser.add_argument(dest="import_from_txt", help="import from txt file that has to be specified", type=str)
 # parse the arguments :
