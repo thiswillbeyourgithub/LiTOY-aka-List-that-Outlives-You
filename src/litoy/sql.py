@@ -64,13 +64,20 @@ def get_category() :
     logging.info("Getting category list...")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     all_entries = fetch_entry("ID >= 0")
-
     cat_list = []
     for i in range(len(all_entries)):
         cat_list.append(all_entries[i]['category'])
     cat_list = list(set(cat_list)).sort()
     db.commit() ;   db.close()
     return cat_list
+
+def get_field_names():
+    logging.info("Getting field names")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    entry = fetch_entry("ID = 1")
+    db.commit() ; db.close()
+    return entry[0].keys()
+
 
 
 

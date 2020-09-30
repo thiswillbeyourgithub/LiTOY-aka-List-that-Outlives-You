@@ -15,48 +15,45 @@ import subprocess
 
 # This file contains general functions used in the main loop :
 
-def print_2_entries(entry_id):
-
-    logging.info("Printing entries : "+ entry_id)
+def print_2_entries(entry_id, all_fields="no"):
+    logging.info("Printing entries : "+ str(entry_id[0]) + " and " + str(entry_id[1]))
+    print("#"*sizex)
     def side_by_side(rowname, a, b, space=4):
         #https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
-        rowname = rowname.ljust(20)
+        rowname = rowname.ljust(30)
         sizex = get_terminal_size()
         width=int((sizex-len(rowname))/2-space*2)
         inc = 0
         while a or b:
             inc+=1
             if inc == 1:
-                print(rowname + " "*space + a[:width] + " "*space + b[:width])
+                print(rowname + " "*space + a[:width].ljust(width) + " "*space + b[:width])
             else :
                 print(" "*(len(rowname)+space) + a[:width].ljust(width) + " "*space + b[:width])
             a = a[width:]
             b = b[width:]
 
-
     entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
-    print("\n\n")
-
-    cat = ["Category : ", str(entries[0]['category']), str(entries[1]['category'])]
-    content = ["Entry : ", str(entries[0]['entry']), str(entries[1]['entry'])]
-    print("\n")
+    cat = ["Category :", str(entries[0]['category']), str(entries[1]['category'])]
+    content = ["Entry :", str(entries[0]['entry']), str(entries[1]['entry'])]
     side_by_side(content[0], content[1], content[2])
     if str(entries[0]['details']) != "None" or str(entries[1]['details']) != "None" :
-        details = ["Details : ", str(entries[0]['details']), str(entries[1]['details'])]
+        details = ["Details :", str(entries[0]['details']), str(entries[1]['details'])]
         side_by_side(details[0], details[1], details[2])
     if str(entries[0]['progress']) != "None" or str(entries[1]['progress']) != "None" :
-        progress = ["Progress : ", str(entries[0]['progress']), str(entries[1]['progress'])]
+        progress = ["Progress :", str(entries[0]['progress']), str(entries[1]['progress'])]
         side_by_side(progress[0], progress[1], progress[2])
-    importance = ["Importance : ", str(entries[0]['importance_elo']), str(entries[1]['importance_elo'])]
+    importance = ["Importance :", str(entries[0]['importance_elo']).split("_")[-1], str(entries[1]['importance_elo']).split("_")[-1]]
     side_by_side(importance[0], importance[1], importance[2])
-    time = ["Time (high is short) : ", str(entries[0]['time_elo']), str(entries[1]['time_elo'])]
+    time = ["Time (high is short) :", str(entries[0]['time_elo']).split("_")[-1], str(entries[1]['time_elo']).split("_")[-1]]
     side_by_side(time[0], time[1], time[2])
 
-    print("\n\n")
+    if all_fields=="all":
+       for i in get_field_names():
+           side_by_side(str(i), str(entries[0][i]), str(entries[1][i]))
+    print("#"*sizex)
 
-
-
-def choose_fighting_entries(mode, condition=""): # tested seems OK
+def pick_2_entries(mode, condition=""): # tested seems OK
     col = fetch_entry('ID >= 0 AND DISABLED IS 0' + condition)
     random.shuffle(col)  # helps when all entries are the same
     if mode == "i" : 
@@ -91,7 +88,7 @@ def choose_fighting_entries(mode, condition=""): # tested seems OK
                 print("Re choosing : selected the same entry")
                 choice1 = random.choice(highest_5_deltas)
             break
-    logging.info("Chose those fighters : " + fighers)
+    logging.info("Chose those fighters : " + str(choice1['ID']) + " and " + str(choice2['ID']))
     return [choice1['ID'], choice2['ID']]
 
 def shortcut_reaction(key, mode, fighters):
@@ -197,5 +194,4 @@ def _get_terminal_size_linux():
             return None
     return int(cr[1]), int(cr[0])
  
-global sizex
 sizex = get_terminal_size()

@@ -70,6 +70,8 @@ The idea behing LiTOY is simple :
 * shows the rank `python3 __main__.py --rank --category="diy" -n 20`
 * shows all entries `python3 __main__.py --list="rank" --category="*"`
 * shows all entries, by date added (can be any other sql field), in reverse order `python3 __main__.py --list="date_added --reversed=1"`
+* show all entries, unformatted `python3 __main__.py --list="raw"`
+* get the field list `python3 __main__.py --print--field`
 * compare 10 cards in a row from the folder called diy `python3 __main__.py --compare --category="diy" -n 10`
 * get history `python3 __main__.py --history`
 * turn on manual mode `python3 __main__.py --manual`
@@ -101,6 +103,7 @@ The idea behing LiTOY is simple :
 * champs "estimated time to read" + "title of url"
         * faut que ca marche aussi si plusieurs url sont données
 * verifier que chaque message important est dans le log
+* rajouter un message d'erreur quand il y a aucune carte et que le mec a rien importé
 * si importé a partir d'un fichier : bouger le fichier dans un dossier ./imported/+date
 * aléatoirement rajouté un message TU VAS MOURIR sometimes
 * les tupple sont plus rapides que les listes, les priviléger

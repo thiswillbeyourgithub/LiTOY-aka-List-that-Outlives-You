@@ -116,13 +116,15 @@ def main() :
 
 
 ###################### main loop :
+    print(get_category())
     while 1==1:
-        type_of_fight = input("Select mode:\nt = Compare time\ni = Compare importance\n\n\nYour choice => ")
+        type_of_fight = input("\nSelect mode:    t = Compare time     i = Compare importance\nYour choice => ")
         if type_of_fight !="i" and type_of_fight != "t" :
             print("Incorrect choice\n\n")
             continue
-        fighters = choose_fighting_entries(type_of_fight)
-        print_2_entries(fighters)
+        fighters = pick_2_entries(type_of_fight)
+        print_2_entries(fighters, "all")
+        print("\n")
 #        if type_of_fight == "i":
 #            user_input = input(questions['importance'] + "\n=>")
 #        if type_of_fight == "t":
