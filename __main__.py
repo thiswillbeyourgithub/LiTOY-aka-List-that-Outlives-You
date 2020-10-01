@@ -92,16 +92,19 @@ def main() :
 
 
     ###################### script arguments :
-    # links I used :
-    # https://docs.python.org/3/howto/argparse.html
-    # https://cmsdk.com/python/how-to-add-multiple-argument-options-in-python-using-argparse.html
-    # https://docs.python.org/3/library/argparse.html
+
     parser = argparse.ArgumentParser()
-    # mutually exclusive arguments :
+
     group_exclusive = parser.add_mutually_exclusive_group()
+    group_exclusive.add_argument("-f",
+            "--fight",
+            nargs = "*",
+            type = str,
+            required=False,
+            help = "pick entries at random and make them fight")
     group_exclusive.add_argument("-a",
             "--add",
-            nargs = "1",
+            nargs = "*",
             type = str,
             metavar='formated_entry',
             dest='newentry',
@@ -113,7 +116,7 @@ def main() :
             type = str,
             metavar='db_path category',
             dest='filepath',
-            default='new_entry.txt',
+            #default='new_entry.txt',
             required=False,
             help = "import from a textfile")
     group_exclusive.add_argument("-s",
@@ -133,6 +136,7 @@ def main() :
 
     # actually useful arguments :
     #parser.add_argument(dest="import_from_txt", help="import from txt file that has to be specified", type=str)
+    parser.add_argument(dest="", help="import from txt file that has to be specified", type=str)
 
     # parse the arguments :
     args = parser.parse_args()
@@ -156,7 +160,11 @@ def main() :
         logging.info("\n#Importing from " + filename + "...\n")
         fun_import_from_txt(filename, cat_choice)
 
+    if args.rank:
+       pass 
 
+   if args.settings:
+       pass
 
 
 
