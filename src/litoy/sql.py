@@ -5,10 +5,12 @@
 import sqlite3
 import logging
 import time
+import sys
+from   .settings   import *
 
 
 def create_table_in_db():
-    logging.info("\n ## Creating table if not found in db \n")
+    logging.info("\n# Creating table if not found in db \n")
     query_create_table = '\
             CREATE TABLE IF NOT EXISTS LiTOY(\
             ID INTEGER,\
@@ -48,10 +50,11 @@ def fun_import_from_txt(filename, category) :
             content = list(dict.fromkeys(content))
 
         # get a new and unused id for the new cards
-        cursor.execute('''SELECT max(ID) FROM LiTOY''')
-        newID = str(cursor.fetchone()[0])
-        if newID == "None" :
-            newID = "1"
+#        cursor.execute('''SELECT max(ID) FROM LiTOY''')
+#        newID = str(cursor.fetchone()[0])
+#        if newID == "None" :
+#            newID = "1"
+        newID = str(int(get_max_ID())+1) # not tested after commenting above
 
         # importation
         for entry in content :
@@ -69,24 +72,25 @@ def fun_import_from_txt(filename, category) :
 
                 if existence == "False" :
                     query_create = "INSERT INTO LiTOY(\
-                            ID, \
-                            date_added, \
-                            entry, \
-                            time_spent_comparing, \
-                            number_of_comparison, \
-                            starred, \
-                            category, \
-                            disabled, \
-                            done, \
-                            K_value\
-                            ) \
-                            VALUES (" + newID + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, '" + str(category) + "', 0, 0" + K_values[0] + ")"
+ID, \
+date_added, \
+entry, \
+time_spent_comparing, \
+number_of_comparison, \
+starred, \
+category, \
+disabled, \
+done, \
+K_value\
+) \
+VALUES (" + str(newID) + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, '" + str(category) + "', 0, 0, " + str(K_values[0]) + ")"
+                    logging.info("SQL REQUEST : " + query_create)
                     cursor.execute(query_create)
-                    print(" ## Entry imported : '" + entry + "'")
-                    logging.info(" ## Entry imported : '" + entry + "'")
+                    print("Entry imported : '" + entry + "'")
+                    logging.info("Entry imported : '" + entry + "'")
                 else :
-                    print(" ## Entry already exists in db : '" + entry + "'")
-                    logging.info(" ## Entry already exists in db : '" + entry + "'")
+                    print("Entry already exists in db : '" + entry + "'")
+                    logging.info("Entry already exists in db : '" + entry + "'")
                 newID = str(int(newID)+1)
         db.commit() ;  db.close()
         logging.info("Done importing\n")
@@ -105,17 +109,34 @@ def get_category() :
     return cat_list
 
 def get_field_names():
-    logging.info("Getting field names")
+    logging.info("Getting field names...")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     entry = fetch_entry("ID = 1")
     db.commit() ; db.close()
-    return entry[0].keys()
+    try :
+        result = list(entry[0].keys())
+    except :
+        logging.info("No category found")
+        result = "None"
+    return result
 
+def get_max_ID():
+    logging.info("Getting max ID...")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    cursor.execute('''SELECT MAX(ID) FROM LiTOY''')
+    maxID = cursor.fetchone()[0]
+    db.commit() ; db.close()
+    try : # if None
+        maxID = int(maxID)
+    except : # then 0
+        maxID = 0 
+    logging.info("MaxID = " + str(maxID))
+    return maxID
 
 
 
 def update_delta(entry_id) :
-    logging.info("Updating delta for entry id "+entry_id)
+    logging.info("\nUpdating delta for entry id "+entry_id)
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     entry = fetch_entry("ID = "+entry_id)[0]
 
@@ -128,22 +149,25 @@ def update_delta(entry_id) :
     entry['delta_imp'] = correct_importance_delta
     logging.info("new delta_imp:"+entry['delta_imp'] + " ; new delta_time:" + entry['delta_time'])
     db.commit() ;   db.close()
-
     push_dico(entry, "UPDATE")
-    logging.info("Done updating deltas")
+    logging.info("Done updating deltas\n")
 
 
 def set_db_defaults_value():
-    logging.info("Setting fields to their default value if needed :")
+    logging.info("\nSetting fields to their default value if needed :")
     all_entries = fetch_entry("ID >=0")
     for i,content in enumerate(all_entries) :
         one_entry = all_entries[i]
         if one_entry['importance_elo'] == "None":
-            one_entry['importance_elo'] = "0"+default_score
+            one_entry['importance_elo'] = "0_"+default_score
         if one_entry['time_elo'] == "None":
-            one_entry['time_elo'] = "0"+default_score
+            one_entry['time_elo'] = "0_"+default_score
         if one_entry["done"] == "1" :
             one_entry["disabled"] = 1
+        if one_entry['date_time_elo'] == "None":
+            one_entry['date_time_elo'] = one_entry['date_added']
+        if one_entry['date_importance_elo'] == "None":
+            one_entry['date_importance_elo'] = one_entry['date_added']
         push_dico(one_entry, "UPDATE")
     logging.info("Done setting fields to default value\n")
 
@@ -151,12 +175,15 @@ def set_db_defaults_value():
 
 def fetch_entry(condition):
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
-    logging.info("Fetching whole entry on condition:"+condition)
-    cursor.execute('''SELECT * FROM LiTOY WHERE '''+condition)
+    logging.info("\nFetching whole entry on condition:"+condition)
+    queryFetch = 'SELECT * FROM LiTOY WHERE ' + str(condition)
+    logging.info("SQL REQUEST : " + queryFetch)
+    cursor.execute(queryFetch)
     fetched_raw = cursor.fetchall()
     columns = cursor.description
     db.commit() ;   db.close()
     dictio = turn_into_dict(fetched_raw, columns)
+    logging.info("Done fetching Dictionnary\n")
     return dictio
 
 def turn_into_dict(fetched_raw, columns=""):
@@ -165,10 +192,12 @@ def turn_into_dict(fetched_raw, columns=""):
     col_name = [col[0] for col in columns]
     fetch_clean = [dict(zip(col_name, row)) for row in fetched_raw]
     db.commit() ;   db.close()
+    logging.info("Turned sql result into dictionnary")
     return fetch_clean
 
 def push_dico(dico, mode):
     # https://blog.softhints.com/python-3-convert-dictionary-to-sql-insert/
+    logging.info('\nPushing dictionnary : ' + str(dico) + " ; mode = " + str(mode))
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     if mode == "INSERT" :
         columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in dico.keys())
@@ -183,6 +212,7 @@ def push_dico(dico, mode):
     logging.info("SQL push_dico:" + query)
     cursor.execute(query)
     db.commit() ;   db.close()
+    logging.info('Done pushing dictionnary\n')
 
 
 

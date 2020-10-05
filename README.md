@@ -76,6 +76,9 @@ The idea behing LiTOY is simple :
 * get history `python3 __main__.py --history`
 * turn on manual mode `python3 __main__.py --manual`
 * check database (do this after major import) `python3 __main__.py --check-db`
+* open in sqlite browser : `python3 __main__.py --external`
+* also show output to the console instead of just in the debug file : `--verbose`
+* edit FIELD from card with id ID : `python3 __main__.py --edit ID FIELD VALUE`
 
 ### Features 
 * Automatically retrieves video length, video size, article reading time duration, pdf reading time duration
@@ -95,6 +98,7 @@ The idea behing LiTOY is simple :
 * prendre le temps de reflechir et repondre a ce message https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
 * rajouter une syntaxe pour importer avec directement des infos : __length=37pages   __length=17minutes __category=audio etc et surtout __1/2/3/4 indique ____ si on lui donne par défaut le score du premier 2e 3e ou 4e cinquieme du classement
 * il faut qu'un raccourci permette d'ouvrir automatiquement les url dans un navigateur + que ca soit configurable
+* utiliser ce module pour gerer les sous titres
 * organiser un autre fichier contenant la todo list, dont une section "long term ideas", ex :
 * check db should happen periodically and after every import
         * penser a rajouter un mode "court terme" qui permet simplement de trier des trucs selon lequel doit etre fait en premier
