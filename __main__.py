@@ -153,14 +153,14 @@ def main() :
             required=False,
             help = "pick entries at random and make them fight")
     parser.add_argument("--add", "-a",
-            nargs = 2,
+            nargs = "*",
             type = str,
             metavar='formated_entry category',
             dest='addentry',
             required=False,
             help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py -a \"do this thing\" \"DIY\"")
     parser.add_argument("--import_from_txt", "-i",
-            nargs = 2,
+            nargs = "*",
             type = str,
             metavar='database_path category',
             dest='import',
@@ -171,21 +171,60 @@ def main() :
             nargs = 2,
             type = str,
             metavar="variable new_value",
-            dest='change_settings',
+            dest='settings',
             required=False,
             help = "set user settings")
     parser.add_argument("--rank", "-r",
             nargs = 1,
             type = str,
             metavar = "SQL_condition",
+            dest="rank",
             required=False,
             help = "display ranked entries according to the right formula")
-    args = parser.parse_args()
-    print(args)
+    parser.add_argument("--version",
+            action='store_true',
+            required=False,
+            help = "display version information")
+    args = parser.parse_args().__dict__
+
+    # check if incompatible arguments
+    inc=0
+    for i in args.keys() :
+        #if str(i) != "None" or i != False:
+        ii = str(args[i])
+        if ii not in ["None","False"]:
+            print(i)
+            inc = inc+1
+    if inc>1 :
+        print("Are incompatible arguments! Exiting...")
+        logging.info("Incompatible arguments! Exiting...")
+        sys.exit()
 
 
+    if args['import'] != None:
+        path = args["import"]
+        if len(path) >2: 
+            print("ERROR : too many arguments!" + str(path[2:]))
+            logging.info("ERROR : too many arguments!" + str(path[2:]))
+            sys.exit()
+        cat_choice = ""
+        if len(path) == 1 :
+            cat_list = get_category()
+            cat_choice = input("Enter category for the new entries: (default is 'None')\nCategories already found in db : " + str(cat_list) + "\n=> ")
+        else :
+            cat_choice = path[1]
+        if cat_choice == "" : # if user input is empty
+            cat_choice == "None"
+        filename=path[0]
+        print("\n#Importing from " + filename + "...\n")
+        logging.info("\n#Importing from " + filename + "...\n")
+        fun_import_from_txt(filename, cat_choice)
 
+    if args['rank'] != None:
+       pass 
 
+    if args['settings'] != None:
+       pass
 
 
 #    if args.filepath:
