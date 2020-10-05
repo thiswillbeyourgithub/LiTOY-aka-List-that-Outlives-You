@@ -146,41 +146,42 @@ def main() :
     # 2eme tentative :
     parser = argparse.ArgumentParser()
     parser.add_argument("--fight", "-f",
-            #nargs = "*",
+            nargs = "*",
+            metavar = "mode number_of_fights",
+            dest='fight',
             type = str,
             required=False,
             help = "pick entries at random and make them fight")
     parser.add_argument("--add", "-a",
-            #nargs = "*",
+            nargs = 2,
             type = str,
-            metavar='formated_entry',
-            dest='newentry',
+            metavar='formated_entry category',
+            dest='addentry',
             required=False,
-            help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py -a \"do x\"")
+            help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py -a \"do this thing\" \"DIY\"")
     parser.add_argument("--import_from_txt", "-i",
-            #nargs = "*",
+            nargs = 2,
             type = str,
-            metavar='dbpath category',
-            dest='filepath',
+            metavar='database_path category',
+            dest='import',
             #default='new_entry.txt',
             required=False,
             help = "import from a textfile")
     parser.add_argument("--settings", "-s",
-            #nargs = "*",
+            nargs = 2,
             type = str,
-            metavar="var newvalue",
+            metavar="variable new_value",
             dest='change_settings',
             required=False,
             help = "set user settings")
     parser.add_argument("--rank", "-r",
-            #nargs = "+",
+            nargs = 1,
             type = str,
             metavar = "SQL_condition",
             required=False,
             help = "display ranked entries according to the right formula")
     args = parser.parse_args()
     print(args)
-    sys.exit()
 
 
 
