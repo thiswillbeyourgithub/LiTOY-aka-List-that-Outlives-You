@@ -39,11 +39,6 @@ def create_table_in_db():
 
 
 
-
-
-
-
-
 def fun_import_from_txt(filename, category) :
         db = sqlite3.connect('database.db') ; cursor = db.cursor()
 
