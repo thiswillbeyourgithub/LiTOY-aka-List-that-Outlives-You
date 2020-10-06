@@ -98,7 +98,7 @@ The idea behing LiTOY is simple :
 * prendre le temps de reflechir et repondre a ce message https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
 * rajouter une syntaxe pour importer avec directement des infos : __length=37pages   __length=17minutes __category=audio etc et surtout __1/2/3/4 indique ____ si on lui donne par défaut le score du premier 2e 3e ou 4e cinquieme du classement
 * il faut qu'un raccourci permette d'ouvrir automatiquement les url dans un navigateur + que ca soit configurable
-* utiliser ce module pour gerer les sous titres
+* utiliser ce module pour gerer les settings : https://pypi.org/project/simple-settings/
 * organiser un autre fichier contenant la todo list, dont une section "long term ideas", ex :
 * check db should happen periodically and after every import
         * penser a rajouter un mode "court terme" qui permet simplement de trier des trucs selon lequel doit etre fait en premier
