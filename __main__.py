@@ -100,7 +100,7 @@ def main() :
             dest='nlimit',
             required=False,
             default=99999,
-            help = "sets the limit of entries to process or display etc, default=infinite")
+            help = "sets the limit of entries to process or display etc, default=999999")
     parser.add_argument("--settings", "-s",
             nargs = 2,
             type = str,
@@ -122,6 +122,20 @@ def main() :
             dest="rank",
             required=False,
             help = "display ranked entries according to the right formula")
+    parser.add_argument("--deck", "-d",
+            nargs = 1,
+            type = str,
+            metavar = "deck_name",
+            dest="deck",
+            required=False,
+            help = "deck to display or fight")
+    parser.add_argument("--tags", "-t",
+            nargs = 1,
+            type = str,
+            metavar = "tags",
+            dest="tags",
+            required=False,
+            help = "tags to display or fight")
     parser.add_argument("--external",
             action='store_true',
             required=False,
@@ -143,13 +157,13 @@ def main() :
     args = parser.parse_args().__dict__
 
     logging.info("LiTOY started with arguments : " + str(args))
-    #print(args)
+    print(args)
 
     inc=0  # exits if incompatible arguments found
     for i in args.keys() :
         ii = str(args[i])
         inc_list=[]
-        if ii not in ["None","False"] and i not in ["nlimit", "verbose"]:
+        if ii not in ["None","False"] and i not in ["nlimit", "verbose", "decks", "tags"]:
             inc_list.append(i)
             inc = inc+1
     if inc>1 :
@@ -205,7 +219,7 @@ def main() :
             if type_of_fight in "random" :
                 mode=random.choice["time","importance"]
 
-            if mode=""
+            if mode=="":
                 print("Fight : invalid fight mode")
                 logging.info("Fight : invalid fight mode")
                 sys.exit()

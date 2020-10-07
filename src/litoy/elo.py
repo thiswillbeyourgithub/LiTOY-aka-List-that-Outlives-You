@@ -6,14 +6,15 @@ import logging
 
 
 def expected(elo_A, elo_B, Rp=100): # tested : not tested but probably OK
-    logging.info("Expected : A=" + str(elo_A) + ", B=" + str(elo_B) + ", Rp="+str(Rp)
-      '''Calculate expected score of A in a best of 3 match against B
-       Expected score of B in a best of 3 match against A is given by 1-expected(A,B,Rp)
-      For each Rp rating points of advantage over the opponent, the expected score is magnified ten times   in comparison to the opponent's expected score '''
-    logging.info("Expected : A=" + str(elo_A) + ", B=" + str(elo_B) + ", Rp="+str(Rp)
-      result = 3 / (1 + 10 ** ((elo_B - elo_A) / Rp))
-      logging.info("Expected : result="+str(result))
-      return result
+    logging.info("Expected : A=" + str(elo_A) + ", B=" + str(elo_B) + ", Rp="+str(Rp))
+    '''Calculate expected score of A in a best of 3 match against B
+    Expected score of B in a best of 3 match against A is given by 1-expected(A,B,Rp)
+    For each Rp rating points of advantage over the opponent, the expected score is magnified
+    ten times   in comparison to the opponent's expected score'''
+    logging.info("Expected : A=" + str(elo_A) + ", B=" + str(elo_B) + ", Rp="+str(Rp))
+    result = 3 / (1 + 10 ** ((elo_B - elo_A) / Rp))
+    logging.info("Expected : result="+str(result))
+    return result
 
 
 def update_elo(elo, exp_score, real_score, K):
@@ -29,7 +30,7 @@ def adjust_K(K0): # tested : OK
         return K0
     for i in range(len(K_values)):
         if K_values[i] == K0 :
-            logging.info("Adjust_K : newK="+str([K_values[i+1]))
+            logging.info("Adjust_K : newK="+str(K_values[i+1]))
             return K_values[i+1]
         else :
             print("Adjust_K : error : K not part of K_values : "+ str(K0) + ", reset to " +str(K_values[-1]))

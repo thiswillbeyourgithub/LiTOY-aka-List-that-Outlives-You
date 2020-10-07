@@ -66,13 +66,13 @@ The idea behing LiTOY is simple :
 * `python3 ./__main__.py`
 
 ### Syntax example :
-* adds a new entry to category todo with the tag diy  `python3 __main__.py --add 'repair the tires' diy 'to do before march'`
-* shows the rank `python3 __main__.py --rank --category="diy" -n 20`
-* shows all entries `python3 __main__.py --list="rank" --category="*"`
+* adds a new entry to deck todo with the tag diy  `python3 __main__.py --add 'repair the tires' diy 'to do before march'`
+* shows the rank `python3 __main__.py --rank --deck="diy" -n 20`
+* shows all entries `python3 __main__.py --rank --deck="*"`
 * shows all entries, by date added (can be any other sql field), in reverse order `python3 __main__.py --list="date_added rev`
 * show all entries, unformatted `python3 __main__.py --list="raw"`
 * get the field list `python3 __main__.py --print--field`
-* compare 10 cards in a row from the folder called diy `python3 __main__.py --compare --category="diy" -n 10`
+* compare 10 cards in a row from the folder called diy `python3 __main__.py --compare --deck="diy" -n 10`
 * get history `python3 __main__.py --history`
 * turn on manual mode `python3 __main__.py --manual`
 * check database (do this after major import) `python3 __main__.py --check-db`
@@ -96,7 +96,7 @@ The idea behing LiTOY is simple :
 * don't pick if card disabled
 * faire un requirement file et le mentionner dans le how to use
 * prendre le temps de reflechir et repondre a ce message https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
-* rajouter une syntaxe pour importer avec directement des infos : __length=37pages   __length=17minutes __category=audio etc et surtout __1/2/3/4 indique ____ si on lui donne par défaut le score du premier 2e 3e ou 4e cinquieme du classement
+* rajouter une syntaxe pour importer avec directement des infos : __length=37pages   __length=17minutes __deck=audio etc et surtout __1/2/3/4 indique ____ si on lui donne par défaut le score du premier 2e 3e ou 4e cinquieme du classement
 * il faut qu'un raccourci permette d'ouvrir automatiquement les url dans un navigateur + que ca soit configurable
 * utiliser ce module pour gerer les settings : https://pypi.org/project/simple-settings/
 * organiser un autre fichier contenant la todo list, dont une section "long term ideas", ex :
@@ -139,7 +139,7 @@ The idea behing LiTOY is simple :
 * tirage au sort du plus grand differentiel
 * pour corriger un field : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142
 * calcul de la moyenne  des differentiels
-* auto backup a chaque changement de details/category/title etc
+* auto backup a chaque changement de details/deck/title etc
 * permettre d'exporter la liste or something, eventuellement en format ical, ou format anki
 * idée de flo : exporter vers maniana (en tout cas il faut jeter un oeil pour voir ce que c'est) https://f-droid.org/fr/packages/com.zapta.apps.maniana/ 
 * il faut que ca affiche le nombre de truc a faire qui sont todo, et si ca croit ou decroit sur 7 jours
@@ -147,7 +147,7 @@ The idea behing LiTOY is simple :
 * pour l'interface une fois que tu as verifie que ca marche bien en cli : apprendre pyqt, clairement ce sera le plus simple et ca t'ouver la porte vers completer anki
 * regarder si il y a pas un moyen plus simple que de faire une backup, genre un moyen de faire des unfo a l'infini ou de garder un historique
 * rajouter un champs winAgainst et loseAainst, on rajoute l'id de l'adversaire dans le field a chaque combat, ca semble utile pour "refaire" des tris" apres coups ; pas encore sur d'a quoi ca sert mais il faut compter les draws aussi
-* idée d'antoine pour l'interface : permettre des command line command genre : litoy set ID --category "truc" ou litoy list --time ou litoy fight -n=50  ou litoy import file  ou   litoy backup    ou    litoy status   ou    litoy testrun 
+* idée d'antoine pour l'interface : permettre des command line command genre : litoy set ID --deck "truc" ou litoy list --time ou litoy fight -n=50  ou litoy import file  ou   litoy backup    ou    litoy status   ou    litoy testrun 
 * noter quelque part que si litoy marche bien il faudra le compatibiliser avec Polar, soit le rendre ineractif (genre qu'il recup des data de polar) soit carrement en le recodant a l'interieur
 
 ### formerly in the TODO but still thinking about it 

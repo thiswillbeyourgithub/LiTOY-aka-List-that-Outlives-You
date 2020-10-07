@@ -116,10 +116,13 @@ def waiting_shortcut(key, mode, fighters):
             f2new = f2old
 
             if mode=="mixed":
-                mode=random.choice(["importance","time"]
+                mode=random.choice(["importance","time"])
+                loggin.info("Shortcut : randomly chosed mode "+str(mode))
+
             field=str(mode)+"_elo"
-            f1new[field] = update_elo(f1old[field], expected(f1old[field], f2old[field]), int(key), f1old['K_value']
-            f2new[field] = update_elo(f2old[field], expected(f2old[field], f1old[field]), int(key), f2old['K_value']
+            # en fait ca marche pas du tout : il faut que ca append le resultat pas l'ecras
+            f1new[field] = update_elo(f1old[field], expected(f1old[field], f2old[field]), int(key), f1old['K_value'])
+            f2new[field] = update_elo(f2old[field], expected(f2old[field], f1old[field]), int(key), f2old['K_value'])
 
         if action == "skip_fight":
             logging.info("Shortcut : Skipped fight")

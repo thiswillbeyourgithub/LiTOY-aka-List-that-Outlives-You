@@ -136,25 +136,6 @@ def get_max_ID():
     return maxID
 
 
-
-#def update_delta(entry_id) :
-#    logging.info("Updating delta for entry id "+entry_id)
-#    db = sqlite3.connect('database.db') ; cursor = db.cursor()
-#    entry = fetch_entry("ID = "+entry_id)[0]
-#
-#    # extract from the format score_score_score etc that is stored in each relevant score field
-#    correct_importance_delta = str(int(entry['importance_elo'].split(sep='_')[-1]) - int(entry['importance_elo'].split(sep='_')[-2]))
-#    correct_time_delta = str(int(entry['time_elo'].split(sep='_')[-1]) - int(entry['time_elo'].split(sep='_')[-2]))
-#
-#    logging.info("current delta_imp:" + str(entry['delta_imp']) + " ; current delta_time:" + str(entry['delta_time'])) 
-#    entry['delta_time'] = correct_time_delta
-#    entry['delta_imp'] = correct_importance_delta
-#    logging.info("new delta_imp:"+entry['delta_imp'] + " ; new delta_time:" + entry['delta_time'])
-#    db.commit() ;   db.close()
-#    push_dico(entry, "UPDATE")
-#    logging.info("Done updating one delta")
-
-
 def check_db_consistency():
     logging.info("Checking database consistency")
     def print_check(id, fieldname, value, error) :
@@ -191,15 +172,6 @@ def check_db_consistency():
         # check time comparing
         # check nb of fight is int
         # check K value part of the setting
-
-#        if one_entry['importance_elo'] == "None":
-#            one_entry['importance_elo'] = "0_"+default_score
-#        if one_entry['time_elo'] == "None":
-#            one_entry['time_elo'] = "0_"+default_score
-#        if one_entry['date_time_elo'] == "None":
-#            one_entry['date_time_elo'] = one_entry['date_added']
-#        if one_entry['date_importance_elo'] == "None":
-#            one_entry['date_importance_elo'] = one_entry['date_added']
     logging.info("Done checking consistency")
 
 
