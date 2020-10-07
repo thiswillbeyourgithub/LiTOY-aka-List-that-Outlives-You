@@ -36,7 +36,7 @@ def print_2_entries(entry_id, all_fields="no"):
     entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
     random.shuffle(entries)
     if all_fields != "all":
-        cat = ["Category :", str(entries[0]['category']), str(entries[1]['category'])]
+        cat = ["deck :", str(entries[0]['deck']), str(entries[1]['deck'])]
         content = ["Entry :", str(entries[0]['entry']), str(entries[1]['entry'])]
         side_by_side(content[0], content[1], content[2])
         if str(entries[0]['details']) != "None" or str(entries[1]['details']) != "None" :
@@ -94,31 +94,64 @@ def pick_2_entries(mode, condition=""): # tested seems OK
     result = [choice1['ID'], choice2['ID']]
     return result
 
-def shortcut_reaction(key, mode, fighters):
+def waiting_shortcut(key, mode, fighters):
     def get_key(val): 
         for key, value in my_dict.items(): 
              if val == value: 
                  return key 
 
-    while 1==1 :
-        logging.info("User types =>" + key)
-        pass
+    while True:
+        logging.info("Shortcut : User typed : " + key)
         if key not in shortcut.values() :
-            print("Error : key not found : " + key)
-            logging.info("Error : key not found : " + key)
+            print("Shortcut : Error : key not found : " + key)
+            logging.info("Shortcut : Error : key not found : " + key)
             continue
         action = get_key(key)
+        logging.info("Shortcut : Action="+action)
+
         if action == "answer_level" :
-            cur_elo1 = get_sql_value("importance_elo, date_importance_elo, time_elo, date_time_elo", "id = "+fighters[0])
-            cur_elo2 = get_sql_value("importance_elo, date_importance_elo, time_elo, date_time_elo", "id = "+fighters[1])
-            cur_K_1 = get_sql_value("K", "id = "+fighters[0])
-            cur_K_2 = get_sql_value("K", "id = "+fighters[1])
+            f1old = fetch_entry(fighters[0])
+            f1new = f1old
+            f2old = fetch_entry(fighters[1])
+            f2new = f2old
 
+            if mode=="mixed":
+                mode=random.choice(["importance","time"]
+            field=str(mode)+"_elo"
+            f1new[field] = update_elo(f1old[field], expected(f1old[field], f2old[field]), int(key), f1old['K_value']
+            f2new[field] = update_elo(f2old[field], expected(f2old[field], f1old[field]), int(key), f2old['K_value']
 
-            new_elo1 = update_elo(cur_elo1, expected(cur_elo1, cur_elo2), int(key), cur_K_1)
-            new_elo2 = update_elo(cur_elo2, expected(cur_elo2, cur_elo1), int(key), cur_K_2)
+        if action == "skip_fight":
+            logging.info("Shortcut : Skipped fight")
+            print("Shortcut : skipped fight")
+            break
+
+        if action == "toggle_display_options":
+            pass
+        if action == "edit":
+            pass
+        if action == "undo":
+            pass
+        if action == "star":
+            pass
+        if action == "disable":
+            pass
+        if action == "show_help":
+            pass
+
         break
 
+#        "skip_fight"                 :  ["s","-"],
+#        "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
+#        "cycle_display_options"      :  "q",
+#        "edit_entry"                 :  "s",
+#        "edit_details"               :  "d",
+#        "undo_fight"                 :  "f",
+#        "mark_left"                  :  "w",
+#        "mark_right"                 :  "x",
+#        "disable_card_because_done"  :  "C",
+#        "disable_card_because_else"  :  "c",
+#        "show_help"                  :  ["h","?"]
 
 
 

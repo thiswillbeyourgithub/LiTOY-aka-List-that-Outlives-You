@@ -66,10 +66,10 @@ The idea behing LiTOY is simple :
 * `python3 ./__main__.py`
 
 ### Syntax example :
-* adds a new entry to category todo with the tag diy  `python3 __main__.py --add 'repair the tires __c=todo __t="diy"'`
+* adds a new entry to category todo with the tag diy  `python3 __main__.py --add 'repair the tires' diy 'to do before march'`
 * shows the rank `python3 __main__.py --rank --category="diy" -n 20`
 * shows all entries `python3 __main__.py --list="rank" --category="*"`
-* shows all entries, by date added (can be any other sql field), in reverse order `python3 __main__.py --list="date_added --reversed=1"`
+* shows all entries, by date added (can be any other sql field), in reverse order `python3 __main__.py --list="date_added rev`
 * show all entries, unformatted `python3 __main__.py --list="raw"`
 * get the field list `python3 __main__.py --print--field`
 * compare 10 cards in a row from the folder called diy `python3 __main__.py --compare --category="diy" -n 10`
