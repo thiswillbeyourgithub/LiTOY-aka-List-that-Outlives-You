@@ -94,16 +94,21 @@ The idea behing LiTOY is simple :
         * le time to read doit etre time to watch si il s'agit d'une video, utiliser youtube-dl pour trouver la durée si url, ou ffmpeg si c'est un fichier local
         * si c'est un pdf : utiliser pdftotext puis le code pour estimer le temps pour lire une page web
 * don't pick if card disabled
+* renommer tous les elo en elo1 et elo2
+    * renommer les mode en elo du coup, et faire une equivalence dans settings
+        * uniformiser le nom des delta pour que ca soit delta1 etc
 * faire un requirement file et le mentionner dans le how to use
 * prendre le temps de reflechir et repondre a ce message https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
 * rajouter une syntaxe pour importer avec directement des infos : __length=37pages   __length=17minutes __deck=audio etc et surtout __1/2/3/4 indique ____ si on lui donne par défaut le score du premier 2e 3e ou 4e cinquieme du classement
 * il faut qu'un raccourci permette d'ouvrir automatiquement les url dans un navigateur + que ca soit configurable
 * utiliser ce module pour gerer les settings : https://pypi.org/project/simple-settings/
 * organiser un autre fichier contenant la todo list, dont une section "long term ideas", ex :
+* il y a aucun moyen que ce soft decolle si il est pas commenté abusivement, pareil avec check le pep8 de vim sur ces fichiers, ca prend pas tres longtemps
 * check db should happen periodically and after every import
         * penser a rajouter un mode "court terme" qui permet simplement de trier des trucs selon lequel doit etre fait en premier
 * rewrite the long SQL request so that it's on multiple lines
 * verifier par le calcul que l'ordre dans lequel on fait les combats n'a pas d'importance, ca conditionne la maniere dont tu stockes les resultats
+* --list should be the same as --rank but rank shouldn't show disabled
 * champs "estimated time to read" + "title of url"
         * faut que ca marche aussi si plusieurs url sont données
 * verifier que chaque message important est dans le log

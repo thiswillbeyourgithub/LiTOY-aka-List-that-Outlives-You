@@ -4,10 +4,12 @@ import time
 import random
 import sqlite3
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import sys
 import argparse
 import pprint
+import subprocess
 
 from   src.litoy.sql        import *
 from   src.litoy.settings   import *
@@ -88,7 +90,7 @@ def main() :
     parser.add_argument("--import_from_txt", "-i",
             nargs = "*",
             type = str,
-            metavar='database_path deck',
+            metavar='database_path',
             dest='import',
             #default='new_entry.txt',
             required=False,
@@ -118,7 +120,7 @@ def main() :
     parser.add_argument("--rank", "-r",
             nargs = "*",
             type = str,
-            metavar = "SQL_condition",
+            metavar = "FIELD direction",
             dest="rank",
             required=False,
             help = "display ranked entries according to the right formula")
@@ -128,7 +130,7 @@ def main() :
             metavar = "deck_name",
             dest="deck",
             required=False,
-            help = "deck to display or fight")
+            help = "deck to display or fight or import to")
     parser.add_argument("--tags", "-t",
             nargs = 1,
             type = str,
@@ -136,11 +138,23 @@ def main() :
             dest="tags",
             required=False,
             help = "tags to display or fight")
-    parser.add_argument("--external",
+    parser.add_argument("--details",
+            nargs = 1,
+            type = str,
+            metavar = "details",
+            dest="details",
+            required=False,
+            help = "details to add to the entry")
+    parser.add_argument("--external","-x",
             action='store_true',
             required=False,
             dest="ext",
             help = "LINUX : open in sqlite browser")
+    parser.add_argument("--list", "-l",
+            action='store_true',
+            required=False,
+            dest="list",
+            help = "list tags and deck")
     parser.add_argument("--verbose",
             action='store_true',
             required=False,
@@ -157,13 +171,13 @@ def main() :
     args = parser.parse_args().__dict__
 
     logging.info("LiTOY started with arguments : " + str(args))
-    print(args)
+    #print(args)
 
     inc=0  # exits if incompatible arguments found
     for i in args.keys() :
         ii = str(args[i])
         inc_list=[]
-        if ii not in ["None","False"] and i not in ["nlimit", "verbose", "decks", "tags"]:
+        if ii not in ["None","False"] and i not in ["nlimit", "verbose", "deck", "tags"]:
             inc_list.append(i)
             inc = inc+1
     if inc>1 :
@@ -192,16 +206,16 @@ def main() :
 
     if args['fight'] != None:
         logging.info("Fight : argument : " + str(args['fight']))
-        if len(args['fight']) != 1:
+        if len(args['fight']) != 1 or args['deck'] == None :
             logging.info("Fight : wrong number of arguments : " + str(args['fight']))
             print("Fight : Wrong number of arguments")
-            print('syntax : python3 __main__.py --fight MODE(i/t/random/other) -n NUMBER ')
-            print("         python3 __main__.py --fight ti -n 25")
+            print('syntax : python3 __main__.py --fight MODE -n NUMBER --deck deck')
+            print("         python3 __main__.py --fight ti -n 25 --deck DIY")
         
         try :
             limit = int(args['nlimit'][0])
         except TypeError:
-            limit = int(args['nlimit'])
+            limit = int(args['nlimit']) # if nlimit=default value
         if limit < 1:
             print('Fight : Invalid limit number')
             logging.info('Fight : Invalid limit number')
@@ -209,70 +223,77 @@ def main() :
         else :
             logging.info("Fight " + str(limit) + " times")
 
+        n_cards = len(fetch_entry("ID >=0"))
+        if n_cards <=5 :
+            print('You need to have at least 5 entries to make them fight!')
+            logging.info("Fight : Not enough entries to fight")
+            sys.exit()
         for n in range(limit):
-            type_of_fight = args['fight'][0]
+            mode_choice = args['fight'][0]
             mode=""
-            if type_of_fight  in "time" :
+            if mode_choice  in "time" :
                 mode="time"
-            if type_of_fight  in "importance" :
+            if mode_choice  in "importance" :
                 mode="importance"
-            if type_of_fight in "random" :
-                mode=random.choice["time","importance"]
+            if mode_choice  in "random" or mode_choice in "mixed" :
+                mode=random.choice(["time","importance"])
 
             if mode=="":
                 print("Fight : invalid fight mode")
                 logging.info("Fight : invalid fight mode")
+                print_syntax_examples()
                 sys.exit()
 
-            fighters = pick_2_entries(type_of_fight)
-            print_2_entries(fighters, "all")
+            try : 
+                fighters = pick_2_entries(mode, " AND deck IS '" + str(args['deck'][0]) + "'" )
+            except sqlite3.OperationalError :
+                print("Wrong deck name, use --list to display deck list")
+                logging.info("Fight : Wrong deck name")
+                sys.exit()
+            print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging
             print("\n")
-            user_input = input(questions[mode] + "\n=>")
-            waiting_shortcut(user_input, mode, fighters)
-
+            shortcut_and_action(mode, fighters)
 
 
     if args['addentry'] != None:
-        # python3 main --add todoX deck "tags tags" "details"
-        if len(args['addentry']) not in [1,2,3,4] :
-            logging.info("Addentry : wrong nomber of arguments : " + str(args['addentry']))
-            print("Addentry : Wrong number of arguments")
-            print('syntax : python3 __main__.py --add "change the tires" "thingsToDO" "garage diy for_madam" "I really need to do this using tool number 17"')
-            print("         python3 __main__.py --add entry deck tags details")
-            sys.exit()
         logging.info("Addentry : adding entry : " + str(args['addentry']))
+        if len(args['addentry']) != 1:
+            print("Invalid number of arguments : " + str(args['addentry']))
+            logging.info("Import : Invalid number of arguments : " + str(args['addentry']))
+            print_syntax_examples()
+            sys.exit()
+
         fields = get_field_names()
         if fields == "None" :
             fields = ["ID", "date_added", "entry", "details",
                     "tags", "deck", "starred", "progress", "importance_elo",
                     "date_importance_elo", "time_elo", "date_time_elo",
-                    "delta_imp", "delta_time", "global_score", "time_spent_comparing",
+                    "delta_importance", "delta_time", "global_score", "time_spent_comparing",
                     "nb_of_fight", "disabled", "K_value"]
         newentry = {} 
         for i in fields :
             newentry[i]=""
 
-        newentry['entry'] = args['addentry'][0]
-        try : newentry['deck'] = args["addentry"][1] 
-        except : newentry['deck'] = "None"
-        try : newentry['tags'] = args["addentry"][2] 
-        except : newentry['tags'] = ""
-        try : newentry['details'] = args["addentry"][3]
-        except : newentry['details'] = ""
+        if args["deck"] == None :
+            print("No deckname supplied")
+            logging.info("addentry : No deckname supplied")
+            print_syntax_examples()
+            print("Here are the decks that are already in your db :")
+            print(get_decks())
+            sys.exit()
+        if args["tags"]==None:
+            logging.info("No tags supplied")
+            rep = input("are you sure you don't want to add tags? They are really useful!\n(Yes/tags)=>")
+            if rep in "yes" :
+                logging.info("Import : Won't use tags")
+                newentry['tags'] = ""
+            else :
+                newentry['tags']=str(rep)
 
-#        if len(args['addentry']) > 1:
-#            newentry['deck'] = args["addentry"][1]
-#        if len(args['addentry']) >2 :
-#            newentry['details'] = args["addentry"][2]
-#        if len(args['addentry']) >3:
-#            print("Addentry : Too many argument, follow this example : python3 __main__.py -a \"read this article\" \"reading_list\"")
-#            logging.info("Addentry : Too many arguments : " + str(args['addentry']))
-#            sys.exit()
-
-#        if newentry['details'] == '' :
-#            print("Addentry : No details added to entry")
-#        if newentry['deck'] == '' :
-#            print("Addentry : No deck added to entry")
+        newentry['entry'] = str(args['addentry'][0])
+        newentry['deck'] = str(args["deck"][0])
+        if args["details"] is not None:
+            newentry["details"] = args['details']
 
         cur_time = str(int(time.time()))
         newID = str(int(get_max_ID())+1)
@@ -285,48 +306,62 @@ def main() :
         newentry['global_score'] = ""
         newentry['date_importance_elo'] = cur_time
         newentry['date_time_elo'] = cur_time
-        newentry['delta_imp'] = default_score
+        newentry['delta_importance'] = default_score
         newentry['delta_time'] = default_score
         newentry['time_spent_comparing'] = "0"
         newentry['nb_of_fight'] = "0"
         newentry['disabled'] = 0
         newentry['K_value'] = K_values[0]
+
         logging.info("Addentry : Pushing entry to db, ID = " + newID)
         print("Addentry : Pushing entry to db, ID = " + newID)
         push_dico(newentry, "INSERT")
         
 
 
+    if args["list"] != False :
+        logging.info("Listing : decks and tags")
+        print("Decks found in db : " + str(get_decks()))
+        print("Tags found in db : " + str(get_tags()))
+        logging.info("Listing : done")
 
     if args['import'] != None:
-        # python3 main --import filename deck
         logging.info("Import : Importing from file, arguments : " + str(args['import']))
-        path=args["import"]
-        filename=path[0]
-        print("Import : from " + filename)
-        if len(path) >3: 
-            print("ERROR : too many arguments!" + str(path[2:]))
-            logging.info("Import : ERROR too many arguments!" + str(path[2:]))
+        if len(args["import"])!=1:
+            print("Invalid number of arguments : " + str(args['import']))
+            logging.info("Import : Invalid number of arguments : " + str(args['import']))
+            print_syntax_examples()
             sys.exit()
-        cat_choice = ""
-        if len(path) == 1 :
-            cat_list = get_deck()
-            cat_choice = input("Choose deck for the new entries: (default is 'None')\nDeck already found in db : " + str(cat_list) + "\n=> ")
-        if len(path) == 2:
-            cat_choice = path[1]
-        if cat_choice == "" : # if user input is empty
-            cat_choice == "None"
-        fun_import_from_txt(filename, cat_choice)
-
+        filename=str(args["import"][0])
+        print("Import : from " + str(filename))
+        if args["deck"] == None :
+            print("No deckname supplied")
+            logging.info("Import : No deckname supplied")
+            print_syntax_examples()
+            print("Here are the decks that are already in your db :")
+            print(get_decks())
+            sys.exit()
+        if args["tags"]==None:
+            logging.info("No tags supplied")
+            rep = input("are you sure you don't want to add tags? They are really useful!\n(Yes/tags)=>")
+            if rep in "yes" :
+                logging.info("Import : Won't use tags")
+                tags=""
+            else :
+                tags=str(rep)
+        else : tags = args["tags"]
+            
+        fun_import_from_txt(filename, str(args['deck'][0]), tags)
 
     if args['rank'] != None:
         # python3 litoy main -r all rev -n 5
         logging.info("Ranks : Displaying ranks, arguments : " + str(args['rank']))
+        compute_Global_score()
         condition=""
         if len(args['rank']) not in [0, 1, 2]:
             print("Invalid number of arguments : " + str(args['rank']))
             logging.info("Ranks : Invalid number of arguments : " + str(args['rank']))
-            print("correct syntax : --rank FIELD r(everse)")
+            print_syntax_examples()
             sys.exit()
 
         if args['rank']==[] : proceed=True
@@ -336,10 +371,10 @@ def main() :
             logging.info("Ranks : Printing all entries\n")
             condition = "ID >= 0 ORDER BY ID"
         if condition=="" : # order by field 
-             condition = "ID >= 0 ORDER BY " + str(args['rank'][0])
-             logging.info("Ranks : Displaying by field " + str(args['rank'][0]))
+            condition = "ID >= 0 ORDER BY " + str(args['rank'][0])
+            logging.info("Ranks : Displaying by field " + str(args['rank'][0]))
         try :
-            if str(args['rank'][1]) in "reverse":
+            if str(args['rank'][1]) in "reverse" or str(args['rank'][0]) in "reverse":
                 condition = condition + " DESC"
         except :
             condition = condition + " ASC"
@@ -351,9 +386,10 @@ def main() :
                 condition = "ID >=0 ORDER BY ID DESC"
             if " ASC" in condition :
                 condition = "ID >=0 ORDER BY ID ASC"
-            logging.info("Ranks : Field not found, using ID")
-            print("Ranks : Field not found, using ID")
-            all_cards = fetch_entry(condition)
+            logging.info("Ranks : Field not foundexiting")
+            print("Ranks : Field not found, use ID for example")
+            print_syntax_examples()
+            sys.exit()
         if len(all_cards)==0 :
             print("Ranks : No cards to display!\nEmpty db?")
             logging.info("Ranks : No cards to display!")
@@ -390,15 +426,23 @@ def main() :
         logging.info("Version : Display version")
         sys.exit()
 
-#    if args['ext'] != False:
-#        print("External : Openning in sqlite browser")
-#        logging.info("External : Openning in sqlite browser\n")
-
+    if args['ext'] != False:
+        print("External : Openning in sqlite browser")
+        logging.info("External : Openning in sqlite browser\n")
+        current_os = platform.system()
+        logging.info("External : OS="+current_os)
+        if current_os == "Linux" :
+            logging.info("External : launching sqlite3browser")
+            results = subprocess.run(["/usr/bin/sqlitebrowser","-t", "LITOY", "database.db"])
+        else :
+            print("External : Only linux can launch sqlite3")
+            logging.info("External : failed because not linux")
 
     if args['editEntry'] != None:
-        if len(args['editEntry']) != 4 :
+        if len(args['editEntry']) != 3 :
                 print("Editentry : ERROR : needs 4 arguments\r    exiting")
                 logging.info("Editentry : Entry edit error : needs 3 arguments, provided : " + str(args['editEntry']))
+                print_syntax_examples()
                 sys.exit()
         editID = str(args['editEntry'][0])
         logging.info("Editentry : Editing entry, ID " + editID)
@@ -436,9 +480,14 @@ def main() :
 
 if __name__ == "__main__" :
     logging.basicConfig(level=logging.INFO,
-            filename = 'debug.log',
+            filename = 'logs/rotating_log',
             filemode='a',
             format='%(asctime)s: %(message)s')
+    #https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
+    log = logging.getLogger()
+    handler = RotatingFileHandler("logs/rotating_log", maxBytes=10*10*1024, backupCount=5)
+    log.addHandler(handler)
+
     main()
 
 

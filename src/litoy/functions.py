@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+import time
 import logging
 import random
+from itertools import chain
+import pprint
 from   .sql         import *
 from   .settings    import *
+from   .elo    import *
 
 # to get the terminal size on all OS :
 import os
@@ -15,8 +19,23 @@ import subprocess
 
 # This file contains general functions used in the main loop :
 
-def print_2_entries(entry_id, all_fields="no"):
+def get_deck_delta(deck, mode):
+    logging.info("Getting delta : begin")
+    all_cards = fetch_entry("ID >=0 AND disabled = 0 AND deck is '" + str(deck) + "'")
+    wholedelta = 0
+    for i in all_cards:
+        wholedelta += int(i["delta_"+str(mode)])
+    return wholedelta
+    logging.info("Getting delta : done")
+
+def print_memento_mori():
+    print("Your life (" + str(int(user_age/user_life_expected*100)) + "%) :\n"+"X"*user_age+"_"*(user_life_expected-user_age))
+
+def print_2_entries(entry_id, deck, mode, all_fields="no"):
     logging.info("Printing entries : "+ str(entry_id[0]) + " and " + str(entry_id[1]))
+    print("#"*sizex)
+    print("Deck " + str(mode) + " delta = " + str(get_deck_delta(deck, mode)))
+    print_memento_mori()
     print("#"*sizex)
     def side_by_side(rowname, a, b, space=4):
         #https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
@@ -36,7 +55,11 @@ def print_2_entries(entry_id, all_fields="no"):
     entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
     random.shuffle(entries)
     if all_fields != "all":
-        cat = ["deck :", str(entries[0]['deck']), str(entries[1]['deck'])]
+        deck = ["Deck :", str(entries[0]['deck']), str(entries[1]['deck'])]
+        side_by_side(deck[0], deck[1], deck[2])
+        if str(entries[0]['tags']) != "None" or str(entries[1]['tags']) != "None" :
+            tags = ["Tags :", str(entries[0]['tags']), str(entries[1]['tags'])]
+            side_by_side(tags[0], tags[1], tags[2])
         content = ["Entry :", str(entries[0]['entry']), str(entries[1]['entry'])]
         side_by_side(content[0], content[1], content[2])
         if str(entries[0]['details']) != "None" or str(entries[1]['details']) != "None" :
@@ -46,9 +69,9 @@ def print_2_entries(entry_id, all_fields="no"):
             progress = ["Progress :", str(entries[0]['progress']), str(entries[1]['progress'])]
             side_by_side(progress[0], progress[1], progress[2])
         importance = ["Importance :", str(entries[0]['importance_elo']).split("_")[-1], str(entries[1]['importance_elo']).split("_")[-1]]
-        side_by_side(importance[0], importance[1], importance[2])
+        #side_by_side(importance[0], importance[1], importance[2])
         time = ["Time (high is short) :", str(entries[0]['time_elo']).split("_")[-1], str(entries[1]['time_elo']).split("_")[-1]]
-        side_by_side(time[0], time[1], time[2])
+        #side_by_side(time[0], time[1], time[2])
 
     if all_fields=="all":
        for i in get_field_names():
@@ -56,12 +79,13 @@ def print_2_entries(entry_id, all_fields="no"):
     print("#"*sizex)
 
 def pick_2_entries(mode, condition=""): # tested seems OK
-    col = fetch_entry('ID >= 0 AND DISABLED IS 0' + condition)
+    logging.info("Picking : begin")
+    col = fetch_entry('ID >= 0 AND DISABLED IS 0 ' + condition)
     random.shuffle(col)  # helps when all entries are the same
-    if mode == "i" : 
-        col.sort(reverse=True, key=lambda x : int(x['delta_imp']))
+    if mode == "importance" : 
+        col.sort(reverse=True, key=lambda x : int(x['delta_importance']))
         col_deltas_dates = col
-    if mode == "t" :
+    if mode == "time" :
         col.sort(reverse=True, key=lambda x : int(x['delta_time']))
         col_deltas_dates = col
     highest_5_deltas = col_deltas_dates[0:5]
@@ -81,7 +105,7 @@ def pick_2_entries(mode, condition=""): # tested seems OK
         while 1==1 :
             #col_deltas_dates.sort(reverse=False, key=lambda x : str(x[mode+2]).split(sep="_")[-1])
             if mode == "i":
-                col_deltas_dates.sort(reverse=False, key=lambda x : str(x['delta_imp']).split(sep="_")[-1])
+                col_deltas_dates.sort(reverse=False, key=lambda x : str(x['delta_importance']).split(sep="_")[-1])
             if mode == "t":
                 col_deltas_dates.sort(reverse=False, key=lambda x : str(x['delta_time']).split(sep="_")[-1])
             choice2 = col_deltas_dates[0]
@@ -91,28 +115,117 @@ def pick_2_entries(mode, condition=""): # tested seems OK
                 choice1 = random.choice(highest_5_deltas)
             break
     logging.info("Chose those fighters : " + str(choice1['ID']) + " and " + str(choice2['ID']))
-    result = [choice1['ID'], choice2['ID']]
+    result = [str(choice1['ID']), str(choice2['ID'])]
+    logging.info("Picking : Done")
     return result
 
-def waiting_shortcut(key, mode, fighters):
-    def get_key(val): 
-        for key, value in my_dict.items(): 
-             if val == value: 
-                 return key 
+def print_syntax_examples():
+    logging.info("Printing syntax example : begin")
+    print("#"*sizex)
+    print("Syntax examples :")
+    print("Adding entries :")
+    print("   python3 __main__.py --add entry --deck deck  --tags tags --details details")
+    print("Importing from file :")
+    print("   python3 __main__.py --import filename  --deck deck --tags tag")
+    print("Showing ranks and listing entries : ")
+    print("   python3 __main__.py --rank FIELD r(everse) -n 50")
+    print("Editing an entry :")
+    print("   python3 __main__.py --edit ID FIELD newvalue")
+    print("Changing a setting :")
+    print("List tags and decks :")
+    print("   python3 __main__.py --list")
+    print("Compare entries :")
+    print("   python3 __main__.pay --fight imp -n 10 --deck deck")
+    print("Example of formula in settings.py :")
+    print('formula_list = { "deckname" : "formula_name", "Toread" : "sum_elo", "DIY" : "sum_elo" }"')
+    print("Current shortcuts in fight mode :")
+    pprint.pprint(shortcuts)
+    print("#"*sizex)
 
+    logging.info("Printing syntax example : done")
+
+
+def compute_Global_score():
+    logging.info("Compute global : all cards")
+
+    # check if the formulas declared in the dictionnary in  settings.py 
+    # correspond to function that have been defined
+    decks = list(get_decks()[0]).sort()
+    formulas = formula_dict.keys()
+    needed_formula = formula_dict.values()
+    defined_function = globals()
+    if decks != formulas :
+        print("WARNING : Not all formulas have been found in the settings")
+        logging.info("Not all formulas have been found in the settings")
+    for i in needed_formula :
+        if i not in defined_function :
+            print("Compute global : Missing formula declaration : " + i)
+            logging.info("Compute global : Missing formula declaration : " + i)
+            sys.exit()
+
+    def get_formula(deck): 
+        found = ""
+        for key, formula in formula_dict.items(): 
+            if str(deck) in key: 
+                if found != "" :
+                    print("Several corresponding formulas found!")
+                    logging.info("Several corresponding formulas found!")
+                    sys.exit()
+                found = formula
+        return found 
+
+    all_cards = fetch_entry("ID >=0")
+    for n,i in enumerate(all_cards):
+        formula = formula_dict[i["deck"]]
+        elo1=str(i["importance_elo"]).split(sep="_")[-1]
+        elo2=str(i["time_elo"]).split(sep="_")[-1]
+#        elo3=str(i["importance_elo"]).split(sep="_")[-1]
+#        elo4=str(i["importance_elo"]).split(sep="_")[-1]
+#        elo5=str(i["importance_elo"]).split(sep="_")[-1]
+
+        global_score = globals()[get_formula(i["deck"])](elo1,elo2)
+        i["global_score"] = global_score
+        push_dico(i, "UPDATE")
+    logging.info("Compute global : done")
+
+def shortcut_and_action(mode, fighters):
+    def get_action(input): 
+        found = ""
+        for action, key in shortcuts.items(): 
+            if str(input) in key: 
+                if found != "" :
+                    print("Several corresponding shortcuts found!")
+                    logging.info("Several corresponding shortcuts found!")
+                    sys.exit()
+                found = action
+        return found 
+
+    action = ""
     while True:
+        if action=="exit" :
+            break
+        logging.info("Shortcut : asking question")
+        key = input(questions[mode] + " (h or ? for help)\n=>")
         logging.info("Shortcut : User typed : " + key)
-        if key not in shortcut.values() :
+        action = ""
+        if key not in list(chain.from_iterable(shortcuts.values())) :
             print("Shortcut : Error : key not found : " + key)
             logging.info("Shortcut : Error : key not found : " + key)
-            continue
-        action = get_key(key)
-        logging.info("Shortcut : Action="+action)
+            action = "show_help"
+        else :
+            action = str(get_action(key))
+            logging.info("Shortcut : Action="+action)
 
         if action == "answer_level" :
-            f1old = fetch_entry(fighters[0])
+            if key=="a": key="1"
+            if key=="z": key="2"
+            if key=="e": key="3"
+            if key=="r": key="4"
+            if key=="t": key="5"
+
+            f1old = fetch_entry("ID = " + str(fighters[0]))[0]
             f1new = f1old
-            f2old = fetch_entry(fighters[1])
+            f2old = fetch_entry("ID = " + str(fighters[1]))[0]
             f2new = f2old
 
             if mode=="mixed":
@@ -120,9 +233,32 @@ def waiting_shortcut(key, mode, fighters):
                 loggin.info("Shortcut : randomly chosed mode "+str(mode))
 
             field=str(mode)+"_elo"
-            # en fait ca marche pas du tout : il faut que ca append le resultat pas l'ecras
-            f1new[field] = update_elo(f1old[field], expected(f1old[field], f2old[field]), int(key), f1old['K_value'])
-            f2new[field] = update_elo(f2old[field], expected(f2old[field], f1old[field]), int(key), f2old['K_value'])
+            elo1=int(str(f1old[field]).split(sep="_")[-1])
+            elo2=int(str(f2old[field]).split(sep="_")[-1])
+            f1new[field] = str(f1old[field])+"_"+str(update_elo(elo1, expected(elo1, elo2), int(key), f1old['K_value']))
+            f2new[field] = str(f1old[field])+"_"+str(update_elo(elo2, expected(elo2, elo1), int(key), f2old['K_value']))
+            logging.info("Shortcut : elo : old new => 1 : " + str(elo1) + ", " + str(f1new[field]) + " ; 2 : " + str(elo2) + ", " + str(f2new[field]))
+
+            f1new['nb_of_fight'] += 1
+            f2new['nb_of_fight'] += 1
+            if mode=="importance":
+                f1new["delta_importance"] = abs(elo1-elo2)
+                f2new["delta_importance"] = abs(elo1-elo2)
+                f1new["date_importance_elo"] = str(time.time())
+                f2new["date_importance_elo"] = str(time.time())
+            if mode=="time":
+                f1new['delta_time'] = abs(elo1-elo2)
+                f2new['delta_time'] = abs(elo1-elo2)
+                f1new["date_time_elo"] = str(time.time())
+                f2new["date_time_elo"] = str(time.time())
+
+            f1new['K_value'] = adjust_K(f1old['K_value'])
+            f2new['K_value'] = adjust_K(f2old['K_value'])
+
+
+            logging.info("Shortcut : fight, done")
+            push_dico(f1new, "UPDATE")
+            push_dico(f2new, "UPDATE")
 
         if action == "skip_fight":
             logging.info("Shortcut : Skipped fight")
@@ -130,31 +266,47 @@ def waiting_shortcut(key, mode, fighters):
             break
 
         if action == "toggle_display_options":
-            pass
+            continue
         if action == "edit":
-            pass
+            coninue
         if action == "undo":
-            pass
+            continue
         if action == "star":
-            pass
+            continue
         if action == "disable":
-            pass
+            logging.info("Shortcut : disable : begin")
+            ans = "no"
+            while True :
+                if ans in "undo" or ans in "exit" :
+                    break
+                ans = input("Which card do you want to disable?\n (left/right/u)=>")
+                if ans in "left" or ans in "right" :
+                    if ans in "left" :
+                        entry = fetch_entry("ID = " + str(fighters[0]))[0]
+                        logging.info("Shortcut : disable : disabling left card, id = " + str(entry["ID"]))
+                    else :
+                        entry = fetch_entry("ID = " + str(fighters[1]))
+                        logging.info("Shortcut : disable : disabling right card, id = " + str(entry["ID"]))
+                    entry["disabled"] = 1
+                    push_dico(entry, "UPDATE")
+                    logging.info("Shortcut : disable : done")
+                    ans = "exit"
+                    action = "exit"
+                else :
+                    print("Incorrect answer, Please choose left or right or undo")
+                    logging.info("Shortcut : disable : wrong answer")
+                    continue
+
+            continue
         if action == "show_help":
-            pass
+            pprint.pprint(shortcuts)
+            continue
+        if action == "quit":
+            logging.info("Shortcut : quitting")
+            sys.exit()
 
         break
 
-#        "skip_fight"                 :  ["s","-"],
-#        "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
-#        "cycle_display_options"      :  "q",
-#        "edit_entry"                 :  "s",
-#        "edit_details"               :  "d",
-#        "undo_fight"                 :  "f",
-#        "mark_left"                  :  "w",
-#        "mark_right"                 :  "x",
-#        "disable_card_because_done"  :  "C",
-#        "disable_card_because_else"  :  "c",
-#        "show_help"                  :  ["h","?"]
 
 
 

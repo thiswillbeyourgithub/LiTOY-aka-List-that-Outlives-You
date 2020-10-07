@@ -25,7 +25,7 @@ def init_table():
             date_importance_elo TEXT,\
             time_elo TEXT,\
             date_time_elo TEXT,\
-            delta_imp INTEGER,\
+            delta_importance INTEGER,\
             delta_time INTEGER,\
             global_score,\
             time_spent_comparing INTEGER,\
@@ -42,14 +42,13 @@ def init_table():
 
 
 
-def fun_import_from_txt(filename, deck) :
+def fun_import_from_txt(filename, deck, tags) :
     logging.info("Importing from file")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     with open(filename) as f: # reads line by line
         content = f.readlines()
         content = [x.strip() for x in content] # removes \n character
         content = list(dict.fromkeys(content))
-
     # importation
     newID = str(int(get_max_ID())+1)
     for entry in content :
@@ -74,6 +73,7 @@ time_spent_comparing, \
 nb_of_fight, \
 starred, \
 deck, \
+tags,\
 disabled, \
 K_value,\
 progress,\
@@ -82,10 +82,10 @@ time_elo,\
 global_score,\
 date_importance_elo,\
 date_time_elo,\
-delta_imp,\
+delta_importance,\
 delta_time\
 ) \
-VALUES (" + str(newID) + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, '" + str(deck) + "', 0, " + str(K_values[0]) + " , '', " + str(default_score) + ", " + str(default_score) + ", '', " + unixtime + ", " + unixtime + ", " +str(default_score) + ", " + str(default_score) + ")"
+VALUES (" + str(newID) + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, '" + str(deck) +"', '" + str(tags) + "', 0, " + str(K_values[0]) + " , '', " + str(default_score) + ", " + str(default_score) + ", '', " + unixtime + ", " + unixtime + ", " +str(default_score) + ", " + str(default_score) + ")"
                 logging.info("SQL REQUEST : " + query_create)
                 cursor.execute(query_create)
                 print("Entry imported : '" + entry + "'")
@@ -98,7 +98,7 @@ VALUES (" + str(newID) + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, '" + s
     logging.info("Done importing from file")
 
 
-def get_deck() :
+def get_decks() :
     logging.info("Getting deck list...")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     all_entries = fetch_entry("ID >= 0")
@@ -109,6 +109,21 @@ def get_deck() :
     cat_list.sort()
     db.commit() ;   db.close()
     return cat_list
+
+def get_tags() :
+    logging.info("Getting tag list...")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    all_entries = fetch_entry("ID >= 0")
+    tag_list = []
+    for i in range(len(all_entries)):
+        tag_list.append(all_entries[i]['tags'])
+        if tag_list[-1] == None:
+            tag_list[-1] = ""
+    tag_list = list(set(tag_list))
+    tag_list.sort()
+    tag_list.remove("")
+    db.commit() ;   db.close()
+    return tag_list
 
 def get_field_names():
     logging.info("Getting field names...")
@@ -138,6 +153,7 @@ def get_max_ID():
 
 def check_db_consistency():
     logging.info("Checking database consistency")
+    compute_Global_score()
     def print_check(id, fieldname, value, error) :
         msg = "CONSISTENCY ERROR : ID="+str(id) + ", "+str(fieldname) + "='"+str(value)+"' <= " + error
         print(msg)
@@ -178,15 +194,15 @@ def check_db_consistency():
 
 def fetch_entry(condition):
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
-    logging.info("Fetching whole entry on condition : "+condition)
+    logging.info("Fetching  : whole entry on condition : "+condition)
     queryFetch = 'SELECT * FROM LiTOY WHERE ' + str(condition)
-    logging.info("SQL REQUEST : " + queryFetch)
+    logging.info("Fetching : SQL : " + queryFetch)
     cursor.execute(queryFetch)
     fetched_raw = cursor.fetchall()
     columns = cursor.description
     db.commit() ;   db.close()
     dictio = turn_into_dict(fetched_raw, columns)
-    logging.info("Done fetching Dictionnary")
+    logging.info("Fetching : Done")
     return dictio
 
 def turn_into_dict(fetched_raw, columns=""):
@@ -195,7 +211,6 @@ def turn_into_dict(fetched_raw, columns=""):
     col_name = [col[0] for col in columns]
     fetch_clean = [dict(zip(col_name, row)) for row in fetched_raw]
     db.commit() ;   db.close()
-    logging.info("Turned sql result into dictionnary")
     return fetch_clean
 
 def push_dico(dico, mode):
