@@ -2,8 +2,10 @@
 
 # This file contains the user settings
 
+useless_first_years = 13
 user_age = 23
-user_life_expected = 75
+user_life_expected = 90
+useless_last_years = 20
 
 questions = {
         "importance" : "What steps will make you likely to achieve your goals?\n* Which is more important?\n* If you had one hour to spend, which would bring you more in your life?",
@@ -11,14 +13,29 @@ questions = {
         "ranking" : "Which task should be done first?"
         }
 
+sqlitebrowser_path = "/usr/bin/sqlitebrowser"
+
+col_red = "\033[91m"
+col_blu = "\033[94m"
+col_yel = "\033[93m"
+col_rst = "\033[0m"
+
+# a few notes :
+# * if you add a one letter shortcut, be sure it's in a list and not just 
+# a str like so ["D"]
+# * if you add or change a letter to the answer level shortcuts, modify
+# it also in the shortcut_and_action function to translate it to the correct number
+# this function is in the file function.py
 shortcuts = {
         "skip_fight"                 :  ["s","-"],
         "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
         "toggle_display_options"     :  ["D"],
         "edit"                       :  ["E"],
         "undo"                       :  ["u"],
+        "show_more_fields"           :  ["M"],
         "star"                       :  ["x"],
         "disable"                    :  ["d"],
+        "open_links"                 :  ["o"],
         "show_help"                  :  ["h","?"],
         "quit"                       :  ["q"]
         }
@@ -39,7 +56,7 @@ def sum_elo(elo1, elo2, elo3=0, elo4=0, elo5=0):
     result = int(elo1) + int(elo2) + int(elo3) + int(elo4) + int(elo5)
     return result
 
-def example_formule(elo1,elo2,elo3,elo4,elo5):
+def example_formula(elo1,elo2,elo3,elo4,elo5):
     # do computation here
     result = ""
     sys.exit()

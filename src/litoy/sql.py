@@ -121,7 +121,10 @@ def get_tags() :
             tag_list[-1] = ""
     tag_list = list(set(tag_list))
     tag_list.sort()
-    tag_list.remove("")
+    try :
+        tag_list.remove("")
+    except ValueError:
+        pass
     db.commit() ;   db.close()
     return tag_list
 

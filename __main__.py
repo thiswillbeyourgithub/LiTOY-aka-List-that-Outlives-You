@@ -66,11 +66,11 @@ def main() :
 
 
 
-###################### main loop :
+###################### main :
 
 
 
-    ###################### script arguments :
+    ###################### arguments that call routines :
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--fight", "-f",
@@ -103,7 +103,7 @@ def main() :
             required=False,
             default=99999,
             help = "sets the limit of entries to process or display etc, default=999999")
-    parser.add_argument("--settings", "-s",
+    parser.add_argument("--settings", "-S",
             nargs = 2,
             type = str,
             metavar="variable new_value",
@@ -150,11 +150,11 @@ def main() :
             required=False,
             dest="ext",
             help = "LINUX : open in sqlite browser")
-    parser.add_argument("--list", "-l",
+    parser.add_argument("--state", "-s",
             action='store_true',
             required=False,
-            dest="list",
-            help = "list tags and deck")
+            dest="state",
+            help = "show tags decks and number of cards")
     parser.add_argument("--verbose",
             action='store_true',
             required=False,
@@ -171,7 +171,6 @@ def main() :
     args = parser.parse_args().__dict__
 
     logging.info("LiTOY started with arguments : " + str(args))
-    #print(args)
 
     inc=0  # exits if incompatible arguments found
     for i in args.keys() :
@@ -185,6 +184,8 @@ def main() :
         print("Are incompatible arguments! \n   Exiting...")
         logging.info("Incompatible arguments :" + str(inc_list) + "\n   Exiting...")
         sys.exit()
+
+    ###################### routines :
 
 #    if args['verbose'] == True:
 #        #https://stackoverflow.com/questions/14058453/making-python-loggers-output-all-messages-to-stdout-in-addition-to-log-file
@@ -209,13 +210,12 @@ def main() :
         if len(args['fight']) != 1 or args['deck'] == None :
             logging.info("Fight : wrong number of arguments : " + str(args['fight']))
             print("Fight : Wrong number of arguments")
-            print('syntax : python3 __main__.py --fight MODE -n NUMBER --deck deck')
-            print("         python3 __main__.py --fight ti -n 25 --deck DIY")
+            print_syntax_examples()
         
         try :
             limit = int(args['nlimit'][0])
         except TypeError:
-            limit = int(args['nlimit']) # if nlimit=default value
+            limit = int(args['nlimit']) # needed if nlimit=default value
         if limit < 1:
             print('Fight : Invalid limit number')
             logging.info('Fight : Invalid limit number')
@@ -250,6 +250,8 @@ def main() :
                 print("Wrong deck name, use --list to display deck list")
                 logging.info("Fight : Wrong deck name")
                 sys.exit()
+            except TypeError :
+                fighters = pick_2_entries(mode, " AND deck IS '" + str(args['deck']) + "'" )
             print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging
             print("\n")
             shortcut_and_action(mode, fighters)
@@ -306,8 +308,8 @@ def main() :
         newentry['global_score'] = ""
         newentry['date_importance_elo'] = cur_time
         newentry['date_time_elo'] = cur_time
-        newentry['delta_importance'] = default_score
-        newentry['delta_time'] = default_score
+        newentry['delta_importance'] = "0_"+str(default_score)
+        newentry['delta_time'] = "0_"+str(default_score)
         newentry['time_spent_comparing'] = "0"
         newentry['nb_of_fight'] = "0"
         newentry['disabled'] = 0
@@ -319,10 +321,15 @@ def main() :
         
 
 
-    if args["list"] != False :
-        logging.info("Listing : decks and tags")
+    if args["state"] != False :
+        logging.info("Showing state of the database")
         print("Decks found in db : " + str(get_decks()))
         print("Tags found in db : " + str(get_tags()))
+        print("Number of cards : " + str(len(fetch_entry("ID >= 0"))))
+        print("Delta by deck : ") 
+        for i in get_decks():
+            for n in ["importance", "time"] :
+                print(" * " + i + " by " + n + " : " + str(get_deck_delta(i, n)))
         logging.info("Listing : done")
 
     if args['import'] != None:
@@ -363,15 +370,22 @@ def main() :
             logging.info("Ranks : Invalid number of arguments : " + str(args['rank']))
             print_syntax_examples()
             sys.exit()
+        if args['deck'] is None :
+            print("Invalid arguments, you have to specify a deck")
+            logging.info("Ranks : missing deck")
+            print_syntax_examples()
+            sys.exit()
+        else : 
+            deck = str(args['deck'][0])
 
         if args['rank']==[] : proceed=True
         else : proceed=False
 
         if proceed==True or args['rank'][0] == "all" :
             logging.info("Ranks : Printing all entries\n")
-            condition = "ID >= 0 ORDER BY ID"
+            condition = "ID >= 0 AND deck IS '" + deck + "' ORDER BY ID"
         if condition=="" : # order by field 
-            condition = "ID >= 0 ORDER BY " + str(args['rank'][0])
+            condition = "ID >= 0 AND deck IS '" + deck + "' ORDER BY " + str(args['rank'][0])
             logging.info("Ranks : Displaying by field " + str(args['rank'][0]))
         try :
             if str(args['rank'][1]) in "reverse" or str(args['rank'][0]) in "reverse":
@@ -383,9 +397,9 @@ def main() :
             all_cards = fetch_entry(condition)
         except sqlite3.OperationalError :
             if " DESC" in condition :
-                condition = "ID >=0 ORDER BY ID DESC"
+                condition = "ID >=0 AND deck IS '" + deck + "' ORDER BY ID DESC"
             if " ASC" in condition :
-                condition = "ID >=0 ORDER BY ID ASC"
+                condition = "ID >=0 AND deck IS '" + deck + "' ORDER BY ID ASC"
             logging.info("Ranks : Field not foundexiting")
             print("Ranks : Field not found, use ID for example")
             print_syntax_examples()
@@ -433,7 +447,7 @@ def main() :
         logging.info("External : OS="+current_os)
         if current_os == "Linux" :
             logging.info("External : launching sqlite3browser")
-            results = subprocess.run(["/usr/bin/sqlitebrowser","-t", "LITOY", "database.db"])
+            results = subprocess.run([sqlitebrowser_path,"-t", "LITOY", "database.db"])
         else :
             print("External : Only linux can launch sqlite3")
             logging.info("External : failed because not linux")
@@ -473,7 +487,7 @@ def main() :
 
 
 
-
+######################## end routines
 
 
 

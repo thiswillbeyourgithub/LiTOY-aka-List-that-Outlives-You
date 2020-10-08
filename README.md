@@ -56,6 +56,8 @@ The idea behing LiTOY is simple :
 
 **How can I undo X?** It is not really possible for now. But you can access the logs and see what you did wrong. Hopefully this can help you repair damage. Rollback features might be added sometime in the future. If you have any issue feel free to open one, especially if you think your action was not recorded in the log.
 
+**What are answer level number ?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 5 means you favor the right one. 3 is obviously the middle gounrd but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
+
 
 
 ## How can I use this?

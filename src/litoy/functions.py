@@ -29,14 +29,15 @@ def get_deck_delta(deck, mode):
     logging.info("Getting delta : done")
 
 def print_memento_mori():
-    print("Your life (" + str(int(user_age/user_life_expected*100)) + "%) :\n"+"X"*user_age+"_"*(user_life_expected-user_age))
+    smlsiz = int(sizex + 20)
+    print("Your life ("+ col_red + str(int((user_age-useless_first_years)/(user_life_expected-useless_first_years - useless_last_years)*100)) + "%" + col_rst + ") : " +col_blu + "x"*(int(useless_first_years/smlsiz*100)) + col_red + "X"*(int((user_age-useless_first_years)/smlsiz*100)) + "_"*(int(((user_life_expected - user_age - useless_last_years)/smlsiz)*100)) + col_blu + "_"*int(useless_last_years/smlsiz*100) + col_rst)
 
 def print_2_entries(entry_id, deck, mode, all_fields="no"):
     logging.info("Printing entries : "+ str(entry_id[0]) + " and " + str(entry_id[1]))
-    print("#"*sizex)
+    print(col_blu + "#"*sizex + col_rst)
     print("Deck " + str(mode) + " delta = " + str(get_deck_delta(deck, mode)))
     print_memento_mori()
-    print("#"*sizex)
+    print(col_blu + "#"*sizex + col_rst)
     def side_by_side(rowname, a, b, space=4):
         #https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
         rowname = rowname.ljust(30)
@@ -55,6 +56,8 @@ def print_2_entries(entry_id, deck, mode, all_fields="no"):
     entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
     random.shuffle(entries)
     if all_fields != "all":
+        ids = ["IDs : ", str(entries[0]["ID"]), str(entries[1]["ID"])]
+        side_by_side(ids[0], ids[1], ids[2])
         deck = ["Deck :", str(entries[0]['deck']), str(entries[1]['deck'])]
         side_by_side(deck[0], deck[1], deck[2])
         if str(entries[0]['tags']) != "None" or str(entries[1]['tags']) != "None" :
@@ -76,7 +79,7 @@ def print_2_entries(entry_id, deck, mode, all_fields="no"):
     if all_fields=="all":
        for i in get_field_names():
            side_by_side(str(i), str(entries[0][i]), str(entries[1][i]))
-    print("#"*sizex)
+    print(col_blu + "#"*sizex + col_rst)
 
 def pick_2_entries(mode, condition=""): # tested seems OK
     logging.info("Picking : begin")
@@ -100,7 +103,7 @@ def pick_2_entries(mode, condition=""): # tested seems OK
                 continue
             break
     else :
-        print("Choosing the oldest seen entry")
+        print(col_yel + "Choosing the oldest seen entry" + col_rst)
         logging.info("Choosing the oldest seen entry")
         while 1==1 :
             #col_deltas_dates.sort(reverse=False, key=lambda x : str(x[mode+2]).split(sep="_")[-1])
@@ -109,7 +112,6 @@ def pick_2_entries(mode, condition=""): # tested seems OK
             if mode == "t":
                 col_deltas_dates.sort(reverse=False, key=lambda x : str(x['delta_time']).split(sep="_")[-1])
             choice2 = col_deltas_dates[0]
-            print("\n\n\n")
             while choice2['ID'] == choice1['ID']:
                 print("Re choosing : selected the same entry")
                 choice1 = random.choice(highest_5_deltas)
@@ -124,20 +126,28 @@ def print_syntax_examples():
     print("#"*sizex)
     print("Syntax examples :")
     print("Adding entries :")
-    print("   python3 __main__.py --add entry --deck deck  --tags tags --details details")
+    print("   * python3 __main__.py --add ENTRY --deck DECK  --tags TAGS --details DETAILS")
+
     print("Importing from file :")
-    print("   python3 __main__.py --import filename  --deck deck --tags tag")
+    print("   * python3 __main__.py --import FILENAME  --deck DECK --tags TAG")
+
     print("Showing ranks and listing entries : ")
-    print("   python3 __main__.py --rank FIELD r(everse) -n 50")
+    print("   * python3 __main__.py --rank FIELD r(everse) -n 50 --deck DECK")
+
     print("Editing an entry :")
-    print("   python3 __main__.py --edit ID FIELD newvalue")
+    print("   * python3 __main__.py --edit ID FIELD NEWVALUE")
+
     print("Changing a setting :")
-    print("List tags and decks :")
-    print("   python3 __main__.py --list")
+
+    print("List tags, decks and number of cards :")
+    print("   * python3 __main__.py --state")
+
     print("Compare entries :")
-    print("   python3 __main__.pay --fight imp -n 10 --deck deck")
+    print("   * python3 __main__.pay --fight imp -n 10 --deck DECK")
+
     print("Example of formula in settings.py :")
-    print('formula_list = { "deckname" : "formula_name", "Toread" : "sum_elo", "DIY" : "sum_elo" }"')
+    print('   * formula_list = { "deckname" : "formula_name", "Toread" : "sum_elo", "DIY" : "sum_elo" }"')
+
     print("Current shortcuts in fight mode :")
     pprint.pprint(shortcuts)
     print("#"*sizex)
@@ -155,7 +165,7 @@ def compute_Global_score():
     needed_formula = formula_dict.values()
     defined_function = globals()
     if decks != formulas :
-        print("WARNING : Not all formulas have been found in the settings")
+        print(col_red + "WARNING : Not all formulas have been found in the settings" + col_rst)
         logging.info("Not all formulas have been found in the settings")
     for i in needed_formula :
         if i not in defined_function :
@@ -270,6 +280,10 @@ def shortcut_and_action(mode, fighters):
         if action == "edit":
             coninue
         if action == "undo":
+            continue
+        if action == "show_more_fields":
+            continue
+        if action == "open_links":
             continue
         if action == "star":
             continue
