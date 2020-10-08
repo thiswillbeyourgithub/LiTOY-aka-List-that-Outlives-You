@@ -24,16 +24,19 @@ def update_elo(elo, exp_score, real_score, K):
     return int(result)
 
 def adjust_K(K0): # tested : OK
+    K0 = int(K0)
     logging.info("Adjust_K : K0="+str(K0))
     if K0 == K_values[-1] :
-        print("Adjust_K : K already at last specified value : " + str(K0) + " == " + str(K_values[-1]))
-        logging.info("Adjust_K : K already at last specified value : " + str(K0) + " == " + str(K_values[-1]))
-        return K0
-    for i in range(len(K_values)):
-        if K_values[i] == K0 :
+        logging.info("Adjust_K : K already at last specified value : " + str(K0) + "=" + str(K_values[-1]))
+        return str(K0)
+    for i in range(len(K_values)-1):
+        if int(K_values[i]) == int(K0) :
+            logging.info("New K_value : " + str(K_values[i+1]))
             return K_values[i+1]
-        else :
-            print("error : K not part of K_values : "+ str(K0))
-            logging.info("error : K not part of K_values : "+ str(K0) + ", reset to " +str(K_values[-1]))
-            return K_values[-1]
+    if K0 not in K_values:
+        print("error : K not part of K_values : "+ str(K0))
+        logging.info("error : K not part of K_values : "+ str(K0) + ", reset to " +str(K_values[-1]))
+        return str(K_values[-1])
+    print(col_red + "this should never be seen")
+    sys.exit()
 

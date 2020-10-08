@@ -58,6 +58,19 @@ The idea behing LiTOY is simple :
 
 **What are answer level number ?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 5 means you favor the right one. 3 is obviously the middle gounrd but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
 
+**What are all these fields for?** 
+* metadata is used to store information like how long is a webpage to read or how long is a movie to watch etc. It will usually be filled automatically for youtube, webpage etc
+* elo1 through elo5 handle elo score, all of them over time separated by a "_".
+* date_elo_n store the date at which an elo score has been modified
+*
+
+
+**How is data encoded in all those SQL fields?**
+* for the persistent settings :
+* for the entries :
+* for the metadata field : 
+* elo's are containing the sequence of all elo's that this particular card has had over time with a "_" in between. For example : `0_1000_1300_1200_1275`
+
 
 
 ## How can I use this?
@@ -146,7 +159,7 @@ The idea behing LiTOY is simple :
 * tirage au sort du plus grand differentiel
 * pour corriger un field : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142
 * calcul de la moyenne  des differentiels
-* auto backup a chaque changement de details/deck/title etc
+* auto backup a chaque changement de metadata/deck/title etc
 * permettre d'exporter la liste or something, eventuellement en format ical, ou format anki
 * idée de flo : exporter vers maniana (en tout cas il faut jeter un oeil pour voir ce que c'est) https://f-droid.org/fr/packages/com.zapta.apps.maniana/ 
 * il faut que ca affiche le nombre de truc a faire qui sont todo, et si ca croit ou decroit sur 7 jours

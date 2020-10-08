@@ -83,7 +83,7 @@ def main() :
     parser.add_argument("--add", "-a",
             nargs = "*",
             type = str,
-            metavar='formated_entry deck details',
+            metavar='formated_entry deck metadata',
             dest='addentry',
             required=False,
             help = "directly add an entry by putting it inside quotation mark like so : python3 ./__main__.py -a \"do this thing\" \"DIY\" \"I really need to do it that way\"")
@@ -138,13 +138,13 @@ def main() :
             dest="tags",
             required=False,
             help = "tags to display or fight")
-    parser.add_argument("--details",
+    parser.add_argument("--metadata",
             nargs = 1,
             type = str,
-            metavar = "details",
-            dest="details",
+            metavar = "metadata",
+            dest="metadata",
             required=False,
-            help = "details to add to the entry")
+            help = "metadata to add to the entry")
     parser.add_argument("--external","-x",
             action='store_true',
             required=False,
@@ -154,7 +154,7 @@ def main() :
             action='store_true',
             required=False,
             dest="state",
-            help = "show tags decks and number of cards")
+            help = "show current tags decks etc")
     parser.add_argument("--verbose",
             action='store_true',
             required=False,
@@ -251,10 +251,17 @@ def main() :
                 logging.info("Fight : Wrong deck name")
                 sys.exit()
             except TypeError :
+                print(col_red + "TYPEERROR, pourquoi?!")
                 fighters = pick_2_entries(mode, " AND deck IS '" + str(args['deck']) + "'" )
             print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging
             print("\n")
             shortcut_and_action(mode, fighters)
+            print("#"*sizex)
+            print("#"*sizex)
+            print("#"*sizex)
+            print("#"*sizex)
+            print("#"*sizex)
+            print("#"*sizex)
 
 
     if args['addentry'] != None:
@@ -267,7 +274,7 @@ def main() :
 
         fields = get_field_names()
         if fields == "None" :
-            fields = ["ID", "date_added", "entry", "details",
+            fields = ["ID", "date_added", "entry", "metadata",
                     "tags", "deck", "starred", "progress", "importance_elo",
                     "date_importance_elo", "time_elo", "date_time_elo",
                     "delta_importance", "delta_time", "global_score", "time_spent_comparing",
@@ -294,8 +301,8 @@ def main() :
 
         newentry['entry'] = str(args['addentry'][0])
         newentry['deck'] = str(args["deck"][0])
-        if args["details"] is not None:
-            newentry["details"] = args['details']
+        if args["metadata"] is not None:
+            newentry["metadata"] = args['metadata']
 
         cur_time = str(int(time.time()))
         newID = str(int(get_max_ID())+1)
@@ -319,17 +326,23 @@ def main() :
         print("Addentry : Pushing entry to db, ID = " + newID)
         push_dico(newentry, "INSERT")
         
-
-
     if args["state"] != False :
         logging.info("Showing state of the database")
-        print("Decks found in db : " + str(get_decks()))
-        print("Tags found in db : " + str(get_tags()))
-        print("Number of cards : " + str(len(fetch_entry("ID >= 0"))))
+        print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
+        print("Tags found in db : " + col_blu + str(get_tags()) + col_rst)
+        print("Number of cards : " + col_blu + str(len(fetch_entry("ID >= 0"))) + col_rst)
         print("Delta by deck : ") 
         for i in get_decks():
+            print(" * " + col_blu + i + col_rst)
             for n in ["importance", "time"] :
-                print(" * " + i + " by " + n + " : " + str(get_deck_delta(i, n)))
+                print("    * by " + n + " : " + str(get_deck_delta(i, n)))
+                D = get_sequential_deltas(i, n)
+                derivative = []
+                for m in range(len(D)-1):
+                    derivative.append(int(D[m]["seq_delta"]) - int(D[m+1]["seq_delta"]))
+                mean_der = sum(derivative)/len(derivative)
+                print(col_gre + "      => in mode " + n + ", lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(D[-1]["seq_delta"])/mean_der)) + ' fights.' + col_rst)
+
         logging.info("Listing : done")
 
     if args['import'] != None:
@@ -340,7 +353,6 @@ def main() :
             print_syntax_examples()
             sys.exit()
         filename=str(args["import"][0])
-        print("Import : from " + str(filename))
         if args["deck"] == None :
             print("No deckname supplied")
             logging.info("Import : No deckname supplied")
@@ -350,7 +362,7 @@ def main() :
             sys.exit()
         if args["tags"]==None:
             logging.info("No tags supplied")
-            rep = input("are you sure you don't want to add tags? They are really useful!\n(Yes/tags)=>")
+            rep = input("Are you sure you don't want to add tags? They are really useful!\nTags found in db : " + str(get_tags()) + "\n(Yes/tags)=>")
             if rep in "yes" :
                 logging.info("Import : Won't use tags")
                 tags=""

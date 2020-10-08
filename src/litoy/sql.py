@@ -18,7 +18,7 @@ def init_table():
             entry TEXT,\
             deck TEXT,\
             tags TEXT,\
-            details TEXT,\
+            metadata TEXT,\
             starred INTEGER,\
             progress TEXT,\
             importance_elo TEXT,\
@@ -37,6 +37,21 @@ def init_table():
     db = sqlite3.connect('database.db')
     cursor = db.cursor()
     cursor.execute(query_create_table)
+    #db.commit(); db.close()
+
+    # persistent settings and data :
+    query_create_pers_sett_table = '\
+            CREATE TABLE IF NOT EXISTS PERS_SETT(\
+            date TEXT,\
+            deck TEXT,\
+            mode TEXT,\
+            seq_delta TEXT,\
+            who_fought_who TEXT\
+            )'
+    #logging.info("SQL CREATE REQUEST : " + query_create_pers_sett_table)
+    db = sqlite3.connect('database.db')
+    cursor = db.cursor()
+    cursor.execute(query_create_pers_sett_table)
     db.commit(); db.close()
     logging.info("Done init table")
 
@@ -111,7 +126,7 @@ def get_decks() :
     return cat_list
 
 def get_tags() :
-    logging.info("Getting tag list...")
+    logging.info("Getting tag list : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     all_entries = fetch_entry("ID >= 0")
     tag_list = []
@@ -126,10 +141,20 @@ def get_tags() :
     except ValueError:
         pass
     db.commit() ;   db.close()
+    logging.info("Getting tag list : done")
     return tag_list
 
+def get_deck_delta(deck, mode):
+    logging.info("Getting delta : begin")
+    all_cards = fetch_entry("ID >=0 AND disabled = 0 AND deck is '" + str(deck) + "'")
+    wholedelta = 0
+    for i in all_cards:
+        wholedelta += int(i["delta_"+str(mode)])
+    return wholedelta
+    logging.info("Getting delta : done")
+
 def get_field_names():
-    logging.info("Getting field names...")
+    logging.info("Getting field names : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     entry = fetch_entry("ID = 1")
     db.commit() ; db.close()
@@ -138,10 +163,11 @@ def get_field_names():
     except :
         logging.info("No deck found")
         result = "None"
+    logging.info("Getting field names : done")
     return result
 
 def get_max_ID():
-    logging.info("Getting max ID...")
+    logging.info("Getting maxID : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     cursor.execute('''SELECT MAX(ID) FROM LiTOY''')
     maxID = cursor.fetchone()[0]
@@ -151,8 +177,20 @@ def get_max_ID():
     except : # then 0
         maxID = 0 
     logging.info("MaxID = " + str(maxID))
+    logging.info("Getting maxIS : done")
     return maxID
 
+def get_sequential_deltas(deck, mode):
+    logging.info("Getting sequential deltas : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    cursor.execute('SELECT date, seq_delta FROM PERS_SETT WHERE mode IS "'+ mode +'"')
+    delta_x_dates_raw = cursor.fetchall()
+    columns = cursor.description
+    db.commit() ; db.close()
+    delta_x_dates = turn_into_dict(delta_x_dates_raw, columns)
+
+    logging.info("Getting sequential deltas : delta")
+    return delta_x_dates
 
 def check_db_consistency():
     logging.info("Checking database consistency")
@@ -193,8 +231,6 @@ def check_db_consistency():
         # check K value part of the setting
     logging.info("Done checking consistency")
 
-
-
 def fetch_entry(condition):
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     logging.info("Fetching  : whole entry on condition : "+condition)
@@ -226,14 +262,29 @@ def push_dico(dico, mode):
         query = "INSERT INTO LiTOY ( %s ) VALUES ( %s );" % (columns, values)
     if mode == "UPDATE" :
         query = "UPDATE LiTOY SET "
-        entry_id = dico.pop('ID')
+        entry_id = dico['ID']
         for a,b in dico.items():
             query = query + str(a) + " = \'" + str(b) + "\', "
         query = query[0:len(query)-2] + " WHERE ID = " + str(entry_id) + " ;"
     logging.info("SQL push_dico:" + query)
     cursor.execute(query)
     db.commit() ;   db.close()
-    logging.info('Done pushing dictionnary')
+    logging.info('Pushing dictionnary : Done')
 
+def push_persist_data(deck, mode, time, id1, id2):
+    logging.info("Pushing persistent data  : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
 
+    if int(id1) > int(id2): # add the fighters in asc order
+        id3=id2
+        id2=id1
+        id1=id3
+
+    delta_to_add = str(get_deck_delta(deck, mode))
+    query_delta = "INSERT INTO PERS_SETT ( date, mode, deck, seq_delta, who_fought_who ) VALUES ( " + str(time) + ", '" + mode + "', '" + deck + "', " + delta_to_add + ", '" + str(id1)+"_"+str(id2) + "')"
+    #logging.info("SQL PUSH PERSI DATA : " + query_delta)
+    cursor.execute(query_delta)
+    db.commit() ; db.close()
+    logging.info("Pushing persistent data : latest delta = " + delta_to_add)
+    logging.info("Pushing persistent data : done")
 

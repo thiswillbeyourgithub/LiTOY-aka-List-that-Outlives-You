@@ -3,6 +3,7 @@
 import time
 import logging
 import random
+import webbrowser
 from itertools import chain
 import pprint
 from   .sql         import *
@@ -19,66 +20,63 @@ import subprocess
 
 # This file contains general functions used in the main loop :
 
-def get_deck_delta(deck, mode):
-    logging.info("Getting delta : begin")
-    all_cards = fetch_entry("ID >=0 AND disabled = 0 AND deck is '" + str(deck) + "'")
-    wholedelta = 0
-    for i in all_cards:
-        wholedelta += int(i["delta_"+str(mode)])
-    return wholedelta
-    logging.info("Getting delta : done")
-
 def print_memento_mori():
-    smlsiz = int(sizex + 20)
-    print("Your life ("+ col_red + str(int((user_age-useless_first_years)/(user_life_expected-useless_first_years - useless_last_years)*100)) + "%" + col_rst + ") : " +col_blu + "x"*(int(useless_first_years/smlsiz*100)) + col_red + "X"*(int((user_age-useless_first_years)/smlsiz*100)) + "_"*(int(((user_life_expected - user_age - useless_last_years)/smlsiz)*100)) + col_blu + "_"*int(useless_last_years/smlsiz*100) + col_rst)
+    seg1 = useless_first_years
+    seg2 = user_age - useless_first_years
+    seg3 = user_life_expected - user_age - useless_last_years
+    seg4 = useless_last_years
+    resize = 1/user_life_expected*(sizex-17)
+    print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_yel + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + "_"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
 
-def print_2_entries(entry_id, deck, mode, all_fields="no"):
-    logging.info("Printing entries : "+ str(entry_id[0]) + " and " + str(entry_id[1]))
+def print_2_entries(fighters, deck, mode, all_fields="no"):
+    logging.info("Printing fighters : "+ str(fighters[0]["ID"]) + " and " + str(fighters[1]["ID"]))
     print(col_blu + "#"*sizex + col_rst)
     print("Deck " + str(mode) + " delta = " + str(get_deck_delta(deck, mode)))
     print_memento_mori()
     print(col_blu + "#"*sizex + col_rst)
-    def side_by_side(rowname, a, b, space=4):
+    def side_by_side(rowname, a, b, space=4, col=""):
         #https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
         rowname = rowname.ljust(30)
         sizex = get_terminal_size()
-        width=int((sizex-len(rowname))/2-space*2)
+        width=int((int(sizex)-len(rowname))/2-int(space)*2)
         inc = 0
         while a or b:
             inc+=1
             if inc == 1:
-                print(rowname + " "*space + a[:width].ljust(width) + " "*space + b[:width])
+                print(str(col) + str(rowname) + " "*space + a[:width].ljust(width) + " "*space + b[:width] + col_rst)
             else :
-                print(" "*(len(rowname)+space) + a[:width].ljust(width) + " "*space + b[:width])
+                print(str(col) + " "*(len(rowname)+space) + a[:width].ljust(width) + " "*space + b[:width] + col_rst)
             a = a[width:]
             b = b[width:]
 
-    entries = fetch_entry("ID = " + str(entry_id[0]) + " OR ID = " + str(entry_id[1]))
-    random.shuffle(entries)
+    random.shuffle(fighters)
     if all_fields != "all":
-        ids = ["IDs : ", str(entries[0]["ID"]), str(entries[1]["ID"])]
+        ids = ["IDs : ", str(fighters[0]["ID"]), str(fighters[1]["ID"])]
         side_by_side(ids[0], ids[1], ids[2])
-        deck = ["Deck :", str(entries[0]['deck']), str(entries[1]['deck'])]
+        deck = ["Deck :", str(fighters[0]['deck']), str(fighters[1]['deck'])]
         side_by_side(deck[0], deck[1], deck[2])
-        if str(entries[0]['tags']) != "None" or str(entries[1]['tags']) != "None" :
-            tags = ["Tags :", str(entries[0]['tags']), str(entries[1]['tags'])]
+        if str(fighters[0]['tags']) != "None" or str(fighters[1]['tags']) != "None" :
+            tags = ["Tags :", str(fighters[0]['tags']), str(fighters[1]['tags'])]
             side_by_side(tags[0], tags[1], tags[2])
-        content = ["Entry :", str(entries[0]['entry']), str(entries[1]['entry'])]
-        side_by_side(content[0], content[1], content[2])
-        if str(entries[0]['details']) != "None" or str(entries[1]['details']) != "None" :
-            details = ["Details :", str(entries[0]['details']), str(entries[1]['details'])]
-            side_by_side(details[0], details[1], details[2])
-        if str(entries[0]['progress']) != "None" or str(entries[1]['progress']) != "None" :
-            progress = ["Progress :", str(entries[0]['progress']), str(entries[1]['progress'])]
+        if str(fighters[0]['metadata']) != "None" or str(fighters[1]['metadata']) != "None" :
+            metadata = ["metadata :", str(fighters[0]['metadata']), str(fighters[1]['metadata'])]
+            side_by_side(metadata[0], metadata[1], metadata[2])
+        if str(fighters[0]['progress']) != "None" or str(fighters[1]['progress']) != "None" :
+            progress = ["Progress :", str(fighters[0]['progress']), str(fighters[1]['progress'])]
             side_by_side(progress[0], progress[1], progress[2])
-        importance = ["Importance :", str(entries[0]['importance_elo']).split("_")[-1], str(entries[1]['importance_elo']).split("_")[-1]]
+        if str(fighters[0]['starred']) != "0" or str(fighters[1]['starred']) != "0" :
+            starred = ["Starred :", str(fighters[0]['starred']), str(fighters[1]['starred'])]
+            side_by_side(starred[0], starred[1], starred[2], col = col_yel)
+        content = ["Entry :", str(fighters[0]['entry']), str(fighters[1]['entry'])]
+        side_by_side(content[0], content[1], content[2])
+        #importance = ["Importance :", str(fighters[0]['importance_elo']).split("_")[-1], str(fighters[1]['importance_elo']).split("_")[-1]]
         #side_by_side(importance[0], importance[1], importance[2])
-        time = ["Time (high is short) :", str(entries[0]['time_elo']).split("_")[-1], str(entries[1]['time_elo']).split("_")[-1]]
+        #time = ["Time (high is short) :", str(fighters[0]['time_elo']).split("_")[-1], str(fighters[1]['time_elo']).split("_")[-1]]
         #side_by_side(time[0], time[1], time[2])
 
     if all_fields=="all":
        for i in get_field_names():
-           side_by_side(str(i), str(entries[0][i]), str(entries[1][i]))
+           side_by_side(str(i), str(fighters[0][i]), str(fighters[1][i]))
     print(col_blu + "#"*sizex + col_rst)
 
 def pick_2_entries(mode, condition=""): # tested seems OK
@@ -117,7 +115,7 @@ def pick_2_entries(mode, condition=""): # tested seems OK
                 choice1 = random.choice(highest_5_deltas)
             break
     logging.info("Chose those fighters : " + str(choice1['ID']) + " and " + str(choice2['ID']))
-    result = [str(choice1['ID']), str(choice2['ID'])]
+    result = [choice1, choice2]
     logging.info("Picking : Done")
     return result
 
@@ -126,7 +124,7 @@ def print_syntax_examples():
     print("#"*sizex)
     print("Syntax examples :")
     print("Adding entries :")
-    print("   * python3 __main__.py --add ENTRY --deck DECK  --tags TAGS --details DETAILS")
+    print("   * python3 __main__.py --add ENTRY --deck DECK  --tags TAGS --metadata metadata")
 
     print("Importing from file :")
     print("   * python3 __main__.py --import FILENAME  --deck DECK --tags TAG")
@@ -153,7 +151,6 @@ def print_syntax_examples():
     print("#"*sizex)
 
     logging.info("Printing syntax example : done")
-
 
 def compute_Global_score():
     logging.info("Compute global : all cards")
@@ -215,7 +212,7 @@ def shortcut_and_action(mode, fighters):
         if action=="exit" :
             break
         logging.info("Shortcut : asking question")
-        key = input(questions[mode] + " (h or ? for help)\n=>")
+        key = input("\033[92m" + questions[mode] + "  (h or ? for help)\n\033[0m =>")
         logging.info("Shortcut : User typed : " + key)
         action = ""
         if key not in list(chain.from_iterable(shortcuts.values())) :
@@ -233,15 +230,16 @@ def shortcut_and_action(mode, fighters):
             if key=="r": key="4"
             if key=="t": key="5"
 
-            f1old = fetch_entry("ID = " + str(fighters[0]))[0]
-            f1new = f1old
-            f2old = fetch_entry("ID = " + str(fighters[1]))[0]
-            f2new = f2old
+            #f1old = fetch_entry("ID = " + str(fighters[0]))[0]
+            f1new = f1old = fighters[0]
+            #f2old = fetch_entry("ID = " + str(fighters[1]))[0]
+            f2new = f2old = fighters[1]
 
             if mode=="mixed":
                 mode=random.choice(["importance","time"])
                 loggin.info("Shortcut : randomly chosed mode "+str(mode))
 
+            date = int(time.time())
             field=str(mode)+"_elo"
             elo1=int(str(f1old[field]).split(sep="_")[-1])
             elo2=int(str(f2old[field]).split(sep="_")[-1])
@@ -254,13 +252,13 @@ def shortcut_and_action(mode, fighters):
             if mode=="importance":
                 f1new["delta_importance"] = abs(elo1-elo2)
                 f2new["delta_importance"] = abs(elo1-elo2)
-                f1new["date_importance_elo"] = str(time.time())
-                f2new["date_importance_elo"] = str(time.time())
+                f1new["date_importance_elo"] = str(date)
+                f2new["date_importance_elo"] = str(date)
             if mode=="time":
                 f1new['delta_time'] = abs(elo1-elo2)
                 f2new['delta_time'] = abs(elo1-elo2)
-                f1new["date_time_elo"] = str(time.time())
-                f2new["date_time_elo"] = str(time.time())
+                f1new["date_time_elo"] = str(date)
+                f2new["date_time_elo"] = str(date)
 
             f1new['K_value'] = adjust_K(f1old['K_value'])
             f2new['K_value'] = adjust_K(f2old['K_value'])
@@ -270,23 +268,114 @@ def shortcut_and_action(mode, fighters):
             push_dico(f1new, "UPDATE")
             push_dico(f2new, "UPDATE")
 
+            push_persist_data(f1new["deck"], mode, date, str(f1new["ID"]), str(f2new["ID"])) 
+
+            action="exit"
+            continue
+
+
         if action == "skip_fight":
             logging.info("Shortcut : Skipped fight")
             print("Shortcut : skipped fight")
             break
 
-        if action == "toggle_display_options":
-            continue
-        if action == "edit":
-            coninue
-        if action == "undo":
-            continue
         if action == "show_more_fields":
+            logging.info("Shortcut : displaying the entries in full")
+            print_2_entries(fighters, fighters[0]["deck"], mode, "all")
+            continue
+
+
+
+        if action == "edit":
+            logging.info("Shortcut : edit : begin")
+            ans = "no"
+            while True :
+                if ans in "undo" or ans in "exit" :
+                    break
+                ans = input("Which card do you want to edit?\n (left/right/u)=>")
+                if ans in "left" or ans in "right" :
+                    if ans in "left" :
+                        entry = fighters[0]
+                        logging.info("Shortcut : edit : editing left card, id = " + str(entry["ID"]))
+                    else :
+                        entry = fighters[1]
+                        logging.info("Shortcut : edit : editing right card, id = " + str(entry["ID"]))
+
+                    ## MAIN
+
+
+                    logging.info("Shortcut : edit : done")
+                    ans = "exit"
+                    action = "exit"
+                else :
+                    print("Incorrect answer, Please choose left or right or undo")
+                    logging.info("Shortcut : edit : wrong answer")
+                    continue
+
+            logging.info("Shortcut : edit : done")
+            continue
+
+
+
+
+
+
+
+        if action == "undo":
+            # todo
             continue
         if action == "open_links":
-            continue
+            logging.info("Shortcut : openning links")
+            print("Shortcut : openning links")
+            relevant_fields = ["entry","metadata"]
+            link=""
+            for f in fighters :
+                for fi in relevant_fields :
+                    potential_links = str(f[fi]).split(sep=" ")
+                    for l in potential_links:
+                        if "http://" in l or "https://" in l:
+                            links=l
+                            logging.info("Shortcut : Openning link : " + l) 
+                            if platform.system() == "Linux" :
+                                subprocess.run([browser_path, l])
+                            else :
+                                webbrowser.open_new_tab(l)
+            if links == "" :
+                print("No links found!")
+                logging.info("Shortcut : no links found")
+                continue
+            else :
+                continue
+
         if action == "star":
+            logging.info("Shortcut : star : begin")
+            ans = "no"
+            while True :
+                if ans in "undo" or ans in "exit" :
+                    break
+                ans = input("Which card do you want to star?\n (left/right/u)=>")
+                if ans in "left" or ans in "right" :
+                    if ans in "left" :
+                        #entry = fetch_entry("ID = " + str(fighters[0]))[0]
+                        entry = fighters[0]
+                        logging.info("Shortcut : star : starring left card, id = " + str(entry["ID"]))
+                    else :
+                        #entry = fetch_entry("ID = " + str(fighters[1]))
+                        entry = fighters[1]
+                        logging.info("Shortcut : star : starring right card, id = " + str(entry["ID"]))
+                    entry["starred"] = 1
+                    push_dico(entry, "UPDATE")
+                    logging.info("Shortcut : star : done")
+                    ans = "exit"
+                    action = "exit"
+                else :
+                    print("Incorrect answer, Please choose left or right or undo")
+                    logging.info("Shortcut : star : wrong answer")
+                    continue
+
+            logging.info("Shortcut : star : done")
             continue
+
         if action == "disable":
             logging.info("Shortcut : disable : begin")
             ans = "no"
@@ -313,10 +402,12 @@ def shortcut_and_action(mode, fighters):
 
             continue
         if action == "show_help":
+            logging.info("Shortcut : showing help")
             pprint.pprint(shortcuts)
             continue
         if action == "quit":
             logging.info("Shortcut : quitting")
+            print("Quitting.")
             sys.exit()
 
         break

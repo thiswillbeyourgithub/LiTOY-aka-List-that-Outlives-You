@@ -10,15 +10,19 @@ useless_last_years = 20
 questions = {
         "importance" : "What steps will make you likely to achieve your goals?\n* Which is more important?\n* If you had one hour to spend, which would bring you more in your life?",
         "time" : "Which task takes the less time to complete?",
-        "ranking" : "Which task should be done first?"
+        "ranking" : "Which task should be done first?",
+        "filesize" : "What file is bigger ?",
+        "duration" : "What movie is longer?",
         }
 
 sqlitebrowser_path = "/usr/bin/sqlitebrowser"
+browser_path = "/usr/bin/firefox" # only on linux, otherwise it uses the webbbrowser package
 
 col_red = "\033[91m"
 col_blu = "\033[94m"
 col_yel = "\033[93m"
 col_rst = "\033[0m"
+col_gre = "\033[92m"
 
 # a few notes :
 # * if you add a one letter shortcut, be sure it's in a list and not just 
@@ -29,7 +33,7 @@ col_rst = "\033[0m"
 shortcuts = {
         "skip_fight"                 :  ["s","-"],
         "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
-        "toggle_display_options"     :  ["D"],
+        #"toggle_display_options"     :  ["D"],
         "edit"                       :  ["E"],
         "undo"                       :  ["u"],
         "show_more_fields"           :  ["M"],
@@ -40,9 +44,14 @@ shortcuts = {
         "quit"                       :  ["q"]
         }
 
-K_values           =  [100,50,25,15,10]
+deck_mode_correspondance = {
+        "toread" : ["importance", "time"],
+        "movies" : ["importance", "duration", "file_size"]
+        }
+
+K_values           =  [100, 50, 25, 15, 10]
 default_score      =  "1000"
-choice_threshold   =  0.25               #  X%    of  the  time    :      the      card  used  the  least  recently  will  be  picked
+choice_threshold   =  0.10               #  X%    of  the  time    :      the      card  used  the  least  recently  will  be  picked
 
 formula_dict = {
         #"deckname" : "formula_name"
