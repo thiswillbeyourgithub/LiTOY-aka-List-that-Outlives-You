@@ -129,9 +129,11 @@ The idea behing LiTOY is simple :
 * verifier que chaque message important est dans le log
 * rajouter un message d'erreur quand il y a aucune carte et que le mec a rien importé
 * si importé a partir d'un fichier : bouger le fichier dans un dossier ./imported/+date
+* utiliser un ascii plotter pour les deltahttps://stackoverflow.com/questions/20295646/python-ascii-plots-in-terminal
 * aléatoirement rajouté un message TU VAS MOURIR sometimes
 * les tupple sont plus rapides que les listes, les priviléger
 * dans l'url : au cas ou : changer ` en '    ' `
+* faire un fichier avec des entries par defaut pour aider a importer
 * il faut en fait rajouter genre 5 fois des fields qui soit score1/2/3/4/5, score_name, score_question et l'utiliser pour faire des trucs plus cmoplexes genre noter des films rapidement, car prendre en compte la taille de fichier video serait ouf
 * il faut rajouter une valeur "average" dans les scores qui serait automatiquement transformée en la moyenne des scores correspondant, par exemple pour si tu as un dvd dans une liste de fichier films, tu auras pas la taille du dvd mais tu auras sa longueur et son importance donc ca ferait foirer la formule
 * function that automatically checks fields consistency :

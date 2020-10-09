@@ -494,6 +494,8 @@ def main() :
 
 
     if args['consistency'] != False:
+        process_all_metadata()
+        
         check_db_consistency()
 
 

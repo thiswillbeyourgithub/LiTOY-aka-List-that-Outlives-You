@@ -212,7 +212,7 @@ def shortcut_and_action(mode, fighters):
         if action=="exit" :
             break
         logging.info("Shortcut : asking question")
-        key = input("\033[92m" + questions[mode] + "  (h or ? for help)\n\033[0m =>")
+        key = input(col_gre + questions[mode] + "  (h or ? for help)\n" + col_rst + "=>")
         logging.info("Shortcut : User typed : " + key)
         action = ""
         if key not in list(chain.from_iterable(shortcuts.values())) :
