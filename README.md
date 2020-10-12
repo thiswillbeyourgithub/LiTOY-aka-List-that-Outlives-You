@@ -81,19 +81,45 @@ The idea behing LiTOY is simple :
 * `python3 ./__main__.py`
 
 ### Syntax example :
-* adds a new entry to deck todo with the tag diy  `python3 __main__.py --add 'repair the tires' diy 'to do before march'`
-* shows the rank `python3 __main__.py --rank --deck="diy" -n 20`
-* shows all entries `python3 __main__.py --rank --deck="*"`
-* shows all entries, by date added (can be any other sql field), in reverse order `python3 __main__.py --list="date_added rev`
-* show all entries, unformatted `python3 __main__.py --list="raw"`
-* get the field list `python3 __main__.py --print--field`
-* compare 10 cards in a row from the folder called diy `python3 __main__.py --compare --deck="diy" -n 10`
-* get history `python3 __main__.py --history`
-* turn on manual mode `python3 __main__.py --manual`
-* check database (do this after major import) `python3 __main__.py --check-db`
-* open in sqlite browser : `python3 __main__.py --external`
-* also show output to the console instead of just in the debug file : `--verbose`
-* edit FIELD from card with id ID : `python3 __main__.py --edit ID FIELD VALUE`
+
+`python3 __main__.py --add 'repair the tires' diy 'to do before march'`
+   * adds a new entry to deck todo with the tag diy 
+
+`python3 __main__.py --rank --deck="diy" -n 20`
+   * shows the rank
+
+`python3 __main__.py --rank --deck="*"`
+   * shows all entries
+
+`python3 __main__.py --list="date_added rev`
+   * shows all entries, by date added (can be any other sql field), in reverse order
+
+`python3 __main__.py --list="raw"`
+   * show all entries, unformatted
+
+`python3 __main__.py --print--field`
+   * get the field list
+
+`python3 __main__.py --compare --deck="diy" -n 10`
+   * compare 10 cards in a row from the folder called diy
+
+`python3 __main__.py --history`
+   * get history
+
+`python3 __main__.py --manual`
+   * turn on manual mode
+
+`python3 __main__.py --check-db`
+   * check database (do this after major import)
+
+`python3 __main__.py --external`
+   * open in sqlite browser
+
+`--verbose`
+   * also show output to the console instead of just in the debug file
+
+`python3 __main__.py --edit ID FIELD VALUE`
+   * edit FIELD from card with id ID
 
 ### Features 
 * Automatically retrieves video length, video size, article reading time duration, pdf reading time duration
@@ -104,74 +130,54 @@ The idea behing LiTOY is simple :
 ### Data structure of the db
 
 ## TODO :
-* recuperer unen entree sous forme de dictionnaire puis le reintroduire, ca a l'air d'etre BY FAR le plus simple a maintenir
-* rajouter un champs type (text / video / audio / manual) 
-        * le time to read doit etre time to watch si il s'agit d'une video, utiliser youtube-dl pour trouver la durée si url, ou ffmpeg si c'est un fichier local
-        * si c'est un pdf : utiliser pdftotext puis le code pour estimer le temps pour lire une page web
-* don't pick if card disabled
-* renommer tous les elo en elo1 et elo2
-    * renommer les mode en elo du coup, et faire une equivalence dans settings
-        * uniformiser le nom des delta pour que ca soit delta1 etc
-* faire un requirement file et le mentionner dans le how to use
-* prendre le temps de reflechir et repondre a ce message https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
-* rajouter une syntaxe pour importer avec directement des infos : __length=37pages   __length=17minutes __deck=audio etc et surtout __1/2/3/4 indique ____ si on lui donne par défaut le score du premier 2e 3e ou 4e cinquieme du classement
-* il faut qu'un raccourci permette d'ouvrir automatiquement les url dans un navigateur + que ca soit configurable
-* utiliser ce module pour gerer les settings : https://pypi.org/project/simple-settings/
-* organiser un autre fichier contenant la todo list, dont une section "long term ideas", ex :
-* il y a aucun moyen que ce soft decolle si il est pas commenté abusivement, pareil avec check le pep8 de vim sur ces fichiers, ca prend pas tres longtemps
-* check db should happen periodically and after every import
-        * penser a rajouter un mode "court terme" qui permet simplement de trier des trucs selon lequel doit etre fait en premier
-* rewrite the long SQL request so that it's on multiple lines
-* verifier par le calcul que l'ordre dans lequel on fait les combats n'a pas d'importance, ca conditionne la maniere dont tu stockes les resultats
-* --list should be the same as --rank but rank shouldn't show disabled
-* champs "estimated time to read" + "title of url"
-        * faut que ca marche aussi si plusieurs url sont données
-* verifier que chaque message important est dans le log
-* rajouter un message d'erreur quand il y a aucune carte et que le mec a rien importé
-* si importé a partir d'un fichier : bouger le fichier dans un dossier ./imported/+date
-* utiliser un ascii plotter pour les deltahttps://stackoverflow.com/questions/20295646/python-ascii-plots-in-terminal
-* aléatoirement rajouté un message TU VAS MOURIR sometimes
-* les tupple sont plus rapides que les listes, les priviléger
-* dans l'url : au cas ou : changer ` en '    ' `
-* faire un fichier avec des entries par defaut pour aider a importer
-* il faut en fait rajouter genre 5 fois des fields qui soit score1/2/3/4/5, score_name, score_question et l'utiliser pour faire des trucs plus cmoplexes genre noter des films rapidement, car prendre en compte la taille de fichier video serait ouf
-* il faut rajouter une valeur "average" dans les scores qui serait automatiquement transformée en la moyenne des scores correspondant, par exemple pour si tu as un dvd dans une liste de fichier films, tu auras pas la taille du dvd mais tu auras sa longueur et son importance donc ca ferait foirer la formule
-* function that automatically checks fields consistency :
-        * estimated time to read
-        * title of url
-        * delta
-        * presence of importance score
-        * check for duplicates in url
-        * presence of time score
-        * nb of time of importance score is the same as nb of time score
-        * same for importance
-* keep log size < 5MB or compress it
-* faire des simulations avec une fausse liste d'item du genre [nombre de 1 a 100 ; nombrer random de 1 a 100]
-        * utiliser ca pour avoir une idée de la vitesse de convergence
-            * utiliser plusieurs valeurs de K
-                * tester avec un truc genre "90% de chance de donner la bonne réponse" pour voir comment les real worls data diffèrent des stats theoriques
-* use different color for the prompt and the display, to make it more readable and overall nicer to read
-* idée : en fait on peut avoir un score par question, et permettre de rajouter des question tout seul non ? voir a la longue si ca serait reelement utile
-* if url is found : compute estimated time to read
-    * if url not found : use waybackmachine
-* racourci qui ouvre sqlite browser
-* fonction qui choppe/stocke une/plusieurs valeur de la db
-*   fixer les valeurs initiales de la db
-    * demander si on veut d'emblées rajouter une categorie lors de l'importation en affichant les categories deja existantes
-* tirage au sort du plus grand differentiel
-* pour corriger un field : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142
-* calcul de la moyenne  des differentiels
-* auto backup a chaque changement de metadata/deck/title etc
-* permettre d'exporter la liste or something, eventuellement en format ical, ou format anki
-* idée de flo : exporter vers maniana (en tout cas il faut jeter un oeil pour voir ce que c'est) https://f-droid.org/fr/packages/com.zapta.apps.maniana/ 
-* il faut que ca affiche le nombre de truc a faire qui sont todo, et si ca croit ou decroit sur 7 jours
-* pour la cli : ce truc a l'air cool pour afficher le tables des podiums : http://zetcode.com/python/prettytable/
-* pour l'interface une fois que tu as verifie que ca marche bien en cli : apprendre pyqt, clairement ce sera le plus simple et ca t'ouver la porte vers completer anki
-* regarder si il y a pas un moyen plus simple que de faire une backup, genre un moyen de faire des unfo a l'infini ou de garder un historique
-* rajouter un champs winAgainst et loseAainst, on rajoute l'id de l'adversaire dans le field a chaque combat, ca semble utile pour "refaire" des tris" apres coups ; pas encore sur d'a quoi ca sert mais il faut compter les draws aussi
-* idée d'antoine pour l'interface : permettre des command line command genre : litoy set ID --deck "truc" ou litoy list --time ou litoy fight -n=50  ou litoy import file  ou   litoy backup    ou    litoy status   ou    litoy testrun 
-* noter quelque part que si litoy marche bien il faudra le compatibiliser avec Polar, soit le rendre ineractif (genre qu'il recup des data de polar) soit carrement en le recodant a l'interieur
+### global :
+    * find the right license
+    * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
+    * dans whofoght who, the result of the fight should be written in the db
+    * comment the code and write a good readme, there is on way this project can takeof otherwise
+    * make a requirement file and mention in the readme
+    * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
+    * write a example_new_entry.txt and mention it in the readme
+    * add a shortcut that only opens the left or right link ?
+    * add a short term deck that allows to simply order item by order of when they should be done
+    * store in persistent data the number of time litoy is run since its last db check, then print a reminder to check the db if it's above 50
+    * use something in ascii to plot the deltas https://stackoverflow.com/questions/20295646/python-ascii-plots-in-terminal
+    * metadata should contain the name of the url tab
+    * metadata field should actually never appear while fighting, write it in the readme
+    * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
+    * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
+    * randomly add a warning that YOU'RE GONNA DIE SOMEDAY
+    * investigate how --list and --ranks should differ
+    * an argument that opens less on the debug log 
+    * check wether it works ok for first timer when they just install it and don't know where to begin, if it doesn't crash etc
+    * check if sql works ok if the url contains ' or ```` etc
+    * ability to export the rank as csv or text + maniana for flo
+    * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
+    * shows entries added over time (ascii plotter) as well as entries marked done
+    * investigate wether prettytable should be user to show ranks / podiums / dictionnary : http://zetcode.com/python/prettytable/
+    * git commit the todo file than read your own litoy db, removing useless junk and doing some stuff, then adding it to new_entry.txt then git comitting the original todo file
 
-### formerly in the TODO but still thinking about it 
-* 
+### src/litoy/media_retriever.py :
+    * if path :
+        * if pdf => pdf
+        * if video => ffmpeg
+        * either way : get file size and file name
+    * if link :
+        * if pdf : pdftotext then estimation of time to read
+        * if youtube link : time to watch via youtube-dl
+        * if just text and not video or pdf : time to read
+        * if 404 etc, use wayback machine and write it in the metadata
+        * else : throws error
+
+### more of a long term issue :
+    * tupples are faster than lists, they might be used instead of lists sometimes
+    * investigate sql rollback or periodic backup
+    * maybe manually "rolling back fights" by looking through the persistence db ?
+    * is it useful to forbid 2 fights to happen too close to each other? It should not happend often actually
+
+
+
+
+
+
 
