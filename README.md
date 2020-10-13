@@ -176,6 +176,7 @@ The idea behing LiTOY is simple :
     * investigate sql rollback or periodic backup
     * maybe manually "rolling back fights" by looking through the persistence db ?
     * is it useful to forbid 2 fights to happen too close to each other? It should not happend often actually
+    * remove as many str() and int() function as possible, you put too many of them and there must be a clever way to organize this
 
 
 
