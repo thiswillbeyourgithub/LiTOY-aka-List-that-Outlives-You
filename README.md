@@ -134,7 +134,6 @@ The idea behing LiTOY is simple :
     * read the anki card and figure out if something is missing from the readme, then suspend the card
     * find the right license
     * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
-    * dans whofoght who, the result of the fight should be written in the db, so they should NOT be ordered by ID
     * comment the code and write a good readme, there is on way this project can takeof otherwise
     * make a requirement file and mention in the readme
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
