@@ -131,10 +131,10 @@ The idea behing LiTOY is simple :
 
 ## TODO :
 ### global :
-    * read the anki card and figure out if something is missing from the readme, then suspend the card
     * find the right license
     * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
     * comment the code and write a good readme, there is on way this project can takeof otherwise
+    * when disabling a card : write the date of suspension somewhere, in metadata?
     * make a requirement file and mention in the readme
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
     * write a example_new_entry.txt and mention it in the readme
@@ -142,7 +142,7 @@ The idea behing LiTOY is simple :
     * add a short term deck that allows to simply order item by order of when they should be done
     * store in persistent data the number of time litoy is run since its last db check, then print a reminder to check the db if it's above 50
     * use something in ascii to plot the deltas https://stackoverflow.com/questions/20295646/python-ascii-plots-in-terminal
-    * metadata should contain the name of the url tab
+    * metadata should contain the name of the url tab : https://github.com/impredicative/urltitle/  or  https://gist.github.com/anderser/1682452
     * metadata field should actually never appear while fighting, write it in the readme
     * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
     * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
@@ -158,6 +158,8 @@ The idea behing LiTOY is simple :
     * git commit the todo file than read your own litoy db, removing useless junk and doing some stuff, then adding it to new_entry.txt then git comitting the original todo file
 
 ### src/litoy/media_retriever.py :
+    * estimate reading time : http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time
+    * could us nodejs for this https://github.com/mozilla/readability
     * if path :
         * if pdf => pdf
         * if video => ffmpeg
@@ -176,6 +178,7 @@ The idea behing LiTOY is simple :
     * maybe manually "rolling back fights" by looking through the persistence db ?
     * is it useful to forbid 2 fights to happen too close to each other? It should not happend often actually
     * remove as many str() and int() function as possible, you put too many of them and there must be a clever way to organize this
+    * investigate encryption of the database
 
 
 

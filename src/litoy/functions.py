@@ -209,9 +209,11 @@ def shortcut_and_action(mode, fighters):
 
     action = ""
     while True:
-        if action=="exit" :
+        start_time = time.time() # to get time elapsed
+
+        if action=="exit" : #not a shortcut, but used as a way to exit the while loop
             break
-        logging.info("Shortcut : asking question")
+        logging.info("Shortcut : asking question, mode = " + str(mode))
         key = input(col_gre + questions[mode] + "  (h or ? for help)\n" + col_rst + "=>")
         logging.info("Shortcut : User typed : " + key)
         action = ""
@@ -223,21 +225,19 @@ def shortcut_and_action(mode, fighters):
             action = str(get_action(key))
             logging.info("Shortcut : Action="+action)
 
-        if action == "answer_level" :
+        if action == "answer_level" : # location of the actual fight
             if key=="a": key="1"
             if key=="z": key="2"
             if key=="e": key="3"
             if key=="r": key="4"
             if key=="t": key="5"
 
-            #f1old = fetch_entry("ID = " + str(fighters[0]))[0]
-            f1new = f1old = fighters[0]
-            #f2old = fetch_entry("ID = " + str(fighters[1]))[0]
-            f2new = f2old = fighters[1]
-
             if mode=="mixed":
                 mode=random.choice(["importance","time"])
                 loggin.info("Shortcut : randomly chosed mode "+str(mode))
+
+            f1new = f1old = fighters[0]
+            f2new = f2old = fighters[1]
 
             date = int(time.time())
             field=str(mode)+"_elo"
@@ -259,6 +259,8 @@ def shortcut_and_action(mode, fighters):
                 f2new['delta_time'] = abs(elo1-elo2)
                 f1new["date_time_elo"] = str(date)
                 f2new["date_time_elo"] = str(date)
+            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing'] + (time.time() - start_time*100)
+            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing'] + (time.time() - start_time*100)
 
             f1new['K_value'] = adjust_K(f1old['K_value'])
             f2new['K_value'] = adjust_K(f2old['K_value'])
@@ -322,8 +324,11 @@ def shortcut_and_action(mode, fighters):
 
 
         if action == "undo":
-            # todo
+            print("The undo function has not been implemented yet!")
+            logging.info("Shortcut : called for undo")
+
             continue
+
         if action == "open_links":
             logging.info("Shortcut : openning links")
             print("Shortcut : openning links")
