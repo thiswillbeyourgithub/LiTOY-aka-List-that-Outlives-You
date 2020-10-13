@@ -131,9 +131,10 @@ The idea behing LiTOY is simple :
 
 ## TODO :
 ### global :
+    * read the anki card and figure out if something is missing from the readme, then suspend the card
     * find the right license
     * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
-    * dans whofoght who, the result of the fight should be written in the db
+    * dans whofoght who, the result of the fight should be written in the db, so they should NOT be ordered by ID
     * comment the code and write a good readme, there is on way this project can takeof otherwise
     * make a requirement file and mention in the readme
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
@@ -146,7 +147,7 @@ The idea behing LiTOY is simple :
     * metadata field should actually never appear while fighting, write it in the readme
     * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
     * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
-    * randomly add a warning that YOU'RE GONNA DIE SOMEDAY
+    * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is
     * investigate how --list and --ranks should differ
     * an argument that opens less on the debug log 
     * check wether it works ok for first timer when they just install it and don't know where to begin, if it doesn't crash etc
@@ -171,6 +172,7 @@ The idea behing LiTOY is simple :
 
 ### more of a long term issue :
     * tupples are faster than lists, they might be used instead of lists sometimes
+    * investigate how to make on online or mobile mode
     * investigate sql rollback or periodic backup
     * maybe manually "rolling back fights" by looking through the persistence db ?
     * is it useful to forbid 2 fights to happen too close to each other? It should not happend often actually

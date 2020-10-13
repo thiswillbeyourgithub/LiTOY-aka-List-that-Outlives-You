@@ -268,7 +268,7 @@ def shortcut_and_action(mode, fighters):
             push_dico(f1new, "UPDATE")
             push_dico(f2new, "UPDATE")
 
-            push_persist_data(f1new["deck"], mode, date, str(f1new["ID"]), str(f2new["ID"])) 
+            push_persist_data(f1new["deck"], mode, date, str(f1new["ID"]), str(f2new["ID"]), str(key)) 
 
             action="exit"
             continue

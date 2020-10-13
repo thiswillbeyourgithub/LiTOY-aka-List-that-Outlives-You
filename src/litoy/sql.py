@@ -271,17 +271,12 @@ def push_dico(dico, mode):
     db.commit() ;   db.close()
     logging.info('Pushing dictionnary : Done')
 
-def push_persist_data(deck, mode, time, id1, id2):
+def push_persist_data(deck, mode, time, id1, id2, score):
     logging.info("Pushing persistent data  : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
 
-    if int(id1) > int(id2): # add the fighters in asc order
-        id3=id2
-        id2=id1
-        id1=id3
-
     delta_to_add = str(get_deck_delta(deck, mode))
-    query_delta = "INSERT INTO PERS_SETT ( date, mode, deck, seq_delta, who_fought_who ) VALUES ( " + str(time) + ", '" + mode + "', '" + deck + "', " + delta_to_add + ", '" + str(id1)+"_"+str(id2) + "')"
+    query_delta = "INSERT INTO PERS_SETT ( date, mode, deck, seq_delta, who_fought_who ) VALUES ( " + str(time) + ", '" + mode + "', '" + deck + "', " + delta_to_add + ", '" + id1+"_"+id2+":"+score + "')"
     #logging.info("SQL PUSH PERSI DATA : " + query_delta)
     cursor.execute(query_delta)
     db.commit() ; db.close()
