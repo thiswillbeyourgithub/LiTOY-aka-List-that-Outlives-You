@@ -259,8 +259,9 @@ def shortcut_and_action(mode, fighters):
                 f2new['delta_time'] = abs(elo1-elo2)
                 f1new["date_time_elo"] = str(date)
                 f2new["date_time_elo"] = str(date)
-            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing'] + (time.time() - start_time*100)
-            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing'] + (time.time() - start_time*100)
+            elapsed = (time.time() - start_time)*1000 # in milliseconds
+            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing']) + elapsed)
+            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing']) + elapsed)
 
             f1new['K_value'] = adjust_K(f1old['K_value'])
             f2new['K_value'] = adjust_K(f2old['K_value'])
