@@ -61,15 +61,7 @@ def main() :
         init_table()
 
 
-
-
-
-
-
 ###################### main :
-
-
-
     ###################### arguments that call routines :
 
     parser = argparse.ArgumentParser()
@@ -172,7 +164,8 @@ def main() :
 
     logging.info("LiTOY started with arguments : " + str(args))
 
-    inc=0  # exits if incompatible arguments found
+    # exits if incompatible arguments found :
+    inc=0
     for i in args.keys() :
         ii = str(args[i])
         inc_list=[]
@@ -212,7 +205,7 @@ def main() :
             print("Fight : Wrong number of arguments")
             print_syntax_examples()
         
-        try :
+        try :  # get nlimit, no matter the format
             limit = int(args['nlimit'][0])
         except TypeError:
             limit = int(args['nlimit']) # needed if nlimit=default value
@@ -256,12 +249,7 @@ def main() :
             print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging
             print("\n")
             shortcut_and_action(mode, fighters)
-            print("#"*sizex)
-            print("#"*sizex)
-            print("#"*sizex)
-            print("#"*sizex)
-            print("#"*sizex)
-            print("#"*sizex)
+            for i in range(6) : print("#"*sizex)
 
 
     if args['addentry'] != None:

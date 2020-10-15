@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
-# This file contains the user settings
+# This file contains the user settings :
 
+# used for the life bar
+disable_lifebar = "no" #default no
 useless_first_years = 13
 user_age = 23
 user_life_expected = 90
@@ -17,12 +19,6 @@ questions = {
 
 sqlitebrowser_path = "/usr/bin/sqlitebrowser"
 browser_path = "/usr/bin/firefox" # only on linux, otherwise it uses the webbbrowser package
-
-col_red = "\033[91m"
-col_blu = "\033[94m"
-col_yel = "\033[93m"
-col_rst = "\033[0m"
-col_gre = "\033[92m"
 
 # a few notes :
 # * if you add a one letter shortcut, be sure it's in a list and not just 
@@ -49,17 +45,21 @@ deck_mode_correspondance = {
         "movies" : ["importance", "duration", "file_size"]
         }
 
-K_values           =  [100, 50, 25, 15, 10]
-default_score      =  "1000"
-choice_threshold   =  0.10               #  X%    of  the  time    :      the      card  used  the  least  recently  will  be  picked
+# ELO :
+K_values           =  [100, 50, 25, 15, 10]  # default [100, 50, 25, 15, 10]
+default_score      =  1000  # default 1000
+choice_threshold   =  0.10  # default 0.10, means that 10% of the time the card used the least recently  will  be  picked
 
 formula_dict = {
+        # syntax :
         #"deckname" : "formula_name"
+
         "IA&work" : "sum_elo",
         "toread" : "sum_elo",
         "movies" : "sum_elo"
         }
 
+# Elo functions :
 def sum_elo(elo1, elo2, elo3=0, elo4=0, elo5=0):
     # here, elo1 and elo2 can be importance_elo and time_elo for example
     result = int(elo1) + int(elo2) + int(elo3) + int(elo4) + int(elo5)

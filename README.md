@@ -71,6 +71,7 @@ The idea behing LiTOY is simple :
 * for the metadata field : 
 * elo's are containing the sequence of all elo's that this particular card has had over time with a "_" in between. For example : `0_1000_1300_1200_1275`
 
+**What is "delta"?** Delta is the difference between a elo score at T0 and at T-1. It intuitively means how much his score changed because of the last comparison. By plotting the delta of all entry of a deck over time we can estimate how many more comparison you have to do.
 
 
 ## How can I use this?
@@ -131,11 +132,16 @@ The idea behing LiTOY is simple :
 
 ## TODO :
 ### global :
+    * en posant la question, noter que 1 à 5 favorise de gauche a droite, pareil dans les settings
+    * addentry should actually be used when calling --import, move addentry to sql.py
+
     * find the right license
     * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
-    * comment the code and write a good readme, there is on way this project can takeof otherwise
     * when disabling a card : write the date of suspension somewhere, in metadata?
     * make a requirement file and mention in the readme
+    * delta should actually be multiplied by the K_value
+    * open links has to open file if a path is found
+    * add a --list-starred function
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
     * write a example_new_entry.txt and mention it in the readme
     * add a shortcut that only opens the left or right link ?
@@ -143,8 +149,11 @@ The idea behing LiTOY is simple :
     * store in persistent data the number of time litoy is run since its last db check, then print a reminder to check the db if it's above 50
     * use something in ascii to plot the deltas https://stackoverflow.com/questions/20295646/python-ascii-plots-in-terminal
     * metadata should contain the name of the url tab : https://github.com/impredicative/urltitle/  or  https://gist.github.com/anderser/1682452
+    * a shortcut could maybe be used to pull up the beginning of the article, to make it easier to compare
     * metadata field should actually never appear while fighting, write it in the readme
+    * check if replacing ' with ` in url doesnt break anything (`)
     * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
+        * store mode as mode_nb and mode_word
     * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
     * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is
     * investigate how --list and --ranks should differ
@@ -156,6 +165,7 @@ The idea behing LiTOY is simple :
     * shows entries added over time (ascii plotter) as well as entries marked done
     * investigate wether prettytable should be user to show ranks / podiums / dictionnary : http://zetcode.com/python/prettytable/
     * git commit the todo file than read your own litoy db, removing useless junk and doing some stuff, then adding it to new_entry.txt then git comitting the original todo file
+    * finished check db consistency function
 
 ### src/litoy/media_retriever.py :
     * estimate reading time : http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time

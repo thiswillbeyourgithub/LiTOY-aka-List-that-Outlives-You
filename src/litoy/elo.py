@@ -6,7 +6,7 @@ from   .settings    import *
 # This file contains ELO ratings related functions :
 
 
-def expected(elo_A, elo_B, Rp=100): # tested : not tested but probably OK
+def expected(elo_A, elo_B, Rp=100):  # used to compute the elo score
     logging.info("Expected : A=" + str(elo_A) + ", B=" + str(elo_B) + ", Rp="+str(Rp))
     '''Calculate expected score of A in a best of 3 match against B
     Expected score of B in a best of 3 match against A is given by 1-expected(A,B,Rp)
@@ -17,13 +17,13 @@ def expected(elo_A, elo_B, Rp=100): # tested : not tested but probably OK
     return int(result)
 
 
-def update_elo(elo, exp_score, real_score, K):
+def update_elo(elo, exp_score, real_score, K): # compute the elo score
     logging.info("Update_elo : elo=" + str(elo) + ", expected=" + str(exp_score) + ", real_score="+str(real_score) + ", K="+str(K))
     result = elo + K*(real_score - exp_score)
     logging.info("Update_elo : result="+str(result))
     return int(result)
 
-def adjust_K(K0): # tested : OK
+def adjust_K(K0): # lowers the K at each comparison
     K0 = int(K0)
     logging.info("Adjust_K : K0="+str(K0))
     if K0 == K_values[-1] :

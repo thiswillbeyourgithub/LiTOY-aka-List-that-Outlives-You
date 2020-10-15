@@ -20,15 +20,29 @@ import subprocess
 
 # This file contains general functions used in the main loop :
 
-def print_memento_mori():
-    seg1 = useless_first_years
-    seg2 = user_age - useless_first_years
-    seg3 = user_life_expected - user_age - useless_last_years
-    seg4 = useless_last_years
-    resize = 1/user_life_expected*(sizex-17)
-    print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_yel + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + "_"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
 
-def print_2_entries(fighters, deck, mode, all_fields="no"):
+# color codes :
+col_red = "\033[91m"
+col_blu = "\033[94m"
+col_yel = "\033[93m"
+col_rst = "\033[0m"
+col_gre = "\033[92m"
+
+
+def print_memento_mori(): # remember you will die
+    if disable_lifebar == "no" :
+        logging.info("Memento mori : begin")
+        seg1 = useless_first_years
+        seg2 = user_age - useless_first_years
+        seg3 = user_life_expected - user_age - useless_last_years
+        seg4 = useless_last_years
+        resize = 1/user_life_expected*(sizex-17)
+        print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_yel + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + "_"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
+        logging.info("Memento mori : done")
+    else : 
+        logging.info("Memento mori : disabled")
+
+def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
     logging.info("Printing fighters : "+ str(fighters[0]["ID"]) + " and " + str(fighters[1]["ID"]))
     print(col_blu + "#"*sizex + col_rst)
     print("Deck " + str(mode) + " delta = " + str(get_deck_delta(deck, mode)))
@@ -49,7 +63,7 @@ def print_2_entries(fighters, deck, mode, all_fields="no"):
             a = a[width:]
             b = b[width:]
 
-    random.shuffle(fighters)
+    random.shuffle(fighters) # otherwise they can be ordered by ID
     if all_fields != "all":
         ids = ["IDs : ", str(fighters[0]["ID"]), str(fighters[1]["ID"])]
         side_by_side(ids[0], ids[1], ids[2])
@@ -74,15 +88,15 @@ def print_2_entries(fighters, deck, mode, all_fields="no"):
         #time = ["Time (high is short) :", str(fighters[0]['time_elo']).split("_")[-1], str(fighters[1]['time_elo']).split("_")[-1]]
         #side_by_side(time[0], time[1], time[2])
 
-    if all_fields=="all":
+    if all_fields=="all": # print all fields, used more for debugging
        for i in get_field_names():
            side_by_side(str(i), str(fighters[0][i]), str(fighters[1][i]))
     print(col_blu + "#"*sizex + col_rst)
 
-def pick_2_entries(mode, condition=""): # tested seems OK
+def pick_2_entries(mode, condition=""):  # used to choose who will fight who
     logging.info("Picking : begin")
     col = fetch_entry('ID >= 0 AND DISABLED IS 0 ' + condition)
-    random.shuffle(col)  # helps when all entries are the same
+    random.shuffle(col)  # helps when all entries are the same, ie when begining to use litoy
     if mode == "importance" : 
         col.sort(reverse=True, key=lambda x : int(x['delta_importance']))
         col_deltas_dates = col
@@ -92,8 +106,10 @@ def pick_2_entries(mode, condition=""): # tested seems OK
     highest_5_deltas = col_deltas_dates[0:5]
     choice1 = random.choice(highest_5_deltas) # first opponent
 
+    # a fraction of the time, the card that was used the farther away in time will be picked,
+    # else it will be the one with the highest delta
     randomness = random.random()
-    if randomness > choice_threshold :
+    if randomness > choice_threshold :       
         while 1==1 :
             choice2 = random.choice(col_deltas_dates)
             if choice2['ID'] == choice1['ID']:
@@ -104,7 +120,6 @@ def pick_2_entries(mode, condition=""): # tested seems OK
         print(col_yel + "Choosing the oldest seen entry" + col_rst)
         logging.info("Choosing the oldest seen entry")
         while 1==1 :
-            #col_deltas_dates.sort(reverse=False, key=lambda x : str(x[mode+2]).split(sep="_")[-1])
             if mode == "i":
                 col_deltas_dates.sort(reverse=False, key=lambda x : str(x['delta_importance']).split(sep="_")[-1])
             if mode == "t":
@@ -119,7 +134,7 @@ def pick_2_entries(mode, condition=""): # tested seems OK
     logging.info("Picking : Done")
     return result
 
-def print_syntax_examples():
+def print_syntax_examples():  # used when an error is thrown
     logging.info("Printing syntax example : begin")
     print("#"*sizex)
     print("Syntax examples :")
@@ -152,7 +167,8 @@ def print_syntax_examples():
 
     logging.info("Printing syntax example : done")
 
-def compute_Global_score():
+def compute_Global_score():  # comptes the score that will be used for final ranking
+    # this function is triggered just before displaying the ranks
     logging.info("Compute global : all cards")
 
     # check if the formulas declared in the dictionnary in  settings.py 
@@ -195,11 +211,12 @@ def compute_Global_score():
         push_dico(i, "UPDATE")
     logging.info("Compute global : done")
 
-def shortcut_and_action(mode, fighters):
-    def get_action(input): 
+def shortcut_and_action(mode, fighters): 
+    # shortcuts are stored in settings.py
+    def get_action(input):   # get action from the keypress pressed
         found = ""
-        for action, key in shortcuts.items(): 
-            if str(input) in key: 
+        for action, keypress in shortcuts.items(): 
+            if str(input) in keypress: 
                 if found != "" :
                     print("Several corresponding shortcuts found!")
                     logging.info("Several corresponding shortcuts found!")
@@ -211,26 +228,29 @@ def shortcut_and_action(mode, fighters):
     while True:
         start_time = time.time() # to get time elapsed
 
-        if action=="exit" : #not a shortcut, but used as a way to exit the while loop
+        if action=="exit" :  # not a shortcut, but used as a way to exit the while loop
+            # not to be confused with "quit"
             break
-        logging.info("Shortcut : asking question, mode = " + str(mode))
-        key = input(col_gre + questions[mode] + "  (h or ? for help)\n" + col_rst + "=>")
-        logging.info("Shortcut : User typed : " + key)
         action = ""
-        if key not in list(chain.from_iterable(shortcuts.values())) :
-            print("Shortcut : Error : key not found : " + key)
-            logging.info("Shortcut : Error : key not found : " + key)
+
+        logging.info("Shortcut : asking question, mode = " + str(mode))
+        keypress = input(col_gre + questions[mode] + "  (h or ? for help)\n" + col_rst + "=>")
+        logging.info("Shortcut : User typed : " + keypress)
+
+        if keypress not in list(chain.from_iterable(shortcuts.values())) :
+            print("Shortcut : Error : keypress not found : " + keypress)
+            logging.info("Shortcut : Error : keypress not found : " + keypress)
             action = "show_help"
         else :
-            action = str(get_action(key))
+            action = str(get_action(keypress))
             logging.info("Shortcut : Action="+action)
 
-        if action == "answer_level" : # location of the actual fight
-            if key=="a": key="1"
-            if key=="z": key="2"
-            if key=="e": key="3"
-            if key=="r": key="4"
-            if key=="t": key="5"
+        if action == "answer_level" : # where the actual fight takes place
+            if keypress=="a": keypress="1"
+            if keypress=="z": keypress="2"
+            if keypress=="e": keypress="3"
+            if keypress=="r": keypress="4"
+            if keypress=="t": keypress="5"
 
             if mode=="mixed":
                 mode=random.choice(["importance","time"])
@@ -243,8 +263,8 @@ def shortcut_and_action(mode, fighters):
             field=str(mode)+"_elo"
             elo1=int(str(f1old[field]).split(sep="_")[-1])
             elo2=int(str(f2old[field]).split(sep="_")[-1])
-            f1new[field] = str(f1old[field])+"_"+str(update_elo(elo1, expected(elo1, elo2), int(key), f1old['K_value']))
-            f2new[field] = str(f1old[field])+"_"+str(update_elo(elo2, expected(elo2, elo1), int(key), f2old['K_value']))
+            f1new[field] = str(f1old[field])+"_"+str(update_elo(elo1, expected(elo1, elo2), int(keypress), f1old['K_value']))
+            f2new[field] = str(f1old[field])+"_"+str(update_elo(elo2, expected(elo2, elo1), int(keypress), f2old['K_value']))
             logging.info("Shortcut : elo : old new => 1 : " + str(elo1) + ", " + str(f1new[field]) + " ; 2 : " + str(elo2) + ", " + str(f2new[field]))
 
             f1new['nb_of_fight'] += 1
@@ -271,7 +291,7 @@ def shortcut_and_action(mode, fighters):
             push_dico(f1new, "UPDATE")
             push_dico(f2new, "UPDATE")
 
-            push_persist_data(f1new["deck"], mode, date, str(f1new["ID"]), str(f2new["ID"]), str(key)) 
+            push_persist_data(f1new["deck"], mode, date, str(f1new["ID"]), str(f2new["ID"]), str(keypress)) 
 
             action="exit"
             continue
@@ -282,14 +302,12 @@ def shortcut_and_action(mode, fighters):
             print("Shortcut : skipped fight")
             break
 
-        if action == "show_more_fields":
+        if action == "show_more_fields":  # display all the fields from a card
             logging.info("Shortcut : displaying the entries in full")
             print_2_entries(fighters, fighters[0]["deck"], mode, "all")
             continue
 
-
-
-        if action == "edit":
+        if action == "edit":  # edit field of one of the current fighters
             logging.info("Shortcut : edit : begin")
             ans = "no"
             while True :
@@ -330,7 +348,7 @@ def shortcut_and_action(mode, fighters):
 
             continue
 
-        if action == "open_links":
+        if action == "open_links":  # if links are found in the entry, open them
             logging.info("Shortcut : openning links")
             print("Shortcut : openning links")
             relevant_fields = ["entry","metadata"]
@@ -353,7 +371,7 @@ def shortcut_and_action(mode, fighters):
             else :
                 continue
 
-        if action == "star":
+        if action == "star":  # useful to get back to it to edit etc after a fight
             logging.info("Shortcut : star : begin")
             ans = "no"
             while True :
@@ -382,7 +400,7 @@ def shortcut_and_action(mode, fighters):
             logging.info("Shortcut : star : done")
             continue
 
-        if action == "disable":
+        if action == "disable":  # disable an entry
             logging.info("Shortcut : disable : begin")
             ans = "no"
             while True :
@@ -405,17 +423,17 @@ def shortcut_and_action(mode, fighters):
                     print("Incorrect answer, Please choose left or right or undo")
                     logging.info("Shortcut : disable : wrong answer")
                     continue
-
             continue
+
         if action == "show_help":
             logging.info("Shortcut : showing help")
             pprint.pprint(shortcuts)
             continue
+
         if action == "quit":
             logging.info("Shortcut : quitting")
             print("Quitting.")
             sys.exit()
-
         break
 
 
@@ -423,7 +441,7 @@ def shortcut_and_action(mode, fighters):
 
 
 # from here : https://gist.github.com/jtriley/1108174
-# used to get terminal size
+# only used to get terminal size, to adjust the width when printing lines
 def get_terminal_size():
     """ getTerminalSize()
      - get width and height of console

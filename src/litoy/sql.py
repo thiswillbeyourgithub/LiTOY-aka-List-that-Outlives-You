@@ -9,7 +9,10 @@ import sys
 from   .settings   import *
 
 
-def init_table():
+def init_table():  # used to create the table if none is found, but launched everytime just in case
+    # the main table is used to store each entry
+    # the persistent table is used to store data related to litoy
+
     logging.info("Init table")
     query_create_table = '\
             CREATE TABLE IF NOT EXISTS LiTOY(\
@@ -33,11 +36,9 @@ def init_table():
             K_value INTEGER,\
             disabled INTEGER\
             )'
-    #logging.info("SQL CREATE REQUEST : " + query_create_table)
     db = sqlite3.connect('database.db')
     cursor = db.cursor()
     cursor.execute(query_create_table)
-    #db.commit(); db.close()
 
     # persistent settings and data :
     query_create_pers_sett_table = '\
@@ -48,7 +49,6 @@ def init_table():
             seq_delta TEXT,\
             who_fought_who TEXT\
             )'
-    #logging.info("SQL CREATE REQUEST : " + query_create_pers_sett_table)
     db = sqlite3.connect('database.db')
     cursor = db.cursor()
     cursor.execute(query_create_pers_sett_table)
@@ -57,29 +57,29 @@ def init_table():
 
 
 
-def fun_import_from_txt(filename, deck, tags) :
-    logging.info("Importing from file")
+def fun_import_from_txt(filename, deck, tags) :  # used to import entries from a textfile
+    logging.info("Importing : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     with open(filename) as f: # reads line by line
         content = f.readlines()
         content = [x.strip() for x in content] # removes \n character
         content = list(dict.fromkeys(content))
-    # importation
+
     newID = str(int(get_max_ID())+1)
     for entry in content :
             entry = entry.replace("'","`") # otherwise it messes with the SQL
-
-            unixtime = str(int(time.time())) # creation date of the entry
-
+            creation_time = str(int(time.time())) # creation date of the entry
             query_exists = "SELECT ID FROM LiTOY WHERE entry = '"+entry + "'"
             cursor.execute(query_exists)
-            #existence = "False"
-            try :
+            try :  # checks if the card already exists
                 existence = str(cursor.fetchone()[0])
             except :
                 existence = "False"
 
-            if existence == "False" :
+            if existence != "False" :
+                print("Entry already exists in db : '" + entry + "'")
+                logging.info("Entry already exists in db : '" + entry + "'")
+            else :
                 query_create = "INSERT INTO LiTOY(\
 ID, \
 date_added, \
@@ -100,21 +100,19 @@ date_time_elo,\
 delta_importance,\
 delta_time\
 ) \
-VALUES (" + str(newID) + ", " + unixtime + ", \'" + entry + "\', 0, 0, 0, '" + str(deck) +"', '" + str(tags) + "', 0, " + str(K_values[0]) + " , '', " + str(default_score) + ", " + str(default_score) + ", '', " + unixtime + ", " + unixtime + ", " +str(default_score) + ", " + str(default_score) + ")"
+VALUES (" + str(newID) + ", " + creation_time + ", \'" + entry + "\', 0, 0, 0, '" + str(deck) +"', '" + str(tags) + "', 0, " + str(K_values[0]) + " , '', " + str(default_score) + ", " + str(default_score) + ", '', " + creation_time + ", " + creation_time + ", " +str(default_score) + ", " + str(default_score) + ")"
+
                 logging.info("SQL REQUEST : " + query_create)
                 cursor.execute(query_create)
                 print("Entry imported : '" + entry + "'")
                 logging.info("Entry imported : '" + entry + "'")
-            else :
-                print("Entry already exists in db : '" + entry + "'")
-                logging.info("Entry already exists in db : '" + entry + "'")
             newID = str(int(newID)+1)
     db.commit() ;  db.close()
-    logging.info("Done importing from file")
+    logging.info("Importing : Done")
 
 
-def get_decks() :
-    logging.info("Getting deck list...")
+def get_decks() :  # get list of decks
+    logging.info("Getting deck list : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     all_entries = fetch_entry("ID >= 0")
     cat_list = []
@@ -123,9 +121,10 @@ def get_decks() :
     cat_list = list(set(cat_list))
     cat_list.sort()
     db.commit() ;   db.close()
+    logging.info("Getting deck list : done")
     return cat_list
 
-def get_tags() :
+def get_tags() :  # get list of tags that are currently being used
     logging.info("Getting tag list : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     all_entries = fetch_entry("ID >= 0")
@@ -144,7 +143,7 @@ def get_tags() :
     logging.info("Getting tag list : done")
     return tag_list
 
-def get_deck_delta(deck, mode):
+def get_deck_delta(deck, mode):  # get the delta of one specific deck
     logging.info("Getting delta : begin")
     all_cards = fetch_entry("ID >=0 AND disabled = 0 AND deck is '" + str(deck) + "'")
     wholedelta = 0
@@ -153,7 +152,20 @@ def get_deck_delta(deck, mode):
     return wholedelta
     logging.info("Getting delta : done")
 
-def get_field_names():
+def get_sequential_deltas(deck, mode):  # get the delta of each deck over time 
+    logging.info("Getting sequential deltas : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    cursor.execute('SELECT date, seq_delta FROM PERS_SETT WHERE mode IS "'+ mode +'"')
+    delta_x_dates_raw = cursor.fetchall()
+    columns = cursor.description
+    db.commit() ; db.close()
+    delta_x_dates = turn_into_dict(delta_x_dates_raw, columns)
+
+    logging.info("Getting sequential deltas : delta")
+    return delta_x_dates
+
+
+def get_field_names():  # get the list of all the fields used in the entry db
     logging.info("Getting field names : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     entry = fetch_entry("ID = 1")
@@ -166,7 +178,7 @@ def get_field_names():
     logging.info("Getting field names : done")
     return result
 
-def get_max_ID():
+def get_max_ID():  # used to get the maximum ID number attributed to a card currently in the db, to ensure ID's are unambiguous
     logging.info("Getting maxID : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     cursor.execute('''SELECT MAX(ID) FROM LiTOY''')
@@ -180,19 +192,7 @@ def get_max_ID():
     logging.info("Getting maxIS : done")
     return maxID
 
-def get_sequential_deltas(deck, mode):
-    logging.info("Getting sequential deltas : begin")
-    db = sqlite3.connect('database.db') ; cursor = db.cursor()
-    cursor.execute('SELECT date, seq_delta FROM PERS_SETT WHERE mode IS "'+ mode +'"')
-    delta_x_dates_raw = cursor.fetchall()
-    columns = cursor.description
-    db.commit() ; db.close()
-    delta_x_dates = turn_into_dict(delta_x_dates_raw, columns)
-
-    logging.info("Getting sequential deltas : delta")
-    return delta_x_dates
-
-def check_db_consistency():
+def check_db_consistency():  # used to make basic tests to know if some incoherent values are found
     logging.info("Checking database consistency")
     compute_Global_score()
     def print_check(id, fieldname, value, error) :
@@ -219,6 +219,7 @@ def check_db_consistency():
 
 
 
+        ##TODO
         # check if doublon id ou doublon entry
         # check delta imp et time
         # check if starred pas 0 ou 1
@@ -231,7 +232,7 @@ def check_db_consistency():
         # check K value part of the setting
     logging.info("Done checking consistency")
 
-def fetch_entry(condition):
+def fetch_entry(condition):  # used to query all fields from an entry
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     logging.info("Fetching  : whole entry on condition : "+condition)
     queryFetch = 'SELECT * FROM LiTOY WHERE ' + str(condition)
@@ -244,7 +245,7 @@ def fetch_entry(condition):
     logging.info("Fetching : Done")
     return dictio
 
-def turn_into_dict(fetched_raw, columns=""):
+def turn_into_dict(fetched_raw, columns=""):  # used to turn the sql result to a python friendly dictionnary
     # https://stackoverflow.com/questions/28755505/how-to-convert-sql-query-results-into-a-python-dictionary
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     col_name = [col[0] for col in columns]
@@ -252,7 +253,7 @@ def turn_into_dict(fetched_raw, columns=""):
     db.commit() ;   db.close()
     return fetch_clean
 
-def push_dico(dico, mode):
+def push_dico(dico, mode):  # used to turn a python friendly dictionnary back into the sql db
     # https://blog.softhints.com/python-3-convert-dictionary-to-sql-insert/
     logging.info('Pushing dictionnary : ' + str(dico) + " ; mode = " + str(mode))
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
@@ -271,7 +272,7 @@ def push_dico(dico, mode):
     db.commit() ;   db.close()
     logging.info('Pushing dictionnary : Done')
 
-def push_persist_data(deck, mode, time, id1, id2, score):
+def push_persist_data(deck, mode, time, id1, id2, score):  # used to push the data to the persistent db
     logging.info("Pushing persistent data  : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
 
