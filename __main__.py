@@ -242,17 +242,17 @@ def main() :
             try : 
                 fighters = pick_2_entries(mode, " AND deck IS '" + str(args['deck'][0]) + "'" )
             except sqlite3.OperationalError :
-                print("Wrong deck name, use --list to display deck list")
+                print("Sql3 error : Wrong deck name? use --list to display deck list")
                 logging.info("Fight : Wrong deck name")
                 sys.exit()
             except TypeError :
-                logging.info("Fight : No deck provided, exiting")
-                print(col_red + "No deck provided, exiting")
+                logging.info("Fight : TypeError : No deck provided, exiting")
+                print(col_red + "Typerror : No deck provided? exiting")
                 sys.exit()
                 #fighters = pick_2_entries(mode, " AND deck IS '" + str(args['deck']) + "'" )
             except IndexError :
-                logging.info("Fight : No card found")
-                print("No card found, wrong deck name ?")
+                logging.info("Fight : IndexError : No card found")
+                print("IndexError : No card found, wrong deck name?")
                 print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
                 sys.exit()
             print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging

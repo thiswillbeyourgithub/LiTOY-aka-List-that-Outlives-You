@@ -138,7 +138,7 @@ The idea behing LiTOY is simple :
 
     * find the right license
     * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
-        * in the same vein, editentry argument should do something like that too
+    * editentry might add the preceding content in metadata
     * make a requirement file and mention in the readme
     * delta should actually be multiplied by the K_value
     * open links has to open file if a path is found
