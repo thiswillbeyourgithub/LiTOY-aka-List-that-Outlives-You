@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import time
-from datetime import datetime
 import random
 import sqlite3
 import logging
