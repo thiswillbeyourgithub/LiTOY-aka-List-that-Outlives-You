@@ -73,6 +73,8 @@ The idea behing LiTOY is simple :
 
 **What is "delta"?** Delta is the difference between a elo score at T0 and at T-1. It intuitively means how much his score changed because of the last comparison. By plotting the delta of all entry of a deck over time we can estimate how many more comparison you have to do.
 
+**What does it mean to answer 1 vs 2345 ?** 1 means you favor the one on the left, strongly. 5 means you favor the one on the right strongly. 3 means they are equal, 2 and 4 are intermediate score ("I prefer left over right, but not that strongly"). Remember that this will change the elo for *both* cards et every fight.
+
 
 ## How can I use this?
 * Read this page thoroughly. Don't be afraid to ask questions.
@@ -132,22 +134,21 @@ The idea behing LiTOY is simple :
 
 ## TODO :
 ### global :
-    * en posant la question, noter que 1 à 5 favorise de gauche a droite, pareil dans les settings
     * addentry should actually be used when calling --import, move addentry to sql.py
 
     * find the right license
     * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
-    * when disabling a card : write the date of suspension somewhere, in metadata?
+        * in the same vein, editentry argument should do something like that too
     * make a requirement file and mention in the readme
     * delta should actually be multiplied by the K_value
     * open links has to open file if a path is found
     * add a --list-starred function
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
+    * there need to be a way to change a deck's name
     * write a example_new_entry.txt and mention it in the readme
     * add a shortcut that only opens the left or right link ?
     * add a short term deck that allows to simply order item by order of when they should be done
     * store in persistent data the number of time litoy is run since its last db check, then print a reminder to check the db if it's above 50
-    * use something in ascii to plot the deltas https://stackoverflow.com/questions/20295646/python-ascii-plots-in-terminal
     * metadata should contain the name of the url tab : https://github.com/impredicative/urltitle/  or  https://gist.github.com/anderser/1682452
     * a shortcut could maybe be used to pull up the beginning of the article, to make it easier to compare
     * metadata field should actually never appear while fighting, write it in the readme

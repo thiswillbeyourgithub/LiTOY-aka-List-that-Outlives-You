@@ -51,13 +51,13 @@ default_score      =  1000  # default 1000
 choice_threshold   =  0.10  # default 0.10, means that 10% of the time the card used the least recently  will  be  picked
 
 formula_dict = {
-        # syntax :
-        #"deckname" : "formula_name"
-
         "IA&work" : "sum_elo",
         "toread" : "sum_elo",
+        "t"       : "sum_elo",
         "movies" : "sum_elo"
         }
+# syntax :
+#"deckname" : "formula_name"
 
 # Elo functions :
 def sum_elo(elo1, elo2, elo3=0, elo4=0, elo5=0):

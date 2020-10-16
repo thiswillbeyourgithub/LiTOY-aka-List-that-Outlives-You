@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import time
+from datetime import datetime
 import random
 import sqlite3
 import logging
@@ -10,8 +11,9 @@ import sys
 import argparse
 import pprint
 import subprocess
+import termplotlib
 
-from   src.litoy.sql        import *
+#from   src.litoy.sql        import *
 from   src.litoy.settings   import *
 from   src.litoy.elo        import *
 from   src.litoy.functions  import *
@@ -244,13 +246,57 @@ def main() :
                 logging.info("Fight : Wrong deck name")
                 sys.exit()
             except TypeError :
-                print(col_red + "TYPEERROR, pourquoi?!")
-                fighters = pick_2_entries(mode, " AND deck IS '" + str(args['deck']) + "'" )
+                logging.info("Fight : No deck provided, exiting")
+                print(col_red + "No deck provided, exiting")
+                sys.exit()
+                #fighters = pick_2_entries(mode, " AND deck IS '" + str(args['deck']) + "'" )
+            except IndexError :
+                logging.info("Fight : No card found")
+                print("No card found, wrong deck name ?")
+                print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
+                sys.exit()
             print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging
             print("\n")
             shortcut_and_action(mode, fighters)
             for i in range(6) : print("#"*sizex)
 
+    if args["state"] != False :
+        logging.info("Showing state of the database")
+        print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
+        print("Tags found in db : " + col_blu + str(get_tags()) + col_rst)
+        print("Number of cards : " + col_blu + str(len(fetch_entry("ID >= 0"))) + col_rst)
+        print("Delta by deck : ") 
+        for deck in get_decks():
+            print(" * " + col_blu + deck + col_rst)
+            for mode in ["importance", "time"] :
+                print("    * by " + col_blu + mode + col_rst + " : " + str(get_deck_delta(deck, mode)))
+                Seq_delta = get_sequential_deltas(deck, mode)
+                derivative = []
+                for n in range(len(Seq_delta)-1):
+                    derivative.append(int(Seq_delta[n]["seq_delta"]) - int(Seq_delta[n+1]["seq_delta"]))
+                try :
+                    mean_der = sum(derivative)/len(derivative)
+                    print(col_gre + "      => in mode " + mode + ", lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(Seq_delta[-1]["seq_delta"])/mean_der)) + ' fights.' + col_rst)
+                    fightnb = []
+                    deltas = []
+                    for m, line in enumerate(Seq_delta) :
+                        fightnb.append(m)
+                        deltas.append(int(line["seq_delta"]))
+                    print("\n")
+                    fig = termplotlib.figure()
+                    fig.plot(fightnb, deltas,
+                            label = "Deltas after each fight : " + deck + " ("+mode+")",
+                            xlabel="Fight index",
+                            width = sizex, height = 20
+                            )
+#                    fig.hist(deltas, dates,
+#                            orientation="vertical",
+#                            force_ascii="false")
+                    fig.show()
+                    print("\n\n\n")
+                except ZeroDivisionError :
+                    print(col_yel + "      => in mode " + mode + ", no fights have been fought, no data to give." + col_rst)
+        logging.info("Listing : done")
 
     if args['addentry'] != None:
         logging.info("Addentry : adding entry : " + str(args['addentry']))
@@ -259,80 +305,8 @@ def main() :
             logging.info("Import : Invalid number of arguments : " + str(args['addentry']))
             print_syntax_examples()
             sys.exit()
-
-        fields = get_field_names()
-        if fields == "None" :
-            fields = ["ID", "date_added", "entry", "metadata",
-                    "tags", "deck", "starred", "progress", "importance_elo",
-                    "date_importance_elo", "time_elo", "date_time_elo",
-                    "delta_importance", "delta_time", "global_score", "time_spent_comparing",
-                    "nb_of_fight", "disabled", "K_value"]
-        newentry = {} 
-        for i in fields :
-            newentry[i]=""
-
-        if args["deck"] == None :
-            print("No deckname supplied")
-            logging.info("addentry : No deckname supplied")
-            print_syntax_examples()
-            print("Here are the decks that are already in your db :")
-            print(get_decks())
-            sys.exit()
-        if args["tags"]==None:
-            logging.info("No tags supplied")
-            rep = input("are you sure you don't want to add tags? They are really useful!\n(Yes/tags)=>")
-            if rep in "yes" :
-                logging.info("Import : Won't use tags")
-                newentry['tags'] = ""
-            else :
-                newentry['tags']=str(rep)
-
-        newentry['entry'] = str(args['addentry'][0])
-        newentry['deck'] = str(args["deck"][0])
-        if args["metadata"] is not None:
-            newentry["metadata"] = args['metadata']
-
-        cur_time = str(int(time.time()))
-        newID = str(int(get_max_ID())+1)
-        newentry['ID'] = newID
-        newentry['date_added'] = cur_time
-        newentry['starred'] = "0"
-        newentry['progress'] = ""
-        newentry['importance_elo'] = "0_" + str(default_score)
-        newentry['time_elo'] = "0_" + str(default_score)
-        newentry['global_score'] = ""
-        newentry['date_importance_elo'] = cur_time
-        newentry['date_time_elo'] = cur_time
-        newentry['delta_importance'] = "0_"+str(default_score)
-        newentry['delta_time'] = "0_"+str(default_score)
-        newentry['time_spent_comparing'] = "0"
-        newentry['nb_of_fight'] = "0"
-        newentry['disabled'] = 0
-        newentry['K_value'] = K_values[0]
-
-        logging.info("Addentry : Pushing entry to db, ID = " + newID)
-        print("Addentry : Pushing entry to db, ID = " + newID)
-        push_dico(newentry, "INSERT")
+        add_entry_todb(args)
         
-    if args["state"] != False :
-        logging.info("Showing state of the database")
-        print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
-        print("Tags found in db : " + col_blu + str(get_tags()) + col_rst)
-        print("Number of cards : " + col_blu + str(len(fetch_entry("ID >= 0"))) + col_rst)
-        print("Delta by deck : ") 
-        for i in get_decks():
-            print(" * " + col_blu + i + col_rst)
-            for n in ["importance", "time"] :
-                print("    * by " + n + " : " + str(get_deck_delta(i, n)))
-                D = get_sequential_deltas(i, n)
-                derivative = []
-                for m in range(len(D)-1):
-                    derivative.append(int(D[m]["seq_delta"]) - int(D[m+1]["seq_delta"]))
-                mean_der = sum(derivative)/len(derivative)
-                print(col_gre + "      => in mode " + n + ", lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(D[-1]["seq_delta"])/mean_der)) + ' fights.' + col_rst)
-
-        logging.info("Listing : done")
-
     if args['import'] != None:
         logging.info("Import : Importing from file, arguments : " + str(args['import']))
         if len(args["import"])!=1:
@@ -356,9 +330,43 @@ def main() :
                 tags=""
             else :
                 tags=str(rep)
-        else : tags = args["tags"]
+        else :
+            tags = args["tags"]
             
-        fun_import_from_txt(filename, str(args['deck'][0]), tags)
+        logging.info("Importing : begin")
+        db = sqlite3.connect('database.db') ; cursor = db.cursor()
+        with open(filename) as f: # reads line by line
+            content = f.readlines()
+            content = [x.strip() for x in content] # removes \n character
+            content = list(dict.fromkeys(content))
+        for entry in content :
+            newID = str(int(get_max_ID())+1)
+            entry = entry.replace("'","`") # otherwise it messes with the SQL
+            creation_time = str(int(time.time())) # creation date of the entry
+            query_exists = "SELECT ID FROM LiTOY WHERE entry = '"+entry + "'"
+            cursor.execute(query_exists)
+            try :  # checks if the card already exists
+                existence = str(cursor.fetchone()[0])
+            except :
+                existence = "False"
+
+            if existence is not "False" :
+                print("Entry already exists in db : '" + entry + "'")
+                logging.info("Entry already exists in db : '" + entry + "'")
+            else :
+                dic = {
+                        "entry"      : entry,
+                        "addentry"      : entry,
+                        "deck"       : str(args["deck"][0]),
+                        "tags"       : tags
+                        }
+                try :
+                    dic["metadata"] = args["metadata"]
+                except :
+                    pass
+                add_entry_todb(dic)
+        logging.info("Importing : done")
+        #fun_import_from_txt(filename, str(args['deck'][0]), tags)
 
     if args['rank'] != None:
         # python3 litoy main -r all rev -n 5

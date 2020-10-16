@@ -4,11 +4,14 @@ import time
 import logging
 import random
 import webbrowser
-from itertools import chain
+import sys
+import sqlite3
 import pprint
-from   .sql         import *
+
+from itertools      import chain
+
 from   .settings    import *
-from   .elo    import *
+from   .elo         import *
 
 # to get the terminal size on all OS :
 import os
@@ -163,6 +166,10 @@ def print_syntax_examples():  # used when an error is thrown
 
     print("Current shortcuts in fight mode :")
     pprint.pprint(shortcuts)
+    print("Meaning of the score :")
+    print("          pressing 1 means you strongly favor the entry on the left on the question")
+    print("          pressing 5 means you strongly favor the entry on the right")
+    print("          pressing 3 means you think the 2 entries are of equal value")
     print("#"*sizex)
 
     logging.info("Printing syntax example : done")
@@ -199,7 +206,17 @@ def compute_Global_score():  # comptes the score that will be used for final ran
 
     all_cards = fetch_entry("ID >=0")
     for n,i in enumerate(all_cards):
-        formula = formula_dict[i["deck"]]
+        try : 
+            formula = formula_dict[i["deck"]]
+        except TypeError:
+            print(col_red + "Type error, are you sure the deck name has been put in formula_dict in settings.py?")
+            logging.info("Compute global score : type error, probably deck name has not been added to formula_dict")
+            sys.exit()
+        except KeyError:
+            print(col_red + "Key error, are you sure the deck name has been put in formula_dict in settings.py?")
+            logging.info("Compute global score : Key error, probably deck name has not been added to formula_dict")
+            sys.exit()
+
         elo1=str(i["importance_elo"]).split(sep="_")[-1]
         elo2=str(i["time_elo"]).split(sep="_")[-1]
 #        elo3=str(i["importance_elo"]).split(sep="_")[-1]
@@ -222,6 +239,10 @@ def shortcut_and_action(mode, fighters):
                     logging.info("Several corresponding shortcuts found!")
                     sys.exit()
                 found = action
+        if action == "":
+            logging.info("No shortcut found, key = " + str(input))
+            action = "show_help"
+
         return found 
 
     action = ""
@@ -280,8 +301,8 @@ def shortcut_and_action(mode, fighters):
                 f1new["date_time_elo"] = str(date)
                 f2new["date_time_elo"] = str(date)
             elapsed = (time.time() - start_time)*1000 # in milliseconds
-            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing']) + elapsed)
-            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing']) + elapsed)
+            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing']) + elapsed
+            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing']) + elapsed
 
             f1new['K_value'] = adjust_K(f1old['K_value'])
             f2new['K_value'] = adjust_K(f2old['K_value'])
@@ -409,12 +430,13 @@ def shortcut_and_action(mode, fighters):
                 ans = input("Which card do you want to disable?\n (left/right/u)=>")
                 if ans in "left" or ans in "right" :
                     if ans in "left" :
-                        entry = fetch_entry("ID = " + str(fighters[0]))[0]
+                        entry = fighters[0]
                         logging.info("Shortcut : disable : disabling left card, id = " + str(entry["ID"]))
                     else :
-                        entry = fetch_entry("ID = " + str(fighters[1]))
+                        entry = fighters[1]
                         logging.info("Shortcut : disable : disabling right card, id = " + str(entry["ID"]))
                     entry["disabled"] = 1
+                    entry["metadata"] = str(entry["metadata"]) + " dateWhenDisabled="+str(int(time.time()))
                     push_dico(entry, "UPDATE")
                     logging.info("Shortcut : disable : done")
                     ans = "exit"
@@ -436,6 +458,332 @@ def shortcut_and_action(mode, fighters):
             sys.exit()
         break
 
+
+#### SQL functions :
+def init_table():  # used to create the table if none is found, but launched everytime just in case
+    # the main table is used to store each entry
+    # the persistent table is used to store data related to litoy
+
+    logging.info("Init table")
+    query_create_table = '\
+            CREATE TABLE IF NOT EXISTS LiTOY(\
+            ID INTEGER,\
+            date_added INTEGER,\
+            entry TEXT,\
+            deck TEXT,\
+            tags TEXT,\
+            metadata TEXT,\
+            starred INTEGER,\
+            progress TEXT,\
+            importance_elo TEXT,\
+            date_importance_elo TEXT,\
+            time_elo TEXT,\
+            date_time_elo TEXT,\
+            delta_importance INTEGER,\
+            delta_time INTEGER,\
+            global_score,\
+            time_spent_comparing INTEGER,\
+            nb_of_fight INTEGER,\
+            K_value INTEGER,\
+            disabled INTEGER\
+            )'
+    db = sqlite3.connect('database.db')
+    cursor = db.cursor()
+    cursor.execute(query_create_table)
+
+    # persistent settings and data :
+    query_create_pers_sett_table = '\
+            CREATE TABLE IF NOT EXISTS PERS_SETT(\
+            date TEXT,\
+            deck TEXT,\
+            mode TEXT,\
+            seq_delta TEXT,\
+            who_fought_who TEXT\
+            )'
+    db = sqlite3.connect('database.db')
+    cursor = db.cursor()
+    cursor.execute(query_create_pers_sett_table)
+    db.commit(); db.close()
+    logging.info("Done init table")
+
+
+
+def add_entry_todb(args):
+        logging.info("Addentry : begin")
+        newentry = {} 
+        if args["deck"] == None :
+            print("No deckname supplied")
+            logging.info("Addentry : No deckname supplied")
+            print_syntax_examples()
+            print("Here are the decks that are already in your db :")
+            print(get_decks())
+            sys.exit()
+        if args["tags"]==None:
+            logging.info("No tags supplied")
+            rep = input("are you sure you don't want to add tags? They are really useful!\n(Yes/tags)=>")
+            if rep in "yes" :
+                logging.info("Import : Won't use tags")
+                newentry['tags'] = ""
+            else :
+                newentry['tags']=str(rep)
+
+        newentry['entry'] = str(args['addentry'][0])
+        newentry['deck'] = str(args["deck"][0])
+        if args["metadata"] is not None:
+            newentry["metadata"] = args['metadata']
+        else : newentry["metadata"] = ""
+
+        cur_time = str(int(time.time()))
+        newID = str(int(get_max_ID())+1)
+        newentry['ID'] = newID
+        newentry['date_added'] = cur_time
+        newentry['starred'] = "0"
+        newentry['progress'] = ""
+        newentry['importance_elo'] = "0_" + str(default_score)
+        newentry['time_elo'] = "0_" + str(default_score)
+        newentry['global_score'] = ""
+        newentry['date_importance_elo'] = cur_time
+        newentry['date_time_elo'] = cur_time
+        newentry['delta_importance'] = "0_"+str(default_score)
+        newentry['delta_time'] = "0_"+str(default_score)
+        newentry['time_spent_comparing'] = "0"
+        newentry['nb_of_fight'] = "0"
+        newentry['disabled'] = 0
+        newentry['K_value'] = K_values[0]
+
+        logging.info("Addentry : Pushing entry to db, ID = " + newID)
+        print("Addentry : Pushing entry to db, ID = " + newID)
+        push_dico(newentry, "INSERT")
+
+#def fun_import_from_txt(filename, deck, tags) :  # used to import entries from a textfile
+#    logging.info("Importing : begin")
+#    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+#    with open(filename) as f: # reads line by line
+#        content = f.readlines()
+#        content = [x.strip() for x in content] # removes \n character
+#        content = list(dict.fromkeys(content))
+#
+#    newID = str(int(get_max_ID())+1)
+#    for entry in content :
+#            entry = entry.replace("'","`") # otherwise it messes with the SQL
+#            creation_time = str(int(time.time())) # creation date of the entry
+#            query_exists = "SELECT ID FROM LiTOY WHERE entry = '"+entry + "'"
+#            cursor.execute(query_exists)
+#            try :  # checks if the card already exists
+#                existence = str(cursor.fetchone()[0])
+#            except :
+#                existence = "False"
+#
+#            if existence != "False" :
+#                print("Entry already exists in db : '" + entry + "'")
+#                logging.info("Entry already exists in db : '" + entry + "'")
+#            else :
+#                query_create = "INSERT INTO LiTOY(\
+#ID, \
+#date_added, \
+#entry, \
+#time_spent_comparing, \
+#nb_of_fight, \
+#starred, \
+#deck, \
+#tags,\
+#disabled, \
+#K_value,\
+#progress,\
+#importance_elo,\
+#time_elo,\
+#global_score,\
+#date_importance_elo,\
+#date_time_elo,\
+#delta_importance,\
+#delta_time\
+#) \
+#VALUES (" + str(newID) + ", " + creation_time + ", \'" + entry + "\', 0, 0, 0, '" + str(deck) +"', '" + str(tags) + "', 0, " + str(K_values[0]) + " , '', " + str(default_score) + ", " + str(default_score) + ", '', " + creation_time + ", " + creation_time + ", " +str(default_score) + ", " + str(default_score) + ")"
+#
+#                logging.info("SQL REQUEST : " + query_create)
+#                cursor.execute(query_create)
+#                print("Entry imported : '" + entry + "'")
+#                logging.info("Entry imported : '" + entry + "'")
+#            newID = str(int(newID)+1)
+#    db.commit() ;  db.close()
+#    logging.info("Importing : Done")
+
+
+
+
+def get_decks():  # get list of decks
+    logging.info("Getting deck list : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    all_entries = fetch_entry("ID >= 0")
+    cat_list = []
+    for i in range(len(all_entries)):
+        cat_list.append(all_entries[i]['deck'])
+    cat_list = list(set(cat_list))
+    cat_list.sort()
+    db.commit() ;   db.close()
+    logging.info("Getting deck list : done")
+    return cat_list
+
+def get_tags() :  # get list of tags that are currently being used
+    logging.info("Getting tag list : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    all_entries = fetch_entry("ID >= 0")
+    tag_list = []
+    for i in range(len(all_entries)):
+        tag_list.append(all_entries[i]['tags'])
+        if tag_list[-1] == None:
+            tag_list[-1] = ""
+    tag_list = list(set(tag_list))
+    tag_list.sort()
+    try :
+        tag_list.remove("")
+    except ValueError:
+        pass
+    db.commit() ;   db.close()
+    logging.info("Getting tag list : done")
+    return tag_list
+
+def get_deck_delta(deck, mode):  # get the delta of one specific deck
+    logging.info("Getting delta : begin")
+    all_cards = fetch_entry("ID >=0 AND disabled = 0 AND deck is '" + str(deck) + "'")
+    wholedelta = 0
+    for i in all_cards:
+        wholedelta += int(i["delta_"+str(mode)])
+    return wholedelta
+    logging.info("Getting delta : done")
+
+def get_sequential_deltas(deck, mode):  # get the delta of each deck over time 
+    logging.info("Getting sequential deltas : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    cursor.execute('SELECT date, seq_delta FROM PERS_SETT WHERE mode IS "'+ mode +'"')
+    delta_x_dates_raw = cursor.fetchall()
+    columns = cursor.description
+    db.commit() ; db.close()
+    delta_x_dates = turn_into_dict(delta_x_dates_raw, columns)
+
+    logging.info("Getting sequential deltas : delta")
+    return delta_x_dates
+
+
+def get_field_names():  # get the list of all the fields used in the entry db
+    logging.info("Getting field names : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    entry = fetch_entry("ID = 1")
+    db.commit() ; db.close()
+    try :
+        result = list(entry[0].keys())
+    except :
+        logging.info("No deck found")
+        result = "None"
+    logging.info("Getting field names : done")
+    return result
+
+def get_max_ID():  # used to get the maximum ID number attributed to a card currently in the db, to ensure ID's are unambiguous
+    logging.info("Getting maxID : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    cursor.execute('''SELECT MAX(ID) FROM LiTOY''')
+    maxID = cursor.fetchone()[0]
+    db.commit() ; db.close()
+    try : # if None
+        maxID = int(maxID)
+    except : # then 0
+        maxID = 0 
+    logging.info("MaxID = " + str(maxID))
+    logging.info("Getting maxIS : done")
+    return maxID
+
+def check_db_consistency():  # used to make basic tests to know if some incoherent values are found
+    logging.info("Checking database consistency")
+    #compute_Global_score()  # commented to avoid circular importation
+        # https://stackoverflow.com/questions/1556387/circular-import-dependency-in-python
+    def print_check(id, fieldname, value, error) :
+        msg = "CONSISTENCY ERROR : ID="+str(id) + ", "+str(fieldname) + "='"+str(value)+"' <= " + error
+        print(msg)
+        logging.info(msg)
+    all_entries = fetch_entry("ID >=0")
+    for i,content in enumerate(all_entries) :
+        one_entry = all_entries[i]
+        try : int(one_entry['importance_elo'])
+        except : print_check(i, "importance_elo", one_entry['importance_elo'], "Not an int")
+        try : int(one_entry['time_elo'])
+        except : print_check(i, "time_elo", one_entry['time_elo'], "Not an int")
+        try : int(one_entry['date_importance_elo'])
+        except : print_check(i, "date_importance_elo", one_entry['date_importance_elo'], "Not an int")
+        try : int(one_entry['date_time_elo'])
+        except : print_check(i, "date_time_elo", one_entry['date_time_elo'], "Not an int")
+
+        if one_entry['entry'] == "" :
+            print_check(i, "entry", one_entry['entry'], "Empty entry")
+
+        try : int(one_entry['date_time_elo'])
+        except : print_check(i, "date_time_elo", one_entry['date_time_elo'], "Not an int")
+
+
+
+        ##TODO
+        # check if doublon id ou doublon entry
+        # check delta imp et time
+        # check if starred pas 0 ou 1
+        # check if date added int
+        # check if number of dates correspond to fighting number
+        # check if empty deck
+        # check if global score not int
+        # check time comparing
+        # check nb of fight is int
+        # check K value part of the setting
+    logging.info("Done checking consistency")
+
+def fetch_entry(condition):  # used to query all fields from an entry
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    logging.info("Fetching  : whole entry on condition : "+condition)
+    queryFetch = 'SELECT * FROM LiTOY WHERE ' + str(condition)
+    logging.info("Fetching : SQL : " + queryFetch)
+    cursor.execute(queryFetch)
+    fetched_raw = cursor.fetchall()
+    columns = cursor.description
+    db.commit() ;   db.close()
+    dictio = turn_into_dict(fetched_raw, columns)
+    logging.info("Fetching : Done")
+    return dictio
+
+def turn_into_dict(fetched_raw, columns=""):  # used to turn the sql result to a python friendly dictionnary
+    # https://stackoverflow.com/questions/28755505/how-to-convert-sql-query-results-into-a-python-dictionary
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    col_name = [col[0] for col in columns]
+    fetch_clean = [dict(zip(col_name, row)) for row in fetched_raw]
+    db.commit() ;   db.close()
+    return fetch_clean
+
+def push_dico(dico, mode):  # used to turn a python friendly dictionnary back into the sql db
+    # https://blog.softhints.com/python-3-convert-dictionary-to-sql-insert/
+    logging.info('Pushing dictionnary : ' + str(dico) + " ; mode = " + str(mode))
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+    if mode == "INSERT" :
+        columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in dico.keys())
+        values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in dico.values())
+        query = "INSERT INTO LiTOY ( %s ) VALUES ( %s );" % (columns, values)
+    if mode == "UPDATE" :
+        query = "UPDATE LiTOY SET "
+        entry_id = dico['ID']
+        for a,b in dico.items():
+            query = query + str(a) + " = \'" + str(b) + "\', "
+        query = query[0:len(query)-2] + " WHERE ID = " + str(entry_id) + " ;"
+    logging.info("SQL push_dico:" + query)
+    cursor.execute(query)
+    db.commit() ;   db.close()
+    logging.info('Pushing dictionnary : Done')
+
+def push_persist_data(deck, mode, time, id1, id2, score):  # used to push the data to the persistent db
+    logging.info("Pushing persistent data  : begin")
+    db = sqlite3.connect('database.db') ; cursor = db.cursor()
+
+    delta_to_add = str(get_deck_delta(deck, mode))
+    query_delta = "INSERT INTO PERS_SETT ( date, mode, deck, seq_delta, who_fought_who ) VALUES ( " + str(time) + ", '" + mode + "', '" + deck + "', " + delta_to_add + ", '" + id1+"_"+id2+":"+score + "')"
+    #logging.info("SQL PUSH PERSI DATA : " + query_delta)
+    cursor.execute(query_delta)
+    db.commit() ; db.close()
+    logging.info("Pushing persistent data : latest delta = " + delta_to_add)
+    logging.info("Pushing persistent data : done")
 
 
 
