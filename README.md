@@ -81,6 +81,7 @@ The idea behing LiTOY is simple :
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY/ `
 * `cd LiTOY`
 * edit the settings in `settings.py`
+* run `sudo pip3 install -r requirements.txt`
 * `python3 ./__main__.py`
 
 ### Syntax example :
@@ -134,12 +135,9 @@ The idea behing LiTOY is simple :
 
 ## TODO :
 ### global :
-    * addentry should actually be used when calling --import, move addentry to sql.py
-
     * find the right license
     * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
-    * editentry might add the preceding content in metadata
-    * make a requirement file and mention in the readme
+        * editentry might add the preceding content in metadata
     * delta should actually be multiplied by the K_value
     * open links has to open file if a path is found
     * add a --list-starred function
