@@ -1,5 +1,28 @@
 #!/usr/bin/env python3
 
+##################################################################################
+# Released under the GNU Lesser General Public License v2.
+# Copyright (C) - 2020 - user "thiswillbeyourgithub" of the website "github".
+# This file is part of LiTOY : a tool to help organiser various goals over time.
+# Anki card template helping user to retain knowledge.
+# 
+# LiTOY is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# LiTOY is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with LiTOY.  If not, see <https://www.gnu.org/licenses/>.
+# 
+# for more information or to get the latest version go to :
+# https://github.com/thiswillbeyourgithub/LiTOY
+##################################################################################
+
 import time
 import logging
 import random
@@ -7,6 +30,7 @@ import webbrowser
 import sys
 import sqlite3
 import pprint
+import readline
 
 from itertools      import chain
 
@@ -249,7 +273,7 @@ def shortcut_and_action(mode, fighters):
     while True:
         start_time = time.time() # to get time elapsed
 
-        if action=="exit" :  # not a shortcut, but used as a way to exit the while loop
+        if action=="exit_outerloop" :  # not a shortcut, but used as a way to exit the while loop
             # not to be confused with "quit"
             break
         action = ""
@@ -290,22 +314,22 @@ def shortcut_and_action(mode, fighters):
 
             f1new['nb_of_fight'] += 1
             f2new['nb_of_fight'] += 1
+            f1new['K_value'] = adjust_K(f1old['K_value'])
+            f2new['K_value'] = adjust_K(f2old['K_value'])
             if mode=="importance":
-                f1new["delta_importance"] = abs(elo1-elo2)
-                f2new["delta_importance"] = abs(elo1-elo2)
+                f1new["delta_importance"] = abs(elo1-elo2)*f1new['K_value']
+                f2new["delta_importance"] = abs(elo1-elo2)*f2new['K_value']
                 f1new["date_importance_elo"] = str(date)
                 f2new["date_importance_elo"] = str(date)
             if mode=="time":
-                f1new['delta_time'] = abs(elo1-elo2)
-                f2new['delta_time'] = abs(elo1-elo2)
+                f1new['delta_time'] = abs(elo1-elo2)*f1new['K_value']
+                f2new['delta_time'] = abs(elo1-elo2)*f2new['K_value']
                 f1new["date_time_elo"] = str(date)
                 f2new["date_time_elo"] = str(date)
-            elapsed = (time.time() - start_time)*1000 # in milliseconds
-            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing']) + elapsed
-            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing']) + elapsed
+            elapsed = int((time.time() - start_time)*1000) # in milliseconds
+            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing'] + elapsed)
+            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing'] + elapsed)
 
-            f1new['K_value'] = adjust_K(f1old['K_value'])
-            f2new['K_value'] = adjust_K(f2old['K_value'])
 
 
             logging.info("Shortcut : fight, done")
@@ -314,7 +338,7 @@ def shortcut_and_action(mode, fighters):
 
             push_persist_data(f1new["deck"], mode, date, str(f1new["ID"]), str(f2new["ID"]), str(keypress)) 
 
-            action="exit"
+            action="exit_outerloop"
             continue
 
 
@@ -332,7 +356,7 @@ def shortcut_and_action(mode, fighters):
             logging.info("Shortcut : edit : begin")
             ans = "no"
             while True :
-                if ans in "undo" or ans in "exit" :
+                if ans in "undo" or ans in "exit_innerloop" :
                     break
                 ans = input("Which card do you want to edit?\n (left/right/u)=>")
                 if ans in "left" or ans in "right" :
@@ -343,18 +367,30 @@ def shortcut_and_action(mode, fighters):
                         entry = fighters[1]
                         logging.info("Shortcut : edit : editing right card, id = " + str(entry["ID"]))
 
-                    ## MAIN
-
-
+                    chosenfield = str(input("What field do you want to edit?\n"))
+                    logging.info("Shortcut : edit : user wants to edit field " + chosenfield)
+                    try :
+                        old_value = str(entry[chosenfield])
+                    except KeyError:
+                        print("Wrong field name")
+                        logging.info("Shortcut : edit : wrong field name")
+                        continue
+                    if platform.system is not "Windows" :
+                        new_value = str(rlinput("Enter the desired new value for field '" + chosenfield +"'\n", prefill=old_value))
+                    else :
+                        logging.info("Shortcut : edit : Windows user, no prefilled input")
+                        new_value = str(input("Enter the desired new value for field '" + chosenfield +"'\n"))
+                    logging.info("Shortcut : edit : field=" + chosenfield + ", old_value='" + old_value + "', new_value='" + new_value + "'")
+                    entry[chosenfield] = new_value
+                    push_dico(entry, "UPDATE")
+                    ans = "exit_innerloop"
                     logging.info("Shortcut : edit : done")
-                    ans = "exit"
-                    action = "exit"
                 else :
                     print("Incorrect answer, Please choose left or right or undo")
                     logging.info("Shortcut : edit : wrong answer")
+                    logging.info("Shortcut : edit : done")
                     continue
-
-            logging.info("Shortcut : edit : done")
+            print_2_entries(fighters, fighters[0]["deck"], mode)
             continue
 
 
@@ -366,37 +402,27 @@ def shortcut_and_action(mode, fighters):
         if action == "undo":
             print("The undo function has not been implemented yet!")
             logging.info("Shortcut : called for undo")
-
             continue
 
-        if action == "open_links":  # if links are found in the entry, open them
-            logging.info("Shortcut : openning links")
-            print("Shortcut : openning links")
-            relevant_fields = ["entry","metadata"]
-            link=""
-            for f in fighters :
-                for fi in relevant_fields :
-                    potential_links = str(f[fi]).split(sep=" ")
-                    for l in potential_links:
-                        if "http://" in l or "https://" in l:
-                            links=l
-                            logging.info("Shortcut : Openning link : " + l) 
-                            if platform.system() == "Linux" :
-                                subprocess.run([browser_path, l])
-                            else :
-                                webbrowser.open_new_tab(l)
-            if links == "" :
-                print("No links found!")
-                logging.info("Shortcut : no links found")
+        if action == "open_media":  # if links are found in the entry, open them
+            logging.info("Shortcut : openning media")
+            print("Shortcut : openning media")
+            status = []
+            status + find_media(fighters[0], "auto-open")
+            status + find_media(fighters[1], "auto-open")
+            if status == []:
+                print("No media found!")
+                logging.info("Shortcut : no media found")
                 continue
             else :
+                print("Media openned")
                 continue
 
         if action == "star":  # useful to get back to it to edit etc after a fight
             logging.info("Shortcut : star : begin")
             ans = "no"
             while True :
-                if ans in "undo" or ans in "exit" :
+                if ans in "undo" or ans in "exit_innerloop" :
                     break
                 ans = input("Which card do you want to star?\n (left/right/u)=>")
                 if ans in "left" or ans in "right" :
@@ -411,8 +437,8 @@ def shortcut_and_action(mode, fighters):
                     entry["starred"] = 1
                     push_dico(entry, "UPDATE")
                     logging.info("Shortcut : star : done")
-                    ans = "exit"
-                    action = "exit"
+                    ans = "exit_innerloop"
+                    action = "exit_outerloop"
                 else :
                     print("Incorrect answer, Please choose left or right or undo")
                     logging.info("Shortcut : star : wrong answer")
@@ -425,7 +451,7 @@ def shortcut_and_action(mode, fighters):
             logging.info("Shortcut : disable : begin")
             ans = "no"
             while True :
-                if ans in "undo" or ans in "exit" :
+                if ans in "undo" or ans in "exit_innerloop" :
                     break
                 ans = input("Which card do you want to disable?\n (left/right/u)=>")
                 if ans in "left" or ans in "right" :
@@ -439,8 +465,8 @@ def shortcut_and_action(mode, fighters):
                     entry["metadata"] = str(entry["metadata"]) + " dateWhenDisabled="+str(int(time.time()))
                     push_dico(entry, "UPDATE")
                     logging.info("Shortcut : disable : done")
-                    ans = "exit"
-                    action = "exit"
+                    ans = "exit_innerloop"
+                    action = "exit_outerloop"
                 else :
                     print("Incorrect answer, Please choose left or right or undo")
                     logging.info("Shortcut : disable : wrong answer")
@@ -457,6 +483,17 @@ def shortcut_and_action(mode, fighters):
             print("Quitting.")
             sys.exit()
         break
+
+
+
+def rlinput(prompt, prefill=''):  # prompt with prefilled text
+    # https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible
+    readline.set_startup_hook(lambda: readline.insert_text(prefill))
+    readline.parse_and_bind("tab: complete")
+    try:
+       return input(prompt)  # or raw_input in Python 2
+    finally:
+      readline.set_startup_hook()
 
 
 #### SQL functions :
@@ -526,6 +563,8 @@ def add_entry_todb(args):
                 newentry['tags'] = ""
             else :
                 newentry['tags']=str(rep)
+        else :
+            newentry["tags"] = str(", ".join(args["tags"]))[0:]
 
         newentry['entry'] = str(args['addentry'][0])
         newentry['deck'] = str(args["deck"][0])

@@ -1,5 +1,28 @@
 #!/usr/bin/env python3
 
+##################################################################################
+# Released under the GNU Lesser General Public License v2.
+# Copyright (C) - 2020 - user "thiswillbeyourgithub" of the website "github".
+# This file is part of LiTOY : a tool to help organiser various goals over time.
+# Anki card template helping user to retain knowledge.
+# 
+# LiTOY is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# LiTOY is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with LiTOY.  If not, see <https://www.gnu.org/licenses/>.
+# 
+# for more information or to get the latest version go to :
+# https://github.com/thiswillbeyourgithub/LiTOY
+##################################################################################
+
 import time
 import random
 import sqlite3
@@ -148,6 +171,16 @@ def main() :
             required=False,
             dest="state",
             help = "show current tags decks etc")
+    parser.add_argument("--list-disabled",
+            action='store_true',
+            required=False,
+            dest="list_disabled",
+            help = "shows the card that have been disabled")
+    parser.add_argument("--list-starred",
+            action='store_true',
+            required=False,
+            dest="list_starred",
+            help = "shows the card that have been starred")
     parser.add_argument("--verbose",
             action='store_true',
             required=False,
@@ -259,7 +292,7 @@ def main() :
             shortcut_and_action(mode, fighters)
             for i in range(6) : print("#"*sizex)
 
-    if args["state"] != False :
+    if args["state"] is not False :
         logging.info("Showing state of the database")
         print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
         print("Tags found in db : " + col_blu + str(get_tags()) + col_rst)
@@ -296,6 +329,21 @@ def main() :
                 except ZeroDivisionError :
                     print(col_yel + "      => in mode " + mode + ", no fights have been fought, no data to give." + col_rst)
         logging.info("Listing : done")
+
+    if args["list_starred"] is not False:
+        print("Printing the starred entries :")
+        logging.info("Showing starred entries : begin")
+        all_cards = fetch_entry("ID >=0 AND starred IS 1")
+        pprint.pprint(all_cards)
+        logging.info("Showing starred entries : done")
+
+
+    if args["list_disabled"] is not False:
+        print("Printing the disabled entries :")
+        logging.info("Showing disabled entries : begin")
+        all_cards = fetch_entry("ID >=0 AND disabled IS 1")
+        pprint.pprint(all_cards)
+        logging.info("Showing disabled entries : done")
 
     if args['addentry'] != None:
         logging.info("Addentry : adding entry : " + str(args['addentry']))
@@ -338,8 +386,12 @@ def main() :
             content = f.readlines()
             content = [x.strip() for x in content] # removes \n character
             content = list(dict.fromkeys(content))
+        newID = -1
         for entry in content :
-            newID = str(int(get_max_ID())+1)
+            if newID = -1 :
+                newID = str(int(get_max_ID())+1)
+            else :
+                newID = str(int(newID)+1)
             entry = entry.replace("'","`") # otherwise it messes with the SQL
             creation_time = str(int(time.time())) # creation date of the entry
             query_exists = "SELECT ID FROM LiTOY WHERE entry = '"+entry + "'"
@@ -354,18 +406,73 @@ def main() :
                 logging.info("Entry already exists in db : '" + entry + "'")
             else :
                 dic = {
-                        "entry"      : entry,
-                        "addentry"      : entry,
-                        "deck"       : str(args["deck"][0]),
-                        "tags"       : tags
+                        "ID"         : str(newID),
+                        "entry"      : [entry],
+                        "addentry"   : [entry],
+                        "deck"       : [str(args["deck"][0])],
                         }
+                # extract tags 
+                if "tags:" in entry :
+                    tag_sep = entry.split(sep="tags:")
+                    if len(tag_sep) >= 3 :
+                        logging.info("Importing : too many tags found!" + tag_sep)
+                        print(col_red + "Importing : too many tags found! : " + tag_sep)
+                        print("Use the syntax like this : somethingtodo __t=DIY/AI/work" + col_rst)
+                        sys.exit()
+                    if len(tag_sep) == 2 :
+                        space_sep = entry.split(sep=" ")
+                        found=0
+                        for word in space_sep :
+                            if word[0:5] == "tags:":
+                                found+=1
+                                word = word[5:]
+                                tags = list(tags) + word.split(sep="/")
+                        if found>1:
+                            print(col_red + "Something is wrong")
+                            logging.info("Importing : several tags were added ?!")
+                        print("Entry with ID " + entry["ID"] + " will also have the following tags : "  +str(tags))
+                        logging.info("Importing : Entry with ID " + entry["ID"] + " will also have the following tags : "  +str(tags))
+                        dic["tags"] = tags
+                    if 
+                else :
+                    logging.info("Importing : no tag specified for entry with ID " + str(entry["ID"]))
+
+                # extract deck  if specified for one entry
+                if "deck:" in entry :
+                    deck_sep = entry.split(sep="deck:")
+                    if len(deck_sep) > 2:
+                        logging.info("Importing : too many deck specified : " + deck_sep)
+                        print(col_red + "Importing : more than 1 specific deck specified : " + deck_sep)
+                        print("Use the syntax like this : somethingtodo __d=somedeck" + col_rst)
+                        sys.exit()
+                    else :
+                        space_sep = entry.split(" ")
+                        deck=""
+                        for word in spa_sep:
+                            if word[0:5] == "deck:":
+                                deck = word[5:]
+                                dic["deck"] = deck
+                        if deck=="":
+                            print("Deck specified but not found?!")
+                            logging.exit("Importing : deck specified but not found : entry is '" + entry + "'")
+                            sys.exit()
+
+#                meta_sep = entry.split(sep="__m:")
+#                if len(meta_sep) != 1 :
+#                    meta_sep = meta_sep[1:]
+#                    for i in meta_sep :
+#                        logging.info("Metadata found : ")
+#                        print("Metadata specified")
+#                        ####TODO
+#                        pass
+
                 try :
                     dic["metadata"] = args["metadata"]
                 except :
+                    logging.info("metadata not specified")
                     pass
                 add_entry_todb(dic)
         logging.info("Importing : done")
-        #fun_import_from_txt(filename, str(args['deck'][0]), tags)
 
     if args['rank'] != None:
         # python3 litoy main -r all rev -n 5
@@ -461,7 +568,7 @@ def main() :
 
     if args['editEntry'] != None:
         if len(args['editEntry']) != 3 :
-                print("Editentry : ERROR : needs 4 arguments\r    exiting")
+                print("Editentry : ERROR : needs 3 arguments\r    exiting")
                 logging.info("Editentry : Entry edit error : needs 3 arguments, provided : " + str(args['editEntry']))
                 print_syntax_examples()
                 sys.exit()
@@ -470,7 +577,6 @@ def main() :
         editField = str(args['editEntry'][1])
         editValue = str(args['editEntry'][2])
         entry = fetch_entry("ID = " + editID)[0]
-        entry[editField] = editValue
         if editField not in get_field_names():
             print("Editentry : You're not supposed to create new fields like that!")
             logging.info("Editentry : ERROR : trying to add a new field : " + editField)
@@ -480,13 +586,13 @@ def main() :
             print("Editentry : Not edited : values are identical")
             logging.info("Editentry : Not edited : values are identical")
             sys.exit()
+        entry[editField] = editValue
         logging.info("Editentry : Changed field " + editField + " from value " + editPrevious + " to value " + editValue)
         print("Editentry : Changing field " + editField + " from value " + editPrevious + " to value " + editValue)
         push_dico(entry, "UPDATE")
         logging.info("Editentry : Done editing field\n")
         print("Editentry : Fresh entry :")
         print(entry)
-
 
     if args['consistency'] != False:
         process_all_metadata()

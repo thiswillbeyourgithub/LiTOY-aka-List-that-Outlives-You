@@ -71,9 +71,11 @@ The idea behing LiTOY is simple :
 * for the metadata field : 
 * elo's are containing the sequence of all elo's that this particular card has had over time with a "_" in between. For example : `0_1000_1300_1200_1275`
 
-**What is "delta"?** Delta is the difference between a elo score at T0 and at T-1. It intuitively means how much his score changed because of the last comparison. By plotting the delta of all entry of a deck over time we can estimate how many more comparison you have to do.
+**What is "delta"?** Delta is the difference between a elo score at T0 and at T-1 multiplied by its K_value. It intuitively means how much his score changed because of the last comparison, and the K_value allows to factor how many time the card has been used in a fight. This way we end up with an idea of how accurate an entry's rank is. And by finding all the deltas from a deck we end up with an idea of how accurate the ranks of this deck are. By plotting the delta of all entry of a deck over time we can estimate how many more comparison you have to do.
 
 **What does it mean to answer 1 vs 2345 ?** 1 means you favor the one on the left, strongly. 5 means you favor the one on the right strongly. 3 means they are equal, 2 and 4 are intermediate score ("I prefer left over right, but not that strongly"). Remember that this will change the elo for *both* cards et every fight.
+
+**What is the unit of "time_spent_comparing" ?** In milliseconds.
 
 
 ## How can I use this?
@@ -82,9 +84,10 @@ The idea behing LiTOY is simple :
 * `cd LiTOY`
 * edit the settings in `settings.py`
 * run `sudo pip3 install -r requirements.txt`
+* Also on linux : you probably want to install sqlitebrowser (for external data browsing) and pdftotext (for automatically finding pdf time to read)
 * `python3 ./__main__.py`
 
-### Syntax example :
+### Syntax on execution, example :
 
 `python3 __main__.py --add 'repair the tires' diy 'to do before march'`
    * adds a new entry to deck todo with the tag diy 
@@ -119,11 +122,27 @@ The idea behing LiTOY is simple :
 `python3 __main__.py --external`
    * open in sqlite browser
 
-`--verbose`
+`python3 __main__.py --verbose *someothercommand*`
    * also show output to the console instead of just in the debug file
 
 `python3 __main__.py --edit ID FIELD VALUE`
    * edit FIELD from card with id ID
+
+#### Example of syntaxt for the import file :
+> repair the bottom shelf of your room __t=diy
+
+> ask the DMV for xyz __t=bureaucratic
+
+> read the next chapter from your manual __t=work/AI
+
+> this entry will be added to the deck specified when launching litoy
+
+> but this entry will be added to the deck __d=otherdeck with tags __t=newtag
+
+> this entry specifies directly that it is something to be read __type=reading
+
+> but this one is related to a video __type=video
+
 
 ### Features 
 * Automatically retrieves video length, video size, article reading time duration, pdf reading time duration
@@ -135,19 +154,17 @@ The idea behing LiTOY is simple :
 
 ## TODO :
 ### global :
-    * find the right license
-    * write the edit function using this : https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible/2533142#2533142 and maybe this https://stackoverflow.com/questions/20972367/python-autocomplete-user-input
-        * editentry might add the preceding content in metadata
-    * delta should actually be multiplied by the K_value
-    * open links has to open file if a path is found
-    * add a --list-starred function
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
-    * there need to be a way to change a deck's name
-    * write a example_new_entry.txt and mention it in the readme
-    * add a shortcut that only opens the left or right link ?
+    * change tag syntnax to tag:X/Y deck:X + in the readme
+    * edit function should be able to handle more specific sql condition
+    * add a field rank1/2/3/4/5/global, this will help later on
+    * there need to be a function and argument to change a deck's name
     * add a short term deck that allows to simply order item by order of when they should be done
+    * when asking which field to edit, print the list of fields, and show more fields just before
     * store in persistent data the number of time litoy is run since its last db check, then print a reminder to check the db if it's above 50
     * metadata should contain the name of the url tab : https://github.com/impredicative/urltitle/  or  https://gist.github.com/anderser/1682452
+    * add a shortcut to show the beginning of the link or pdf
+    * if the file linked in the media is not found, exception should be thrown
     * a shortcut could maybe be used to pull up the beginning of the article, to make it easier to compare
     * metadata field should actually never appear while fighting, write it in the readme
     * check if replacing ' with ` in url doesnt break anything (`)

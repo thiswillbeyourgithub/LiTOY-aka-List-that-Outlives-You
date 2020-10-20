@@ -1,0 +1,8 @@
+repair the bottom shelf of your room tags:diy
+ask the DMV for xyz tags:bureaucratic
+read the next chapter from your manual tags:work/AI
+this entry will be added to the deck specified when launching litoy
+but this entry will be added to the deck deck:otherdeck with tags tags:newtag
+
+#this entry specifies directly that it is something to be read __type=reading
+#but this one is related to a video __type=video

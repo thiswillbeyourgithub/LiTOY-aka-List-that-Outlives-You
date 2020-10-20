@@ -1,1 +1,2 @@
 termplotlib==0.3.2
+readline==6.2.4.1  # only linux

@@ -1,5 +1,28 @@
 #!/usr/bin/env python3
 
+##################################################################################
+# Released under the GNU Lesser General Public License v2.
+# Copyright (C) - 2020 - user "thiswillbeyourgithub" of the website "github".
+# This file is part of LiTOY : a tool to help organiser various goals over time.
+# Anki card template helping user to retain knowledge.
+# 
+# LiTOY is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# LiTOY is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General Public License
+# along with LiTOY.  If not, see <https://www.gnu.org/licenses/>.
+# 
+# for more information or to get the latest version go to :
+# https://github.com/thiswillbeyourgithub/LiTOY
+##################################################################################
+
 # This file contains the user settings :
 
 # used for the life bar
@@ -19,6 +42,7 @@ questions = {
 
 sqlitebrowser_path = "/usr/bin/sqlitebrowser"
 browser_path = "/usr/bin/firefox" # only on linux, otherwise it uses the webbbrowser package
+default_path = "/home/"  # when a file beginning like that is found in an entry, it is recognized as a media 
 
 # a few notes :
 # * if you add a one letter shortcut, be sure it's in a list and not just 
@@ -29,13 +53,12 @@ browser_path = "/usr/bin/firefox" # only on linux, otherwise it uses the webbbro
 shortcuts = {
         "skip_fight"                 :  ["s","-"],
         "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
-        #"toggle_display_options"     :  ["D"],
         "edit"                       :  ["E"],
         "undo"                       :  ["u"],
         "show_more_fields"           :  ["M"],
         "star"                       :  ["x"],
         "disable"                    :  ["d"],
-        "open_links"                 :  ["o"],
+        "open_media"                 :  ["o"],
         "show_help"                  :  ["h","?"],
         "quit"                       :  ["q"]
         }
