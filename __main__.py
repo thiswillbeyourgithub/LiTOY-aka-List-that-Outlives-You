@@ -572,11 +572,11 @@ def main() :
                 logging.info("Editentry : Entry edit error : needs 3 arguments, provided : " + str(args['editEntry']))
                 print_syntax_examples()
                 sys.exit()
-        editID = str(args['editEntry'][0])
-        logging.info("Editentry : Editing entry, ID " + editID)
+        condition = str(args['editEntry'][0])
+        logging.info("Editentry : Editing entry, arguments : " + args['editEntry'])
         editField = str(args['editEntry'][1])
         editValue = str(args['editEntry'][2])
-        entry = fetch_entry("ID = " + editID)[0]
+        entry = fetch_entry(condition)
         if editField not in get_field_names():
             print("Editentry : You're not supposed to create new fields like that!")
             logging.info("Editentry : ERROR : trying to add a new field : " + editField)

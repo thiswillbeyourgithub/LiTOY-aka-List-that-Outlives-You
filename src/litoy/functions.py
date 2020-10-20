@@ -175,7 +175,7 @@ def print_syntax_examples():  # used when an error is thrown
     print("   * python3 __main__.py --rank FIELD r(everse) -n 50 --deck DECK")
 
     print("Editing an entry :")
-    print("   * python3 __main__.py --edit ID FIELD NEWVALUE")
+    print("   * python3 __main__.py --edit 'CONDITION' FIELD NEWVALUE")
 
     print("Changing a setting :")
 
@@ -427,11 +427,9 @@ def shortcut_and_action(mode, fighters):
                 ans = input("Which card do you want to star?\n (left/right/u)=>")
                 if ans in "left" or ans in "right" :
                     if ans in "left" :
-                        #entry = fetch_entry("ID = " + str(fighters[0]))[0]
                         entry = fighters[0]
                         logging.info("Shortcut : star : starring left card, id = " + str(entry["ID"]))
                     else :
-                        #entry = fetch_entry("ID = " + str(fighters[1]))
                         entry = fighters[1]
                         logging.info("Shortcut : star : starring right card, id = " + str(entry["ID"]))
                     entry["starred"] = 1
@@ -564,7 +562,7 @@ def add_entry_todb(args):
             else :
                 newentry['tags']=str(rep)
         else :
-            newentry["tags"] = str(", ".join(args["tags"]))[0:]
+            newentry["tags"] = str(" ".join(args["tags"]))[0:]
 
         newentry['entry'] = str(args['addentry'][0])
         newentry['deck'] = str(args["deck"][0])

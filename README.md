@@ -77,6 +77,8 @@ The idea behing LiTOY is simple :
 
 **What is the unit of "time_spent_comparing" ?** In milliseconds.
 
+**Where can I see the correct syntax to use when writing a file destined for importation?** See [this file](./example_new_entry.txt)
+
 
 ## How can I use this?
 * Read this page thoroughly. Don't be afraid to ask questions.
@@ -125,23 +127,10 @@ The idea behing LiTOY is simple :
 `python3 __main__.py --verbose *someothercommand*`
    * also show output to the console instead of just in the debug file
 
-`python3 __main__.py --edit ID FIELD VALUE`
-   * edit FIELD from card with id ID
+`python3 __main__.py --edit 'ID IS 38' FIELD VALUE`
+   * edit FIELD from card with id ID, the first argument can be any sql conditionnal argument
 
-#### Example of syntaxt for the import file :
-> repair the bottom shelf of your room __t=diy
-
-> ask the DMV for xyz __t=bureaucratic
-
-> read the next chapter from your manual __t=work/AI
-
-> this entry will be added to the deck specified when launching litoy
-
-> but this entry will be added to the deck __d=otherdeck with tags __t=newtag
-
-> this entry specifies directly that it is something to be read __type=reading
-
-> but this one is related to a video __type=video
+To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 
 ### Features 
@@ -155,7 +144,6 @@ The idea behing LiTOY is simple :
 ## TODO :
 ### global :
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
-    * change tag syntnax to tag:X/Y deck:X + in the readme
     * edit function should be able to handle more specific sql condition
     * add a field rank1/2/3/4/5/global, this will help later on
     * there need to be a function and argument to change a deck's name
