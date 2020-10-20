@@ -31,11 +31,14 @@ import sys
 import sqlite3
 import pprint
 import readline
+import re
 
-from itertools      import chain
+from    itertools      import chain
+from    urltitle       import URLTitleReader
 
-from   .settings    import *
-from   .elo         import *
+from   .settings        import *
+from   .elo             import *
+from   .media_retriever import *
 
 # to get the terminal size on all OS :
 import os
@@ -64,7 +67,7 @@ def print_memento_mori(): # remember you will die
         seg3 = user_life_expected - user_age - useless_last_years
         seg4 = useless_last_years
         resize = 1/user_life_expected*(sizex-17)
-        print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_yel + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + "_"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
+        print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + col_gre + "-"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
         logging.info("Memento mori : done")
     else : 
         logging.info("Memento mori : disabled")
@@ -89,6 +92,7 @@ def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
                 print(str(col) + " "*(len(rowname)+space) + a[:width].ljust(width) + " "*space + b[:width] + col_rst)
             a = a[width:]
             b = b[width:]
+        print("."*sizex)
 
     random.shuffle(fighters) # otherwise they can be ordered by ID
     if all_fields != "all":
@@ -99,17 +103,20 @@ def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
         if str(fighters[0]['tags']) != "None" or str(fighters[1]['tags']) != "None" :
             tags = ["Tags :", str(fighters[0]['tags']), str(fighters[1]['tags'])]
             side_by_side(tags[0], tags[1], tags[2])
-        if str(fighters[0]['metadata']) != "None" or str(fighters[1]['metadata']) != "None" :
-            metadata = ["metadata :", str(fighters[0]['metadata']), str(fighters[1]['metadata'])]
-            side_by_side(metadata[0], metadata[1], metadata[2])
+#        if str(fighters[0]['metadata']) != "None" or str(fighters[1]['metadata']) != "None" :
+#            metadata = ["metadata :", str(fighters[0]['metadata']), str(fighters[1]['metadata'])]
+#            side_by_side(metadata[0], metadata[1], metadata[2])
         if str(fighters[0]['progress']) != "None" or str(fighters[1]['progress']) != "None" :
             progress = ["Progress :", str(fighters[0]['progress']), str(fighters[1]['progress'])]
             side_by_side(progress[0], progress[1], progress[2])
         if str(fighters[0]['starred']) != "0" or str(fighters[1]['starred']) != "0" :
             starred = ["Starred :", str(fighters[0]['starred']), str(fighters[1]['starred'])]
             side_by_side(starred[0], starred[1], starred[2], col = col_yel)
+
         content = ["Entry :", str(fighters[0]['entry']), str(fighters[1]['entry'])]
         side_by_side(content[0], content[1], content[2])
+
+        # removed as I don't think it should be displayed all the time
         #importance = ["Importance :", str(fighters[0]['importance_elo']).split("_")[-1], str(fighters[1]['importance_elo']).split("_")[-1]]
         #side_by_side(importance[0], importance[1], importance[2])
         #time = ["Time (high is short) :", str(fighters[0]['time_elo']).split("_")[-1], str(fighters[1]['time_elo']).split("_")[-1]]
@@ -118,6 +125,17 @@ def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
     if all_fields=="all": # print all fields, used more for debugging
        for i in get_field_names():
            side_by_side(str(i), str(fighters[0][i]), str(fighters[1][i]))
+
+    # metadata :
+    tabname = {0:"", 1:""}
+    for n,i in enumerate(fighters) :
+        meta = i["metadata"]
+        if "urltabtitle" in meta:
+            tabtitle = str(re.search("urltabtitle=__.+__", meta).group())[14:-2]
+            tabname[n] = tabtitle
+    if tabname != {} :
+        side_by_side("Tabname :", str(tabname[0]), str(tabname[1]))
+
     print(col_blu + "#"*sizex + col_rst)
 
 def pick_2_entries(mode, condition=""):  # used to choose who will fight who
@@ -367,6 +385,7 @@ def shortcut_and_action(mode, fighters):
                         entry = fighters[1]
                         logging.info("Shortcut : edit : editing right card, id = " + str(entry["ID"]))
 
+                    print("Field currently in the db : " + col_blu + str(get_field_names()) + col_rst)
                     chosenfield = str(input("What field do you want to edit?\n"))
                     logging.info("Shortcut : edit : user wants to edit field " + chosenfield)
                     try :
@@ -408,14 +427,13 @@ def shortcut_and_action(mode, fighters):
             logging.info("Shortcut : openning media")
             print("Shortcut : openning media")
             status = []
-            status + find_media(fighters[0], "auto-open")
-            status + find_media(fighters[1], "auto-open")
+            status = status + find_media(fighters[0], "auto-open") + find_media(fighters[1], "auto-open")
             if status == []:
                 print("No media found!")
                 logging.info("Shortcut : no media found")
                 continue
             else :
-                print("Media openned")
+                print("Done openning media")
                 continue
 
         if action == "star":  # useful to get back to it to edit etc after a fight
@@ -451,12 +469,32 @@ def shortcut_and_action(mode, fighters):
             while True :
                 if ans in "undo" or ans in "exit_innerloop" :
                     break
-                ans = input("Which card do you want to disable?\n (left/right/u)=>")
-                if ans in "left" or ans in "right" :
+                ans = input("Which card do you want to disable?\n (left/right/both/undo)=>")
+                if ans in "undo":
+                    logging.info("Shortcut : disable : input = " + ans)
+                    print("Undone.")
+                    continue
+                if ans not in "both" and ans not in "left" and ans not in "right" and ans not in "undo" :
+                    print("Incorrect answer, Please choose left or right or undo")
+                    logging.info("Shortcut : disable : wrong answer")
+                    continue
+                if ans in "both" :
+                    logging.info("Shortcut : disable : disabling both cards, id = " + str(fighters[0]["ID"]) + " and " + str(fighters[1]["ID"]))
+                    fighters[0]["disabled"] = 1
+                    fighters[1]["disabled"] = 1
+                    fighters[0]["metadata"] = str(fighters[0]["metadata"]) + " dateWhenDisabled="+str(int(time.time()))
+                    fighters[1]["metadata"] = str(fighters[1]["metadata"]) + " dateWhenDisabled="+str(int(time.time()))
+                    push_dico(fighters[0], "UPDATE")
+                    push_dico(fighters[1], "UPDATE")
+                    logging.info("Shortcut : disable : done")
+                    ans = "exit_innerloop"
+                    action = "exit_outerloop"
+                    continue
+                elif ans in "left" or ans in "right" :
                     if ans in "left" :
                         entry = fighters[0]
                         logging.info("Shortcut : disable : disabling left card, id = " + str(entry["ID"]))
-                    else :
+                    elif ans in "right" :
                         entry = fighters[1]
                         logging.info("Shortcut : disable : disabling right card, id = " + str(entry["ID"]))
                     entry["disabled"] = 1
@@ -465,10 +503,6 @@ def shortcut_and_action(mode, fighters):
                     logging.info("Shortcut : disable : done")
                     ans = "exit_innerloop"
                     action = "exit_outerloop"
-                else :
-                    print("Incorrect answer, Please choose left or right or undo")
-                    logging.info("Shortcut : disable : wrong answer")
-                    continue
             continue
 
         if action == "show_help":
@@ -553,14 +587,17 @@ def add_entry_todb(args):
             print("Here are the decks that are already in your db :")
             print(get_decks())
             sys.exit()
-        if args["tags"]==None:
-            logging.info("No tags supplied")
-            rep = input("are you sure you don't want to add tags? They are really useful!\n(Yes/tags)=>")
-            if rep in "yes" :
-                logging.info("Import : Won't use tags")
-                newentry['tags'] = ""
-            else :
-                newentry['tags']=str(rep)
+        try :
+            if args["tags"]==None:
+                logging.info("No tags supplied")
+                rep = input("are you sure you don't want to add tags? They are really useful!\n(Yes/tags)=>")
+                if rep in "yes" :
+                    logging.info("Import : Won't use tags")
+                    newentry['tags'] = ""
+                else :
+                    newentry['tags']=str(rep)
+        except KeyError :  # tags contains a list and is not Nonetype when called using --import
+            pass
         else :
             newentry["tags"] = str(" ".join(args["tags"]))[0:]
 
@@ -592,61 +629,6 @@ def add_entry_todb(args):
         print("Addentry : Pushing entry to db, ID = " + newID)
         push_dico(newentry, "INSERT")
 
-#def fun_import_from_txt(filename, deck, tags) :  # used to import entries from a textfile
-#    logging.info("Importing : begin")
-#    db = sqlite3.connect('database.db') ; cursor = db.cursor()
-#    with open(filename) as f: # reads line by line
-#        content = f.readlines()
-#        content = [x.strip() for x in content] # removes \n character
-#        content = list(dict.fromkeys(content))
-#
-#    newID = str(int(get_max_ID())+1)
-#    for entry in content :
-#            entry = entry.replace("'","`") # otherwise it messes with the SQL
-#            creation_time = str(int(time.time())) # creation date of the entry
-#            query_exists = "SELECT ID FROM LiTOY WHERE entry = '"+entry + "'"
-#            cursor.execute(query_exists)
-#            try :  # checks if the card already exists
-#                existence = str(cursor.fetchone()[0])
-#            except :
-#                existence = "False"
-#
-#            if existence != "False" :
-#                print("Entry already exists in db : '" + entry + "'")
-#                logging.info("Entry already exists in db : '" + entry + "'")
-#            else :
-#                query_create = "INSERT INTO LiTOY(\
-#ID, \
-#date_added, \
-#entry, \
-#time_spent_comparing, \
-#nb_of_fight, \
-#starred, \
-#deck, \
-#tags,\
-#disabled, \
-#K_value,\
-#progress,\
-#importance_elo,\
-#time_elo,\
-#global_score,\
-#date_importance_elo,\
-#date_time_elo,\
-#delta_importance,\
-#delta_time\
-#) \
-#VALUES (" + str(newID) + ", " + creation_time + ", \'" + entry + "\', 0, 0, 0, '" + str(deck) +"', '" + str(tags) + "', 0, " + str(K_values[0]) + " , '', " + str(default_score) + ", " + str(default_score) + ", '', " + creation_time + ", " + creation_time + ", " +str(default_score) + ", " + str(default_score) + ")"
-#
-#                logging.info("SQL REQUEST : " + query_create)
-#                cursor.execute(query_create)
-#                print("Entry imported : '" + entry + "'")
-#                logging.info("Entry imported : '" + entry + "'")
-#            newID = str(int(newID)+1)
-#    db.commit() ;  db.close()
-#    logging.info("Importing : Done")
-
-
-
 
 def get_decks():  # get list of decks
     logging.info("Getting deck list : begin")
@@ -667,7 +649,8 @@ def get_tags() :  # get list of tags that are currently being used
     all_entries = fetch_entry("ID >= 0")
     tag_list = []
     for i in range(len(all_entries)):
-        tag_list.append(all_entries[i]['tags'])
+        toadd = str(all_entries[i]['tags']).split(" ")
+        tag_list += list(toadd)
         if tag_list[-1] == None:
             tag_list[-1] = ""
     tag_list = list(set(tag_list))
@@ -740,22 +723,22 @@ def check_db_consistency():  # used to make basic tests to know if some incohere
     all_entries = fetch_entry("ID >=0")
     for i,content in enumerate(all_entries) :
         one_entry = all_entries[i]
-        try : int(one_entry['importance_elo'])
-        except : print_check(i, "importance_elo", one_entry['importance_elo'], "Not an int")
-        try : int(one_entry['time_elo'])
-        except : print_check(i, "time_elo", one_entry['time_elo'], "Not an int")
-        try : int(one_entry['date_importance_elo'])
-        except : print_check(i, "date_importance_elo", one_entry['date_importance_elo'], "Not an int")
-        try : int(one_entry['date_time_elo'])
-        except : print_check(i, "date_time_elo", one_entry['date_time_elo'], "Not an int")
+#        try : int(one_entry['importance_elo'])
+#        except : print_check(i, "importance_elo", one_entry['importance_elo'], "Not an int")
+#        try : int(one_entry['time_elo'])
+#        except : print_check(i, "time_elo", one_entry['time_elo'], "Not an int")
+#        try : int(one_entry['date_importance_elo'])
+#        except : print_check(i, "date_importance_elo", one_entry['date_importance_elo'], "Not an int")
+#        try : int(one_entry['date_time_elo'])
+#        except : print_check(i, "date_time_elo", one_entry['date_time_elo'], "Not an int")
 
         if one_entry['entry'] == "" :
             print_check(i, "entry", one_entry['entry'], "Empty entry")
 
-        try : int(one_entry['date_time_elo'])
-        except : print_check(i, "date_time_elo", one_entry['date_time_elo'], "Not an int")
+#        try : int(one_entry['date_time_elo'])
+#        except : print_check(i, "date_time_elo", one_entry['date_time_elo'], "Not an int")
 
-
+        process_all_metadata(one_entry, "PUSH") 
 
         ##TODO
         # check if doublon id ou doublon entry
@@ -796,8 +779,10 @@ def push_dico(dico, mode):  # used to turn a python friendly dictionnary back in
     logging.info('Pushing dictionnary : ' + str(dico) + " ; mode = " + str(mode))
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
     if mode == "INSERT" :
-        columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in dico.keys())
-        values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in dico.values())
+#        columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in dico.keys())
+#        values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in dico.values())
+        columns = ', '.join("`" + str(x) + "`" for x in dico.keys())
+        values = ', '.join("'" + str(x) + "'" for x in dico.values())
         query = "INSERT INTO LiTOY ( %s ) VALUES ( %s );" % (columns, values)
     if mode == "UPDATE" :
         query = "UPDATE LiTOY SET "
@@ -821,6 +806,94 @@ def push_persist_data(deck, mode, time, id1, id2, score):  # used to push the da
     db.commit() ; db.close()
     logging.info("Pushing persistent data : latest delta = " + delta_to_add)
     logging.info("Pushing persistent data : done")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# This file contains functions used to retrieve reading time from pdf or URL, 
+
+def process_all_metadata(entry, action):  # used to store information related links found etc in the entry
+    logging.info("Process all metadata : begin")
+    found = find_media(entry, "return")
+    if len(found)==0:
+        logging.info("Processing all metadata : none in entry with ID " + str(entry["ID"]))
+    else:
+        print("Processing metadata for entry with ID " + str(entry["ID"]))
+        for item in found:
+            if default_path in item :
+                logging.info("Processing all metadata : identified as path")
+                pass
+            elif "http" in item :
+                if "pdf" in item : # if the webpage links to a pdf
+                    logging.info("Processing all metadata : identified as link to a pdf")
+                    pass
+                else :
+                    logging.info("Processing all metadata : identified as link to an article")
+                    reader = URLTitleReader(verify_ssl=True)
+                    title = reader.title(item)
+                    title.replace("'","`")
+                    title.replace(",",".")
+                    if entry["metadata"] is None: entry["metadata"] = ""
+                    entry["metadata"] = entry["metadata"] + " urltabtitle=__" + title + "__"
+    logging.info("Process all metadata : done")
+
+
+
+def find_media(entry, action=""):  # finds media in the entry, action can be "auto-open" or "return"
+    logging.info("Finding media : begin")
+    relevant_fields = ["entry","metadata"]
+    found=[]
+    for f in relevant_fields :
+        word = str(entry[f]).replace("['","").replace("']","").split(" ")
+        for ff in word:
+            if default_path in ff :
+                if action == "auto-open" :
+                    logging.info("Finding media : Openning folder : "+ff)
+                    if platform.system() == "Linux" :
+                        subprocess.Popen("nautilus", ff)
+                elif action == "return" :
+                    logging.info("Finding media : returning folder : "+ff)
+                    found.append(ff)
+
+            if "http://" in ff or "https://" in ff or "www" in ff:
+                if action == "auto-open" :
+                    logging.info("Finding media : Openning link : "+ff) 
+                    if platform.system() == "Linux" :
+                        subprocess.run([browser_path, ff])
+                    else :
+                        webbrowser.open_new_tab(ff)
+                elif action == "return" :
+                    logging.info("Finding media : returning link : "+ff)
+                    found.append(ff)
+    logging.info("Finding media : done")
+    return found
+
+
+
+
+
+
+
+
+
+
 
 
 

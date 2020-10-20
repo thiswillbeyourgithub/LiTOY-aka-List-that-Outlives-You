@@ -297,18 +297,19 @@ def main() :
         print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
         print("Tags found in db : " + col_blu + str(get_tags()) + col_rst)
         print("Number of cards : " + col_blu + str(len(fetch_entry("ID >= 0"))) + col_rst)
-        print("Delta by deck : ") 
+        print("Current fields in the db : " + col_blu + str(get_field_names()) + col_rst)
+        print("\nDelta by deck : ")
         for deck in get_decks():
-            print(" * " + col_blu + deck + col_rst)
+            print(" => " + col_blu + deck + col_rst)
             for mode in ["importance", "time"] :
-                print("    * by " + col_blu + mode + col_rst + " : " + str(get_deck_delta(deck, mode)))
+                print("    => by " + col_blu + mode + col_rst + " : " + str(get_deck_delta(deck, mode)))
                 Seq_delta = get_sequential_deltas(deck, mode)
                 derivative = []
                 for n in range(len(Seq_delta)-1):
                     derivative.append(int(Seq_delta[n]["seq_delta"]) - int(Seq_delta[n+1]["seq_delta"]))
                 try :
                     mean_der = sum(derivative)/len(derivative)
-                    print(col_gre + "      => in mode " + mode + ", lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(Seq_delta[-1]["seq_delta"])/mean_der)) + ' fights.' + col_rst)
+                    print(col_gre + "        => in mode " + mode + ", lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(Seq_delta[-1]["seq_delta"])/mean_der)) + ' fights.' + col_rst)
                     fightnb = []
                     deltas = []
                     for m, line in enumerate(Seq_delta) :
@@ -374,11 +375,11 @@ def main() :
             rep = input("Are you sure you don't want to add tags? They are really useful!\nTags found in db : " + str(get_tags()) + "\n(Yes/tags)=>")
             if rep in "yes" :
                 logging.info("Import : Won't use tags")
-                tags=""
+                tags=[""]
             else :
-                tags=str(rep)
+                tags=[str(rep)]
         else :
-            tags = args["tags"]
+            tags = [args["tags"]]
             
         logging.info("Importing : begin")
         db = sqlite3.connect('database.db') ; cursor = db.cursor()
@@ -386,15 +387,19 @@ def main() :
             content = f.readlines()
             content = [x.strip() for x in content] # removes \n character
             content = list(dict.fromkeys(content))
+        try :content.remove("")  # remove empty lines
+        except ValueError : pass # no empty lines
         newID = -1
         for entry in content :
-            if newID = -1 :
+            if tags != [""] or tags != [str(rep)]:
+                tags=""  # otherwise it is not reset between entries
+            if newID == -1 :
                 newID = str(int(get_max_ID())+1)
             else :
                 newID = str(int(newID)+1)
             entry = entry.replace("'","`") # otherwise it messes with the SQL
             creation_time = str(int(time.time())) # creation date of the entry
-            query_exists = "SELECT ID FROM LiTOY WHERE entry = '"+entry + "'"
+            query_exists = "SELECT ID FROM LiTOY WHERE entry = '" + entry + "'"
             cursor.execute(query_exists)
             try :  # checks if the card already exists
                 existence = str(cursor.fetchone()[0])
@@ -405,19 +410,21 @@ def main() :
                 print("Entry already exists in db : '" + entry + "'")
                 logging.info("Entry already exists in db : '" + entry + "'")
             else :
+                # this routine uses both "entry" and "addentry" for backwards compatibility with the 
+                # argument call when using litoy --add
                 dic = {
                         "ID"         : str(newID),
                         "entry"      : [entry],
                         "addentry"   : [entry],
                         "deck"       : [str(args["deck"][0])],
                         }
-                # extract tags 
+                # extract tags if present
                 if "tags:" in entry :
                     tag_sep = entry.split(sep="tags:")
                     if len(tag_sep) >= 3 :
                         logging.info("Importing : too many tags found!" + tag_sep)
                         print(col_red + "Importing : too many tags found! : " + tag_sep)
-                        print("Use the syntax like this : somethingtodo __t=DIY/AI/work" + col_rst)
+                        print("Use the syntax like this : 'somethingtodo tags:DIY/AI/work'" + col_rst)
                         sys.exit()
                     if len(tag_sep) == 2 :
                         space_sep = entry.split(sep=" ")
@@ -430,28 +437,27 @@ def main() :
                         if found>1:
                             print(col_red + "Something is wrong")
                             logging.info("Importing : several tags were added ?!")
-                        print("Entry with ID " + entry["ID"] + " will also have the following tags : "  +str(tags))
-                        logging.info("Importing : Entry with ID " + entry["ID"] + " will also have the following tags : "  +str(tags))
+                        print("           Entry with ID " + dic["ID"] + " will also have the following tags : "  +str(tags))
+                        logging.info("Importing : Entry with ID " + dic["ID"] + " will have the following additionnal tags : "  +str(tags[1:]))
                         dic["tags"] = tags
-                    if 
                 else :
-                    logging.info("Importing : no tag specified for entry with ID " + str(entry["ID"]))
+                    logging.info("Importing : no tag specified for entry with ID " + str(dic["ID"]))
 
-                # extract deck  if specified for one entry
+                # extract deck if present
                 if "deck:" in entry :
                     deck_sep = entry.split(sep="deck:")
                     if len(deck_sep) > 2:
                         logging.info("Importing : too many deck specified : " + deck_sep)
                         print(col_red + "Importing : more than 1 specific deck specified : " + deck_sep)
-                        print("Use the syntax like this : somethingtodo __d=somedeck" + col_rst)
+                        print("Use the syntax like this : 'somethingtodo deck:somedeck'" + col_rst)
                         sys.exit()
                     else :
                         space_sep = entry.split(" ")
                         deck=""
-                        for word in spa_sep:
+                        for word in space_sep:
                             if word[0:5] == "deck:":
                                 deck = word[5:]
-                                dic["deck"] = deck
+                                dic["deck"] = [deck]
                         if deck=="":
                             print("Deck specified but not found?!")
                             logging.exit("Importing : deck specified but not found : entry is '" + entry + "'")
@@ -466,11 +472,20 @@ def main() :
 #                        ####TODO
 #                        pass
 
+                reconstructed=""# remove syntax from the entry
+                for word in dic["entry"][0].split(" "):
+                    if "tags:" not in word and "deck:" not in word:
+                        reconstructed = reconstructed + " " + word
+                dic["entry"] = [reconstructed]
+                dic["addentry"] = dic["entry"]
+                    
                 try :
                     dic["metadata"] = args["metadata"]
                 except :
                     logging.info("metadata not specified")
+                    dic["metadata"] = ""
                     pass
+                process_all_metadata(dic, "RETURN")
                 add_entry_todb(dic)
         logging.info("Importing : done")
 
@@ -560,7 +575,7 @@ def main() :
         current_os = platform.system()
         logging.info("External : OS="+current_os)
         if current_os == "Linux" :
-            logging.info("External : launching sqlite3browser")
+            logging.info("External : launching sqlitebrowser")
             results = subprocess.run([sqlitebrowser_path,"-t", "LITOY", "database.db"])
         else :
             print("External : Only linux can launch sqlite3")
@@ -572,31 +587,35 @@ def main() :
                 logging.info("Editentry : Entry edit error : needs 3 arguments, provided : " + str(args['editEntry']))
                 print_syntax_examples()
                 sys.exit()
+        if str(args['editEntry'][1]) == "ID":
+                print("EditEntry : Error : cannot edit ID, are you sure that's what you want to do ?")
+                print("If you really need to alter the ID of an entry, interact directly with the db using sqlitebrowser for example")
+                logging.info("EditEntry : Error : cannot edit ID")
+                sys.exit()
         condition = str(args['editEntry'][0])
-        logging.info("Editentry : Editing entry, arguments : " + args['editEntry'])
+        logging.info("Editentry : Editing entry, arguments : " + str(args['editEntry']))
         editField = str(args['editEntry'][1])
         editValue = str(args['editEntry'][2])
-        entry = fetch_entry(condition)
-        if editField not in get_field_names():
-            print("Editentry : You're not supposed to create new fields like that!")
-            logging.info("Editentry : ERROR : trying to add a new field : " + editField)
-            sys.exit()
-        editPrevious = str(entry[editField])
-        if editPrevious == editValue:
-            print("Editentry : Not edited : values are identical")
-            logging.info("Editentry : Not edited : values are identical")
-            sys.exit()
-        entry[editField] = editValue
-        logging.info("Editentry : Changed field " + editField + " from value " + editPrevious + " to value " + editValue)
-        print("Editentry : Changing field " + editField + " from value " + editPrevious + " to value " + editValue)
-        push_dico(entry, "UPDATE")
-        logging.info("Editentry : Done editing field\n")
-        print("Editentry : Fresh entry :")
-        print(entry)
+        entry_group = fetch_entry(condition)
+        for entry in entry_group:
+            if editField not in get_field_names():
+                print("Editentry : You're not supposed to create new fields like that!")
+                logging.info("Editentry : ERROR : trying to add a new field : " + editField)
+                sys.exit()
+            editPrevious = str(entry[editField])
+            if str(editPrevious) == str(editValue):
+                print("Editentry : Not edited : values are identical")
+                logging.info("Editentry : Not edited : values are identical")
+            else :
+                entry[editField] = editValue
+                logging.info("Editentry : Changed field " + editField + " from value " + editPrevious + " to value " + editValue)
+                print("Editentry : Changing field " + editField + " from value " + editPrevious + " to value " + editValue)
+                push_dico(entry, "UPDATE")
+                logging.info("Editentry : Done editing field\n")
+                print("Editentry : entry is now :")
+                pprint.pprint(entry)
 
     if args['consistency'] != False:
-        process_all_metadata()
-        
         check_db_consistency()
 
 

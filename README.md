@@ -11,7 +11,7 @@ The idea behing LiTOY is simple :
 1. have all items in the same sqlite database
 2. automatically pick 2 items and prompt the user for which is better according to a user-specified question
 3. adjust the ELO score of each item accordingly
-4. When enough pairwise comparisons are done, rank the items according to a user-specified formula, for example the ranking could reflect `Books I want to read ordered by importance and by shortest time to read (i.e. "I want the most important short books first")`
+4. When enough pairwise comparisons are done, rank the items according to a user-specified formula, for example the ranking could reflect *Books I want to read ordered by importance and by shortest time to read (i.e. "I want the most important short books first")*
 
 
 
@@ -79,6 +79,8 @@ The idea behing LiTOY is simple :
 
 **Where can I see the correct syntax to use when writing a file destined for importation?** See [this file](./example_new_entry.txt)
 
+**How can I rename a deck?** See the syntax section below.
+
 
 ## How can I use this?
 * Read this page thoroughly. Don't be afraid to ask questions.
@@ -130,6 +132,9 @@ The idea behing LiTOY is simple :
 `python3 __main__.py --edit 'ID IS 38' FIELD VALUE`
    * edit FIELD from card with id ID, the first argument can be any sql conditionnal argument
 
+`python3 __main__.py --edit 'deck IS old_name' deck new_deck`
+    * rename a deck
+
 To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 
@@ -144,13 +149,7 @@ To see example of the syntax for the import file, read [this file](./example_new
 ## TODO :
 ### global :
     * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
-    * edit function should be able to handle more specific sql condition
     * add a field rank1/2/3/4/5/global, this will help later on
-    * there need to be a function and argument to change a deck's name
-    * add a short term deck that allows to simply order item by order of when they should be done
-    * when asking which field to edit, print the list of fields, and show more fields just before
-    * store in persistent data the number of time litoy is run since its last db check, then print a reminder to check the db if it's above 50
-    * metadata should contain the name of the url tab : https://github.com/impredicative/urltitle/  or  https://gist.github.com/anderser/1682452
     * add a shortcut to show the beginning of the link or pdf
     * if the file linked in the media is not found, exception should be thrown
     * a shortcut could maybe be used to pull up the beginning of the article, to make it easier to compare
@@ -169,7 +168,8 @@ To see example of the syntax for the import file, read [this file](./example_new
     * shows entries added over time (ascii plotter) as well as entries marked done
     * investigate wether prettytable should be user to show ranks / podiums / dictionnary : http://zetcode.com/python/prettytable/
     * git commit the todo file than read your own litoy db, removing useless junk and doing some stuff, then adding it to new_entry.txt then git comitting the original todo file
-    * finished check db consistency function
+    * finish the check db consistency function
+    * find a way to repair the existence test of the import function, probably by adding a check_if_already_exist(entry) function
 
 ### src/litoy/media_retriever.py :
     * estimate reading time : http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time
