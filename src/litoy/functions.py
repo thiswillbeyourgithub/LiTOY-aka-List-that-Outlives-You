@@ -32,6 +32,9 @@ import sqlite3
 import pprint
 import readline
 import re
+import bs4
+import requests
+from requests_html import HTMLSession
 
 from    itertools      import chain
 from    urltitle       import URLTitleReader
@@ -78,63 +81,84 @@ def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
     print("Deck " + str(mode) + " delta = " + str(get_deck_delta(deck, mode)))
     print_memento_mori()
     print(col_blu + "#"*sizex + col_rst)
-    def side_by_side(rowname, a, b, space=4, col=""):
+    def side_by_side(rowname, a, b, space=2, col=""):
         #https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
         rowname = rowname.ljust(30)
-        sizex = get_terminal_size()
-        width=int((int(sizex)-len(rowname))/2-int(space)*2)
+        col_width=int((int(sizex)-len(rowname))/2-int(space)*2)
         inc = 0
         while a or b:
             inc+=1
             if inc == 1:
-                print(str(col) + str(rowname) + " "*space + a[:width].ljust(width) + " "*space + b[:width] + col_rst)
+                print(str(col) + str(rowname) + " "*space + "|" + a[:col_width].ljust(col_width) + " "*space + "|" + b[:col_width] + col_rst)
             else :
-                print(str(col) + " "*(len(rowname)+space) + a[:width].ljust(width) + " "*space + b[:width] + col_rst)
-            a = a[width:]
-            b = b[width:]
-        print("."*sizex)
+                print(str(col) + " "*(len(rowname)+space) + "|" + a[:col_width].ljust(col_width) + " "*space + "|" + b[:col_width] + col_rst)
+            a = a[col_width:]
+            b = b[col_width:]
 
     random.shuffle(fighters) # otherwise they can be ordered by ID
     if all_fields != "all":
         ids = ["IDs : ", str(fighters[0]["ID"]), str(fighters[1]["ID"])]
         side_by_side(ids[0], ids[1], ids[2])
+        print("."*sizex)
         deck = ["Deck :", str(fighters[0]['deck']), str(fighters[1]['deck'])]
         side_by_side(deck[0], deck[1], deck[2])
-        if str(fighters[0]['tags']) != "None" or str(fighters[1]['tags']) != "None" :
+        print("."*sizex)
+
+        if str(fighters[0]['tags']) not in ["None",""] or str(fighters[1]['tags']) not in ["None", ""] :
             tags = ["Tags :", str(fighters[0]['tags']), str(fighters[1]['tags'])]
             side_by_side(tags[0], tags[1], tags[2])
-#        if str(fighters[0]['metadata']) != "None" or str(fighters[1]['metadata']) != "None" :
-#            metadata = ["metadata :", str(fighters[0]['metadata']), str(fighters[1]['metadata'])]
-#            side_by_side(metadata[0], metadata[1], metadata[2])
-        if str(fighters[0]['progress']) != "None" or str(fighters[1]['progress']) != "None" :
+            print("."*sizex)
+        if str(fighters[0]['progress']) not in ["None", ""] or str(fighters[1]['progress']) not in ["None", ""] :
             progress = ["Progress :", str(fighters[0]['progress']), str(fighters[1]['progress'])]
             side_by_side(progress[0], progress[1], progress[2])
+            print("."*sizex)
         if str(fighters[0]['starred']) != "0" or str(fighters[1]['starred']) != "0" :
             starred = ["Starred :", str(fighters[0]['starred']), str(fighters[1]['starred'])]
             side_by_side(starred[0], starred[1], starred[2], col = col_yel)
+            print("."*sizex)
 
         content = ["Entry :", str(fighters[0]['entry']), str(fighters[1]['entry'])]
         side_by_side(content[0], content[1], content[2])
+        print("."*sizex)
 
         # removed as I don't think it should be displayed all the time
         #importance = ["Importance :", str(fighters[0]['importance_elo']).split("_")[-1], str(fighters[1]['importance_elo']).split("_")[-1]]
         #side_by_side(importance[0], importance[1], importance[2])
         #time = ["Time (high is short) :", str(fighters[0]['time_elo']).split("_")[-1], str(fighters[1]['time_elo']).split("_")[-1]]
         #side_by_side(time[0], time[1], time[2])
+        #if str(fighters[0]['metadata']) != "None" or str(fighters[1]['metadata']) != "None" :
+            #metadata = ["metadata :", str(fighters[0]['metadata']), str(fighters[1]['metadata'])]
+            #side_by_side(metadata[0], metadata[1], metadata[2])
 
     if all_fields=="all": # print all fields, used more for debugging
        for i in get_field_names():
            side_by_side(str(i), str(fighters[0][i]), str(fighters[1][i]))
+           print("."*sizex)
 
     # metadata :
-    tabname = {0:"", 1:""}
+    tabname     = {0:"", 1:""}
+    readingtime = {0:"", 1:""}
+    vidlen      = {0:"", 1:""}
     for n,i in enumerate(fighters) :
         meta = i["metadata"]
-        if "urltabtitle" in meta:
-            tabtitle = str(re.search("urltabtitle=__.+__", meta).group())[14:-2]
+        if "urlTabTitle" in meta:
+            tabtitle = str(re.search("urlTabTitle=__.+?__", meta).group())[14:-2]
             tabname[n] = tabtitle
-    if tabname != {} :
+        if "estimatedReadingTime" in meta:
+            estimate = str(re.search("estimatedReadingTime=__.+?__", meta).group())[23:-2]
+            readingtime[n] = estimate
+        if "videoLength" in meta:
+            length = str(re.search("videoLength=__.+?__", meta).group())[14:-2]
+            vidlen[n] = str(length)
+    if tabname != {0:"", 1:""} :
         side_by_side("Tabname :", str(tabname[0]), str(tabname[1]))
+        print("."*sizex)
+    if readingtime != {0:"", 1:""} :
+        side_by_side("Reading time in minute :", str(readingtime[0]), str(readingtime[1]))
+        print("."*sizex)
+    if vidlen != {0:"", 1:""}:
+        side_by_side("Watch time in minute :", str(vidlen[0]), str(vidlen[1]))
+        print("."*sizex)
 
     print(col_blu + "#"*sizex + col_rst)
 
@@ -223,8 +247,8 @@ def compute_Global_score():  # comptes the score that will be used for final ran
     # check if the formulas declared in the dictionnary in  settings.py 
     # correspond to function that have been defined
     decks = list(get_decks()[0]).sort()
-    formulas = formula_dict.keys()
-    needed_formula = formula_dict.values()
+    formulas = deck_and_formula_table.keys()
+    needed_formula = deck_and_formula_table.values()
     defined_function = globals()
     if decks != formulas :
         print(col_red + "WARNING : Not all formulas have been found in the settings" + col_rst)
@@ -237,7 +261,7 @@ def compute_Global_score():  # comptes the score that will be used for final ran
 
     def get_formula(deck): 
         found = ""
-        for key, formula in formula_dict.items(): 
+        for key, formula in deck_and_formula_table.items(): 
             if str(deck) in key: 
                 if found != "" :
                     print("Several corresponding formulas found!")
@@ -249,7 +273,7 @@ def compute_Global_score():  # comptes the score that will be used for final ran
     all_cards = fetch_entry("ID >=0")
     for n,i in enumerate(all_cards):
         try : 
-            formula = formula_dict[i["deck"]]
+            formula = deck_and_formula_table[i["deck"]]
         except TypeError:
             print(col_red + "Type error, are you sure the deck name has been put in formula_dict in settings.py?")
             logging.info("Compute global score : type error, probably deck name has not been added to formula_dict")
@@ -335,13 +359,13 @@ def shortcut_and_action(mode, fighters):
             f1new['K_value'] = adjust_K(f1old['K_value'])
             f2new['K_value'] = adjust_K(f2old['K_value'])
             if mode=="importance":
-                f1new["delta_importance"] = abs(elo1-elo2)*f1new['K_value']
-                f2new["delta_importance"] = abs(elo1-elo2)*f2new['K_value']
+                f1new["delta_importance"] = abs(int(str(f1new["importance_elo"]).split("_")[-1]) - int(str(f1new["importance_elo"]).split("_")[-2]))*int(f1new["K_value"])
+                f2new["delta_importance"] = abs(int(str(f2new["importance_elo"]).split("_")[-1]) - int(str(f2new["importance_elo"]).split("_")[-2]))*int(f2new["K_value"])
                 f1new["date_importance_elo"] = str(date)
                 f2new["date_importance_elo"] = str(date)
             if mode=="time":
-                f1new['delta_time'] = abs(elo1-elo2)*f1new['K_value']
-                f2new['delta_time'] = abs(elo1-elo2)*f2new['K_value']
+                f1new["delta_time"] = abs(int(str(f1new["time_elo"]).split("_")[-1]) - int(str(f1new["time_elo"]).split("_")[-2]))*int(f1new["K_value"])
+                f2new["delta_time"] = abs(int(str(f2new["time_elo"]).split("_")[-1]) - int(str(f2new["time_elo"]).split("_")[-2]))*int(f2new["K_value"])
                 f1new["date_time_elo"] = str(date)
                 f2new["date_time_elo"] = str(date)
             elapsed = int((time.time() - start_time)*1000) # in milliseconds
@@ -367,6 +391,7 @@ def shortcut_and_action(mode, fighters):
 
         if action == "show_more_fields":  # display all the fields from a card
             logging.info("Shortcut : displaying the entries in full")
+            print("\n"*sizey)
             print_2_entries(fighters, fighters[0]["deck"], mode, "all")
             continue
 
@@ -618,8 +643,8 @@ def add_entry_todb(args):
         newentry['global_score'] = ""
         newentry['date_importance_elo'] = cur_time
         newentry['date_time_elo'] = cur_time
-        newentry['delta_importance'] = "0_"+str(default_score)
-        newentry['delta_time'] = "0_"+str(default_score)
+        newentry['delta_importance'] = str(default_score)
+        newentry['delta_time'] = str(default_score)
         newentry['time_spent_comparing'] = "0"
         newentry['nb_of_fight'] = "0"
         newentry['disabled'] = 0
@@ -675,12 +700,11 @@ def get_deck_delta(deck, mode):  # get the delta of one specific deck
 def get_sequential_deltas(deck, mode):  # get the delta of each deck over time 
     logging.info("Getting sequential deltas : begin")
     db = sqlite3.connect('database.db') ; cursor = db.cursor()
-    cursor.execute('SELECT date, seq_delta FROM PERS_SETT WHERE mode IS "'+ mode +'"')
+    cursor.execute("SELECT date, seq_delta FROM PERS_SETT WHERE mode IS '"+ mode +"' AND deck IS '" + deck + "'")
     delta_x_dates_raw = cursor.fetchall()
     columns = cursor.description
     db.commit() ; db.close()
     delta_x_dates = turn_into_dict(delta_x_dates_raw, columns)
-
     logging.info("Getting sequential deltas : delta")
     return delta_x_dates
 
@@ -738,7 +762,7 @@ def check_db_consistency():  # used to make basic tests to know if some incohere
 #        try : int(one_entry['date_time_elo'])
 #        except : print_check(i, "date_time_elo", one_entry['date_time_elo'], "Not an int")
 
-        process_all_metadata(one_entry, "PUSH") 
+        process_all_metadata(one_entry, "UPDATE") 
 
         ##TODO
         # check if doublon id ou doublon entry
@@ -821,16 +845,14 @@ def push_persist_data(deck, mode, time, id1, id2, score):  # used to push the da
 
 
 
-
-
-
-
-
-
 # This file contains functions used to retrieve reading time from pdf or URL, 
 
 def process_all_metadata(entry, action):  # used to store information related links found etc in the entry
     logging.info("Process all metadata : begin")
+    if action not in ["UPDATE", "RETURN"]:
+        logging.info("Process all metadata : invalid call")
+        print("Process all metadata : invalid call")
+        sys.exit()
     found = find_media(entry, "return")
     if len(found)==0:
         logging.info("Processing all metadata : none in entry with ID " + str(entry["ID"]))
@@ -838,23 +860,69 @@ def process_all_metadata(entry, action):  # used to store information related li
         print("Processing metadata for entry with ID " + str(entry["ID"]))
         for item in found:
             if default_path in item :
+                print("found link : " + item)
                 logging.info("Processing all metadata : identified as path")
                 pass
             elif "http" in item :
                 if "pdf" in item : # if the webpage links to a pdf
+                    print("found weblink to a pdf : " + item)
                     logging.info("Processing all metadata : identified as link to a pdf")
                     pass
                 else :
+                    print("found webpage : " + item)
+
+                    print("Getting page title...")
                     logging.info("Processing all metadata : identified as link to an article")
                     reader = URLTitleReader(verify_ssl=True)
                     title = reader.title(item)
                     title.replace("'","`")
                     title.replace(",",".")
                     if entry["metadata"] is None: entry["metadata"] = ""
-                    entry["metadata"] = entry["metadata"] + " urltabtitle=__" + title + "__"
+                    entry["metadata"] = entry["metadata"] + "urlTabTitle=__" + title + "__"
+
+                    print("Estimating reading time...")
+                    # http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time
+                    # https://github.com/assafelovic/reading_time_estimator/blame/master/reading_time_estimator.py
+                    html = requests.get(item).text
+                    soup = bs4.BeautifulSoup(html, 'html.parser')
+                    texts = soup.findAll(text=True)
+                    def is_visible(element):
+                        if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+                            return False
+                        elif isinstance(element, bs4.element.Comment):
+                            return False
+                        elif element.string == "\n":
+                            return False
+                        return True
+                    def filter_visible_text(page_texts):
+                            return filter(is_visible, page_texts)
+                    def count_words_in_text(text_list, word_length):
+                            total_words = 0
+                            for current_text in text_list:
+                                    total_words += len(current_text)/word_length
+                            return total_words
+                    def estimate_reading_time(url):
+                            filtered_text = filter_visible_text(texts)
+                            total_words = count_words_in_text(filtered_text, WORD_LENGTH)
+                            return round(total_words/WPM,1)
+                    est = estimate_reading_time("http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time")
+                    entry["metadata"] = entry["metadata"] + "estimatedReadingTime=__" + str(est) + "__"
+
+
+                    if "tube" in item or "yt" in item :
+                        print("Get youtube video duration...")
+                        replacement_link = yt_instance + str(re.search("watch.+", item).group())
+                        html = requests.get(replacement_link).text
+                        soup = bs4.BeautifulSoup(html, "html.parser")
+                        line = re.search("length_seconds.+: \d+\.\d+", str(soup)).group()
+                        vidlen = str(round(int(re.search("\d+", line).group())/60,1))
+                        entry["metadata"] = entry["metadata"] + "videoLength=__" + str(vidlen) + "__"
+
+    if action == "UPDATE" :
+        push_dico(entry, action)
+    if action == "RETURN":
+        return entry
     logging.info("Process all metadata : done")
-
-
 
 def find_media(entry, action=""):  # finds media in the entry, action can be "auto-open" or "return"
     logging.info("Finding media : begin")
@@ -919,7 +987,7 @@ def get_terminal_size():
     if tuple_xy is None:
         print("default")
         tuple_xy = (80, 25)      # default value
-    return tuple_xy[0]
+    return [tuple_xy[0], tuple_xy[1]]
 def _get_terminal_size_windows():
     try:
         from ctypes import windll, create_string_buffer
@@ -971,5 +1039,6 @@ def _get_terminal_size_linux():
         except:
             return None
     return int(cr[1]), int(cr[0])
- 
-sizex = get_terminal_size()
+both_size = get_terminal_size()
+sizex = int(both_size[0])
+sizey = int(both_size[1])

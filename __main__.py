@@ -287,10 +287,10 @@ def main() :
                 print("IndexError : No card found, wrong deck name?")
                 print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
                 sys.exit()
+            print("\n"*sizey)
             print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging
             print("\n")
             shortcut_and_action(mode, fighters)
-            for i in range(6) : print("#"*sizex)
 
     if args["state"] is not False :
         logging.info("Showing state of the database")
@@ -305,11 +305,14 @@ def main() :
                 print("    => by " + col_blu + mode + col_rst + " : " + str(get_deck_delta(deck, mode)))
                 Seq_delta = get_sequential_deltas(deck, mode)
                 derivative = []
-                for n in range(len(Seq_delta)-1):
-                    derivative.append(int(Seq_delta[n]["seq_delta"]) - int(Seq_delta[n+1]["seq_delta"]))
                 try :
+                    # complete plot
+                    for n in range(len(Seq_delta)-1):
+                        derivative.append(int(Seq_delta[n]["seq_delta"]) - int(Seq_delta[n+1]["seq_delta"]))
+#                    for n in range(10, 0, -1):
+#                        derivative.append(int(Seq_delta[len(Seq_delta)-n-1]["seq_delta"]) - int(Seq_delta[len(Seq_delta)-n]["seq_delta"]))
                     mean_der = sum(derivative)/len(derivative)
-                    print(col_gre + "        => in mode " + mode + ", lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(Seq_delta[-1]["seq_delta"])/mean_der)) + ' fights.' + col_rst)
+                    print(col_gre + "        => in mode " + mode + ", lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(Seq_delta[-1]["seq_delta"])/mean_der)+1) + ' fights.' + col_rst)
                     fightnb = []
                     deltas = []
                     for m, line in enumerate(Seq_delta) :
@@ -322,13 +325,31 @@ def main() :
                             xlabel="Fight index",
                             width = sizex, height = 20
                             )
-#                    fig.hist(deltas, dates,
-#                            orientation="vertical",
-#                            force_ascii="false")
                     fig.show()
-                    print("\n\n\n")
-                except ZeroDivisionError :
-                    print(col_yel + "      => in mode " + mode + ", no fights have been fought, no data to give." + col_rst)
+                except ZeroDivisionError:
+                    print(col_yel + "      => in mode " + mode + ", no fights have been fought, no data to show." + col_rst)
+                # plot for the last 10 fights :
+                try :
+                    mean_der = sum(derivative[len(derivative)-10:])/10
+                    print(col_gre + "        => in mode " + mode + ", for the last 10 fights : lost on average " + str(int(mean_der)) + " points per fight. Expected to reach 0 after " + str(int(int(Seq_delta[-1]["seq_delta"])/mean_der)+1) + ' fights.' + col_rst)
+                    fightnb = []
+                    deltas = []
+                    for m, line in enumerate(Seq_delta) :
+                        fightnb.append(m)
+                        deltas.append(int(line["seq_delta"]))
+                    print("\n")
+                    fig = termplotlib.figure()
+                    fig.plot(fightnb, deltas,
+                            label = "Deltas after each fight : " + deck + " ("+mode+")",
+                            xlabel="Fight index",
+                            width = sizex, height = 20
+                            )
+                    fig.show()
+                except IndexError:
+                    print(col_yel + "      => in mode " + mode + ", less than 10 fights, no graphics to show." + col_rst)
+                except ZeroDivisionError:
+                    print(col_yel + "      => in mode " + mode + ", no fights have been fought, no data to show." + col_rst)
+                print("\n\n\n")
         logging.info("Listing : done")
 
     if args["list_starred"] is not False:
@@ -476,6 +497,7 @@ def main() :
                 for word in dic["entry"][0].split(" "):
                     if "tags:" not in word and "deck:" not in word:
                         reconstructed = reconstructed + " " + word
+                reconstructed = reconstructed[1:] # removes the leading whitespace
                 dic["entry"] = [reconstructed]
                 dic["addentry"] = dic["entry"]
                     

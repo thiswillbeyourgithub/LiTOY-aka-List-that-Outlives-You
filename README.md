@@ -59,19 +59,19 @@ The idea behing LiTOY is simple :
 **What are answer level number ?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 5 means you favor the right one. 3 is obviously the middle gounrd but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
 
 **What are all these fields for?** 
-* metadata is used to store information like how long is a webpage to read or how long is a movie to watch etc. It will usually be filled automatically for youtube, webpage etc
+* metadata is used to store information like how long is a webpage to read or how long is a movie to watch etc. It will usually be filled automatically for youtube, webpage etc. It can contain quite a lot of information and the list is not definitive. They are not supposed to be read by the user while fighting etc, he/she normally does not have to interact with it.
 * elo1 through elo5 handle elo score, all of them over time separated by a "_".
 * date_elo_n store the date at which an elo score has been modified
-*
+* detlas : see related FAQ question.
 
 
-**How is data encoded in all those SQL fields?**
+**How is data encoded in all those SQL fields?** a
 * for the persistent settings :
 * for the entries :
-* for the metadata field : 
+* for the metadata field : fields separated by space and contained within two `__`. For example : `urltabtitle:__this is the tab title__ nbofpage:__729__`
 * elo's are containing the sequence of all elo's that this particular card has had over time with a "_" in between. For example : `0_1000_1300_1200_1275`
 
-**What is "delta"?** Delta is the difference between a elo score at T0 and at T-1 multiplied by its K_value. It intuitively means how much his score changed because of the last comparison, and the K_value allows to factor how many time the card has been used in a fight. This way we end up with an idea of how accurate an entry's rank is. And by finding all the deltas from a deck we end up with an idea of how accurate the ranks of this deck are. By plotting the delta of all entry of a deck over time we can estimate how many more comparison you have to do.
+**What is "delta"?** Delta is the difference between a elo score at T0 and at T-1 multiplied by its K_value. It intuitively means how much his score changed because of the last comparison, and the K_value allows to factor how many time the card has been used in a fight. This way we end up with an idea of how accurate an entry's rank is. And by finding all the deltas from a deck we end up with an idea of how accurate the ranks of this deck are. By plotting the delta of all entry of a deck over time we can estimate how many more comparison you have to do. Note that the first value of delta is "0_1000", this allows for a better ordering when fighting ideas that have just been added (for example just after importing your first db).
 
 **What does it mean to answer 1 vs 2345 ?** 1 means you favor the one on the left, strongly. 5 means you favor the one on the right strongly. 3 means they are equal, 2 and 4 are intermediate score ("I prefer left over right, but not that strongly"). Remember that this will change the elo for *both* cards et every fight.
 
@@ -82,57 +82,58 @@ The idea behing LiTOY is simple :
 **How can I rename a deck?** See the syntax section below.
 
 
-## How can I use this?
+## How can I use LiTOY?
 * Read this page thoroughly. Don't be afraid to ask questions.
+* install pyenv and use it to install python 3.7 on your system, otherwise it seems some needed package won't work.
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY/ `
 * `cd LiTOY`
 * edit the settings in `settings.py`
 * run `sudo pip3 install -r requirements.txt`
 * Also on linux : you probably want to install sqlitebrowser (for external data browsing) and pdftotext (for automatically finding pdf time to read)
-* `python3 ./__main__.py`
+* `python3.7 ./__main__.py`
 
 ### Syntax on execution, example :
 
-`python3 __main__.py --add 'repair the tires' diy 'to do before march'`
+`python3.7 __main__.py --add 'repair the tires' diy 'to do before march'`
    * adds a new entry to deck todo with the tag diy 
 
-`python3 __main__.py --rank --deck="diy" -n 20`
+`python3.7 __main__.py --rank --deck="diy" -n 20`
    * shows the rank
 
-`python3 __main__.py --rank --deck="*"`
+`python3.7 __main__.py --rank --deck="*"`
    * shows all entries
 
-`python3 __main__.py --list="date_added rev`
+`python3.7 __main__.py --list="date_added rev`
    * shows all entries, by date added (can be any other sql field), in reverse order
 
-`python3 __main__.py --list="raw"`
+`python3.7 __main__.py --list="raw"`
    * show all entries, unformatted
 
-`python3 __main__.py --print--field`
+`python3.7 __main__.py --print--field`
    * get the field list
 
-`python3 __main__.py --compare --deck="diy" -n 10`
+`python3.7 __main__.py --compare --deck="diy" -n 10`
    * compare 10 cards in a row from the folder called diy
 
-`python3 __main__.py --history`
+`python3.7 __main__.py --history`
    * get history
 
-`python3 __main__.py --manual`
+`python3.7 __main__.py --manual`
    * turn on manual mode
 
-`python3 __main__.py --check-db`
+`python3.7 __main__.py --check-db`
    * check database (do this after major import)
 
-`python3 __main__.py --external`
+`python3.7 __main__.py --external`
    * open in sqlite browser
 
-`python3 __main__.py --verbose *someothercommand*`
+`python3.7 __main__.py --verbose *someothercommand*`
    * also show output to the console instead of just in the debug file
 
-`python3 __main__.py --edit 'ID IS 38' FIELD VALUE`
+`python3.7 __main__.py --edit 'ID IS 38' FIELD VALUE`
    * edit FIELD from card with id ID, the first argument can be any sql conditionnal argument
 
-`python3 __main__.py --edit 'deck IS old_name' deck new_deck`
+`python3.7 __main__.py --edit 'deck IS old_name' deck new_deck`
     * rename a deck
 
 To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
@@ -147,45 +148,33 @@ To see example of the syntax for the import file, read [this file](./example_new
 ### Data structure of the db
 
 ## TODO :
-### global :
-    * time to read should be stored in seconds in the metadata, and then translated into duration by printing2entries
-    * add a field rank1/2/3/4/5/global, this will help later on
-    * add a shortcut to show the beginning of the link or pdf
-    * if the file linked in the media is not found, exception should be thrown
-    * a shortcut could maybe be used to pull up the beginning of the article, to make it easier to compare
-    * metadata field should actually never appear while fighting, write it in the readme
-    * check if replacing ' with ` in url doesnt break anything (`)
-    * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
-        * store mode as mode_nb and mode_word
-    * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
-    * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is
-    * investigate how --list and --ranks should differ
-    * an argument that opens less on the debug log 
-    * check wether it works ok for first timer when they just install it and don't know where to begin, if it doesn't crash etc
-    * check if sql works ok if the url contains ' or ```` etc
-    * ability to export the rank as csv or text + maniana for flo
-    * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
-    * shows entries added over time (ascii plotter) as well as entries marked done
-    * investigate wether prettytable should be user to show ranks / podiums / dictionnary : http://zetcode.com/python/prettytable/
-    * git commit the todo file than read your own litoy db, removing useless junk and doing some stuff, then adding it to new_entry.txt then git comitting the original todo file
-    * finish the check db consistency function
-    * find a way to repair the existence test of the import function, probably by adding a check_if_already_exist(entry) function
-
-### src/litoy/media_retriever.py :
-    * estimate reading time : http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time
-    * could us nodejs for this https://github.com/mozilla/readability
     * if path :
         * if pdf => pdf
         * if video => ffmpeg
         * either way : get file size and file name
     * if link :
         * if pdf : pdftotext then estimation of time to read
-        * if youtube link : time to watch via youtube-dl
-        * if just text and not video or pdf : time to read
-        * if 404 etc, use wayback machine and write it in the metadata
-        * else : throws error
+    * add a shortcut to show the beginning of the link or pdf
+    * check if metadata are present in duplicate in the db, to repair the existence test
+    * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
+        * store mode as mode_nb and mode_word
+    * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is
+    * investigate how --list and --ranks should differ
+    * an argument that opens less on the debug log 
+    * check wether it works ok for first timer when they just install it and don't know where to begin, if it doesn't crash etc
+    * check if sql works ok if the url contains ' or ```` etc
+    * ability to export the rank as csv or text + maniana for flo : https://stackoverflow.com/questions/2887878/importing-a-csv-file-into-a-sqlite3-database-table-using-python  and  https://stackoverflow.com/questions/10522830/how-to-export-sqlite-to-csv-in-python-without-being-formatted-as-a-list
+    * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
+    * shows entries added over time (ascii plotter) as well as entries marked done
+    * investigate wether prettytable should be user to show ranks / podiums / dictionnary : http://zetcode.com/python/prettytable/
+    * git commit the todo file than read your own litoy db, removing useless junk and doing some stuff, then adding it to new_entry.txt then git comitting the original todo file
+    * finish the check db consistency function
+    * find a way to repair the existence test of the import function, probably by adding a check_if_already_exist(entry) function
+    * add a field rank1/2/3/4/5/global, this will help later on
+    * if the file linked in the media is not found, exception should be thrown
+    * --state should show the distribution of elo scores
 
-### more of a long term issue :
+### more long term:
     * tupples are faster than lists, they might be used instead of lists sometimes
     * investigate how to make on online or mobile mode
     * investigate sql rollback or periodic backup
@@ -193,6 +182,7 @@ To see example of the syntax for the import file, read [this file](./example_new
     * is it useful to forbid 2 fights to happen too close to each other? It should not happend often actually
     * remove as many str() and int() function as possible, you put too many of them and there must be a clever way to organize this
     * investigate encryption of the database
+    * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
 
 
 

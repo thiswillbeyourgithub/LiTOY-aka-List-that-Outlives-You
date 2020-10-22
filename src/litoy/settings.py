@@ -33,6 +33,9 @@ user_life_expected  = 90
 useless_last_years  = 20
 
 
+# for reading time estimation :
+WPM = 200
+WORD_LENGTH = 6
 
 
 
@@ -48,6 +51,7 @@ questions = {
 sqlitebrowser_path = "/usr/bin/sqlitebrowser"
 browser_path = "/usr/bin/firefox" # only on linux, otherwise it uses the webbbrowser package
 default_path = "/home/"  # when a file beginning like that is found in an entry, it is recognized as a media 
+yt_instance = "https://invidious.snopyta.org/"  # substituting youtube url  to remove ads that make it hard to get video duration
 
 
 
@@ -71,7 +75,7 @@ shortcuts = {
         "quit"                       :  ["q"]
         }
 
-deck_mode_correspondance = {
+deck_and_mode_table = {
         "toread" : ["importance", "time"],
         "movies" : ["importance", "duration", "file_size"],
         "simple_order" : ["order"]
@@ -86,10 +90,9 @@ K_values           =  [100, 50, 25, 15, 10]  # default [100, 50, 25, 15, 10]
 default_score      =  1000  # default 1000
 choice_threshold   =  0.10  # default 0.10, means that 10% of the time the card used the least recently  will  be  picked
 
-formula_dict = {
+deck_and_formula_table = {  # this is used to know which function (below) is to be used for each deck when computing the global score
         "IA&work"   : "sum_elo",
         "toread"    : "sum_elo",
-        "t"         : "sum_elo",
         "movies"    : "sum_elo",
         "order"     : "simple_order_score"
         }
@@ -111,7 +114,6 @@ def example_formula(elo1,elo2,elo3,elo4,elo5):
     result = ""
     sys.exit()
     return result
-
 
 def simple_order_score(elo1, elo2, elo3, elo4, elo5):  # used to sort in what order task should be done
     result = int(elo1)
