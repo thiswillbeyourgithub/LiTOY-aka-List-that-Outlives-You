@@ -287,7 +287,7 @@ def main() :
                 print("IndexError : No card found, wrong deck name?")
                 print("Decks found in db : " + col_blu + str(get_decks()) + col_rst)
                 sys.exit()
-            print("\n"*sizey)
+            print("\n"*(sizey-10))
             print_2_entries(fighters, str(args['deck'][0]), mode, "noall") #all is for debugging
             print("\n")
             shortcut_and_action(mode, fighters)
@@ -408,8 +408,13 @@ def main() :
             content = f.readlines()
             content = [x.strip() for x in content] # removes \n character
             content = list(dict.fromkeys(content))
+        for n,line in enumerate(content) :
+            if line[0] == "#":
+                print(col_yel + "Ignored content : " + line + col_rst)
+                content[n]=""
         try :content.remove("")  # remove empty lines
         except ValueError : pass # no empty lines
+
         newID = -1
         for entry in content :
             if tags != [""] or tags != [str(rep)]:

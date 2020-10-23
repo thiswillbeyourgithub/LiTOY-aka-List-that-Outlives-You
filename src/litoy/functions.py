@@ -34,10 +34,12 @@ import readline
 import re
 import bs4
 import requests
-from requests_html import HTMLSession
+import pdftotext
+import math
 
 from    itertools      import chain
 from    urltitle       import URLTitleReader
+#from requests_html import HTMLSession
 
 from   .settings        import *
 from   .elo             import *
@@ -136,22 +138,28 @@ def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
            print("."*sizex)
 
     # metadata :
-    tabname     = {0:"", 1:""}
+    mediaTitle     = {0:"", 1:""}
     readingtime = {0:"", 1:""}
     vidlen      = {0:"", 1:""}
     for n,i in enumerate(fighters) :
         meta = i["metadata"]
         if "urlTabTitle" in meta:
             tabtitle = str(re.search("urlTabTitle=__.+?__", meta).group())[14:-2]
-            tabname[n] = tabtitle
+            mediaTitle[n] = tabtitle
+        if "fileTitle" in meta:
+            filetitle = str(re.search("fileTitle=__.+?__", meta).group())[11:-2]
+            mediaTitle[n] = filetitle
         if "estimatedReadingTime" in meta:
             estimate = str(re.search("estimatedReadingTime=__.+?__", meta).group())[23:-2]
+            readingtime[n] = estimate
+        if "fileEstimatedReadingTime" in meta:
+            estimate = str(re.search("fileEstimatedReadingTime=__.+?__", meta).group())[27:-2]
             readingtime[n] = estimate
         if "videoLength" in meta:
             length = str(re.search("videoLength=__.+?__", meta).group())[14:-2]
             vidlen[n] = str(length)
-    if tabname != {0:"", 1:""} :
-        side_by_side("Tabname :", str(tabname[0]), str(tabname[1]))
+    if mediaTitle != {0:"", 1:""} :
+        side_by_side("Media title :", str(mediaTitle[0]), str(mediaTitle[1]))
         print("."*sizex)
     if readingtime != {0:"", 1:""} :
         side_by_side("Reading time in minute :", str(readingtime[0]), str(readingtime[1]))
@@ -359,18 +367,18 @@ def shortcut_and_action(mode, fighters):
             f1new['K_value'] = adjust_K(f1old['K_value'])
             f2new['K_value'] = adjust_K(f2old['K_value'])
             if mode=="importance":
-                f1new["delta_importance"] = abs(int(str(f1new["importance_elo"]).split("_")[-1]) - int(str(f1new["importance_elo"]).split("_")[-2]))*int(f1new["K_value"])
-                f2new["delta_importance"] = abs(int(str(f2new["importance_elo"]).split("_")[-1]) - int(str(f2new["importance_elo"]).split("_")[-2]))*int(f2new["K_value"])
+                f1new["delta_importance"] = abs(int(str(f1new["importance_elo"]).split("_")[-1]) - int(str(f1new["importance_elo"]).split("_")[-2]))*math.log(int(f1new["K_value"]))
+                f2new["delta_importance"] = abs(int(str(f2new["importance_elo"]).split("_")[-1]) - int(str(f2new["importance_elo"]).split("_")[-2]))*math.log(int(f2new["K_value"]))
                 f1new["date_importance_elo"] = str(date)
                 f2new["date_importance_elo"] = str(date)
             if mode=="time":
-                f1new["delta_time"] = abs(int(str(f1new["time_elo"]).split("_")[-1]) - int(str(f1new["time_elo"]).split("_")[-2]))*int(f1new["K_value"])
-                f2new["delta_time"] = abs(int(str(f2new["time_elo"]).split("_")[-1]) - int(str(f2new["time_elo"]).split("_")[-2]))*int(f2new["K_value"])
+                f1new["delta_time"] = abs(int(str(f1new["time_elo"]).split("_")[-1]) - int(str(f1new["time_elo"]).split("_")[-2]))*math.log(int(f1new["K_value"]))
+                f2new["delta_time"] = abs(int(str(f2new["time_elo"]).split("_")[-1]) - int(str(f2new["time_elo"]).split("_")[-2]))*math.log(int(f2new["K_value"]))
                 f1new["date_time_elo"] = str(date)
                 f2new["date_time_elo"] = str(date)
             elapsed = int((time.time() - start_time)*1000) # in milliseconds
-            f1new['time_spent_comparing'] = int(f1new['time_spent_comparing'] + elapsed)
-            f2new['time_spent_comparing'] = int(f2new['time_spent_comparing'] + elapsed)
+            f1new['ms_spent_comparing'] = int(f1new['ms_spent_comparing'] + elapsed)
+            f2new['ms_spent_comparing'] = int(f2new['ms_spent_comparing'] + elapsed)
 
 
 
@@ -391,7 +399,7 @@ def shortcut_and_action(mode, fighters):
 
         if action == "show_more_fields":  # display all the fields from a card
             logging.info("Shortcut : displaying the entries in full")
-            print("\n"*sizey)
+            print("\n"*(sizey-10))
             print_2_entries(fighters, fighters[0]["deck"], mode, "all")
             continue
 
@@ -576,7 +584,7 @@ def init_table():  # used to create the table if none is found, but launched eve
             delta_importance INTEGER,\
             delta_time INTEGER,\
             global_score,\
-            time_spent_comparing INTEGER,\
+            ms_spent_comparing INTEGER,\
             nb_of_fight INTEGER,\
             K_value INTEGER,\
             disabled INTEGER\
@@ -645,13 +653,13 @@ def add_entry_todb(args):
         newentry['date_time_elo'] = cur_time
         newentry['delta_importance'] = str(default_score)
         newentry['delta_time'] = str(default_score)
-        newentry['time_spent_comparing'] = "0"
+        newentry['ms_spent_comparing'] = "0"
         newentry['nb_of_fight'] = "0"
         newentry['disabled'] = 0
         newentry['K_value'] = K_values[0]
 
         logging.info("Addentry : Pushing entry to db, ID = " + newID)
-        print("Addentry : Pushing entry to db, ID = " + newID)
+        print(col_blu + "Addentry : Pushing entry to db, ID = " + newID + col_rst)
         push_dico(newentry, "INSERT")
 
 
@@ -857,30 +865,59 @@ def process_all_metadata(entry, action):  # used to store information related li
     if len(found)==0:
         logging.info("Processing all metadata : none in entry with ID " + str(entry["ID"]))
     else:
+        if entry["metadata"] is None: entry["metadata"] = ""
         print("Processing metadata for entry with ID " + str(entry["ID"]))
         for item in found:
             if default_path in item :
-                print("found link : " + item)
+                print("        found path : " + item)
                 logging.info("Processing all metadata : identified as path")
-                pass
+                if item[-3:] == "pdf" or item[-3:] == "txt" or item[-2:]=="md":
+                    print("            path links to a text file (pdf, txt or md)")
+                    logging.info("Processing all metadata : path links to a text file")
+                    if item[-3:]=="pdf":
+                        # estimating time to read
+                        try :
+                            with open(item, "rb") as f:
+                                text_content = pdftotext.PDF(f)
+                                text_content = str("\n").join(text_content)
+                        except FileNotFoundError:
+                            print(col_red + "FILE NOT FOUND : " + item)
+                    else : 
+                        f = open(item)
+                        text_content = f.read()
+                        f.close()
+                    text_content = text_content.replace(" ","")
+                    text_content = text_content.replace("\r","")
+                    text_content = text_content.replace("\n","")
+                    total_words = 0
+                    for current_text in text_content:
+                            total_words += len(current_text)/average_word_length
+                    estimatedReadingTime = round(total_words/wpm,1)
+                    entry["metadata"] = entry["metadata"] + "fileEstimatedReadingTime=__" + str(estimatedReadingTime) + "__"
+
+                    # getting title
+                    title = item.split(sep="/")[-1]
+                    title.replace("__","_ _") # to make sure it doesn't interfere with the formatting
+                    entry["metadata"] = entry["metadata"] + "fileTitle=__" + str(title) + "__"
+
             elif "http" in item :
                 if "pdf" in item : # if the webpage links to a pdf
-                    print("found weblink to a pdf : " + item)
+                    print("        found weblink to a pdf : " + item)
                     logging.info("Processing all metadata : identified as link to a pdf")
                     pass
                 else :
-                    print("found webpage : " + item)
+                    print("        found webpage : " + item)
 
-                    print("Getting page title...")
+                    print("               Getting page title...")
                     logging.info("Processing all metadata : identified as link to an article")
                     reader = URLTitleReader(verify_ssl=True)
                     title = reader.title(item)
                     title.replace("'","`")
                     title.replace(",",".")
-                    if entry["metadata"] is None: entry["metadata"] = ""
                     entry["metadata"] = entry["metadata"] + "urlTabTitle=__" + title + "__"
 
-                    print("Estimating reading time...")
+                    print(title)
+                    print("              Estimating reading time...")
                     # http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time
                     # https://github.com/assafelovic/reading_time_estimator/blame/master/reading_time_estimator.py
                     html = requests.get(item).text
@@ -899,14 +936,15 @@ def process_all_metadata(entry, action):  # used to store information related li
                     def count_words_in_text(text_list, word_length):
                             total_words = 0
                             for current_text in text_list:
-                                    total_words += len(current_text)/word_length
+                                    total_words += len(current_text)/average_word_length
                             return total_words
                     def estimate_reading_time(url):
                             filtered_text = filter_visible_text(texts)
-                            total_words = count_words_in_text(filtered_text, WORD_LENGTH)
-                            return round(total_words/WPM,1)
+                            total_words = count_words_in_text(filtered_text, average_word_length)
+                            return round(total_words/wpm,1)
                     est = estimate_reading_time("http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time")
                     entry["metadata"] = entry["metadata"] + "estimatedReadingTime=__" + str(est) + "__"
+                    print("                 " + str(est) + "m")
 
 
                     if "tube" in item or "yt" in item :
@@ -917,6 +955,7 @@ def process_all_metadata(entry, action):  # used to store information related li
                         line = re.search("length_seconds.+: \d+\.\d+", str(soup)).group()
                         vidlen = str(round(int(re.search("\d+", line).group())/60,1))
                         entry["metadata"] = entry["metadata"] + "videoLength=__" + str(vidlen) + "__"
+                        print(vidlen + "m")
 
     if action == "UPDATE" :
         push_dico(entry, action)
@@ -928,28 +967,43 @@ def find_media(entry, action=""):  # finds media in the entry, action can be "au
     logging.info("Finding media : begin")
     relevant_fields = ["entry","metadata"]
     found=[]
-    for f in relevant_fields :
-        word = str(entry[f]).replace("['","").replace("']","").split(" ")
-        for ff in word:
-            if default_path in ff :
+    for field in relevant_fields :
+        temp_entry = str(entry[field]).replace("['","").replace("']","")
+        words = str(temp_entry).split(" ")
+        for word in words:
+            if default_path in word:  # extract path from the whole string
+                wholepath=""
+                string = str(temp_entry).split("__")
+                for section in string :
+                    if str(default_path) in str(section):
+                       wholepath=section
+                if wholepath=="":
+                    print("Path could not be extracted!")
+                    sys.exit()
                 if action == "auto-open" :
-                    logging.info("Finding media : Openning folder : "+ff)
+                    logging.info("Finding media : Openning folder : " + wholepath)
                     if platform.system() == "Linux" :
-                        subprocess.Popen("nautilus", ff)
+                        if platform.system() == "Windows":
+                            os.startfile(wholepath)
+                        elif platform.system() == "Darwin":
+                            subprocess.Popen(["open", wholepath])
+                        else:
+                            subprocess.Popen(["xdg-open", wholepath])
                 elif action == "return" :
-                    logging.info("Finding media : returning folder : "+ff)
-                    found.append(ff)
+                    logging.info("Finding media : returning folder : " + wholepath)
+                    found.append(wholepath)
 
-            if "http://" in ff or "https://" in ff or "www" in ff:
+            if "http://" in word or "https://" in word or "www" in word:
+                url=word
                 if action == "auto-open" :
-                    logging.info("Finding media : Openning link : "+ff) 
+                    logging.info("Finding media : Openning link : "+url) 
                     if platform.system() == "Linux" :
-                        subprocess.run([browser_path, ff])
+                        subprocess.run([browser_path, url])
                     else :
-                        webbrowser.open_new_tab(ff)
+                        webbrowser.open_new_tab(url)
                 elif action == "return" :
-                    logging.info("Finding media : returning link : "+ff)
-                    found.append(ff)
+                    logging.info("Finding media : returning link : "+url)
+                    found.append(url)
     logging.info("Finding media : done")
     return found
 

@@ -3,3 +3,4 @@ readline==6.2.4.1  # only linux
 urltitle==0.3.2  # was only working with python 3.7 for me  
 bs4==0.0.1
 youtube-dl==2020.9.20
+pikepdf==1.19.3  # for pdftotext

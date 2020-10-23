@@ -3,5 +3,6 @@ ask the DMV for xyz tags:bureaucratic
 read the next chapter from your manual tags:work/programming
 this entry will be added to the deck specified when launching litoy
 but this entry will be added to the deck deck:otherdeck with tags tags:newtag
-this entry specifies directly that it is something to be read http://www.duck.com
-I might be wanting to read this https://en.wikipedia.org/wiki/Spacetime
+I might be wanting to read this https://en.wikipedia.org/wiki/Spacetime tags:cosmo
+#to add files like pdf for example write them between _ like so __/home/user/pdfdirectory/myfile.pdf__
+for testing purposes : __/home/glume/Downloads/ETUDE _ We Look Like Our Names_ The Manifestation of Name Stereotypes in_Facial Appearance.pdf__

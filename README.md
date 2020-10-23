@@ -65,7 +65,7 @@ The idea behing LiTOY is simple :
 * detlas : see related FAQ question.
 
 
-**How is data encoded in all those SQL fields?** a
+**How is data encoded in all those SQL fields?** 
 * for the persistent settings :
 * for the entries :
 * for the metadata field : fields separated by space and contained within two `__`. For example : `urltabtitle:__this is the tab title__ nbofpage:__729__`
@@ -75,7 +75,7 @@ The idea behing LiTOY is simple :
 
 **What does it mean to answer 1 vs 2345 ?** 1 means you favor the one on the left, strongly. 5 means you favor the one on the right strongly. 3 means they are equal, 2 and 4 are intermediate score ("I prefer left over right, but not that strongly"). Remember that this will change the elo for *both* cards et every fight.
 
-**What is the unit of "time_spent_comparing" ?** In milliseconds.
+**What is the unit of "ms_spent_comparing" ?** In milliseconds.
 
 **Where can I see the correct syntax to use when writing a file destined for importation?** See [this file](./example_new_entry.txt)
 
@@ -149,13 +149,11 @@ To see example of the syntax for the import file, read [this file](./example_new
 
 ## TODO :
     * if path :
-        * if pdf => pdf
-        * if video => ffmpeg
-        * either way : get file size and file name
+        * if video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
     * if link :
-        * if pdf : pdftotext then estimation of time to read
-    * add a shortcut to show the beginning of the link or pdf
+        * if is pdf : dl then pdftotext then estimation of time to read
     * check if metadata are present in duplicate in the db, to repair the existence test
+    * check your own db and add it to litoy to see how it fares in actual combat
     * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
         * store mode as mode_nb and mode_word
     * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is

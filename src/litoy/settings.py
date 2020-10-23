@@ -34,8 +34,8 @@ useless_last_years  = 20
 
 
 # for reading time estimation :
-WPM = 200
-WORD_LENGTH = 6
+wpm = 200
+average_word_length = 6
 
 
 
