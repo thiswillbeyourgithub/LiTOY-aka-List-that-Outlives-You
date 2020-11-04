@@ -647,7 +647,6 @@ def main() :
 
 
 
-
 ######################## end routines
 
 
@@ -660,7 +659,7 @@ if __name__ == "__main__" :
             format='%(asctime)s: %(message)s')
     #https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
     log = logging.getLogger()
-    handler = RotatingFileHandler("logs/rotating_log", maxBytes=10*10*1024, backupCount=5)
+    handler = RotatingFileHandler("logs/rotating_log", maxBytes=20*1024*1024, backupCount=2)
     log.addHandler(handler)
 
     main()

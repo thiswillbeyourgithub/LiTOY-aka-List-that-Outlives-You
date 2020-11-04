@@ -1,5 +1,9 @@
 # LiTOY : the List That Outlives You.
 
+## Acknowledgement (in no particular order)
+* Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
+* Thanks to [Kryzar (Antoine Hugounet)](https://github.com/kryzar) for his insight on UI.
+
 ## What is LiTOY?
 There are several ways to look at it :
 * LiTOY is a python script using sqlite to create and manage a list of your goals, be it short, medium or long term but more importantly : it ranks them in a smart and very flexible way using pairwise comparisons and several [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
@@ -151,9 +155,12 @@ To see example of the syntax for the import file, read [this file](./example_new
     * if path :
         * if video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
     * if link :
-        * if is pdf : dl then pdftotext then estimation of time to read
+        * if is pdf : dl then pdftotext then estimation of time to read https://stackabuse.com/download-files-with-python/
     * check if metadata are present in duplicate in the db, to repair the existence test
+    * tell time needed for importation
+    * --list should show everything but --rank should restrict to scores etc
     * check your own db and add it to litoy to see how it fares in actual combat
+        * add manually the pdfs that seem very important from your personnal folder
     * rename all elos to elo1 elo2 etc, and write the dictionnary that translates the name when printing, same with deltas (rename to delta1 etc)
         * store mode as mode_nb and mode_word
     * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is
@@ -171,6 +178,8 @@ To see example of the syntax for the import file, read [this file](./example_new
     * add a field rank1/2/3/4/5/global, this will help later on
     * if the file linked in the media is not found, exception should be thrown
     * --state should show the distribution of elo scores
+    * use pyinstaller to try to package the damn thing
+    * ask fernand to proof read the README, then show it to ludo
 
 ### more long term:
     * tupples are faster than lists, they might be used instead of lists sometimes
@@ -181,6 +190,7 @@ To see example of the syntax for the import file, read [this file](./example_new
     * remove as many str() and int() function as possible, you put too many of them and there must be a clever way to organize this
     * investigate encryption of the database
     * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
+    * change from argparse to click, according to fernand https://click.palletsprojects.com/en/7.x/why/#why-not-argparse
 
 
 

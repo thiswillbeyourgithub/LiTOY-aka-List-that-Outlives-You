@@ -659,7 +659,7 @@ def add_entry_todb(args):
         newentry['K_value'] = K_values[0]
 
         logging.info("Addentry : Pushing entry to db, ID = " + newID)
-        print(col_blu + "Addentry : Pushing entry to db, ID = " + newID + col_rst)
+        print(col_gre + "Addentry : Pushing entry to db, ID = " + newID + col_rst)
         push_dico(newentry, "INSERT")
 
 
