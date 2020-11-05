@@ -416,6 +416,7 @@ def main() :
         except ValueError : pass # no empty lines
 
         newID = -1
+        starttime = time.time()
         for entry in content :
             if tags != [""] or tags != [str(rep)]:
                 tags=""  # otherwise it is not reset between entries
@@ -515,6 +516,7 @@ def main() :
                 process_all_metadata(dic, "RETURN")
                 add_entry_todb(dic)
         logging.info("Importing : done")
+        print("Time taken for importation : " + str(int(time.time() - starttime)) + " seconds.")
 
     if args['rank'] != None:
         # python3 litoy main -r all rev -n 5

@@ -152,6 +152,7 @@ To see example of the syntax for the import file, read [this file](./example_new
 ### Data structure of the db
 
 ## TODO :
+    * inspect every time you used the "replace" method to make sure it's coherent
     * if path :
         * if video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
     * if link :

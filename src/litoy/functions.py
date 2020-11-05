@@ -38,7 +38,7 @@ import pdftotext
 import math
 
 from    itertools      import chain
-from    urltitle       import URLTitleReader
+import urltitle
 #from requests_html import HTMLSession
 
 from   .settings        import *
@@ -62,6 +62,7 @@ col_blu = "\033[94m"
 col_yel = "\033[93m"
 col_rst = "\033[0m"
 col_gre = "\033[92m"
+spacer  = " "  # nicer print message
 
 
 def print_memento_mori(): # remember you will die
@@ -102,9 +103,6 @@ def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
         ids = ["IDs : ", str(fighters[0]["ID"]), str(fighters[1]["ID"])]
         side_by_side(ids[0], ids[1], ids[2])
         print("."*sizex)
-        deck = ["Deck :", str(fighters[0]['deck']), str(fighters[1]['deck'])]
-        side_by_side(deck[0], deck[1], deck[2])
-        print("."*sizex)
 
         if str(fighters[0]['tags']) not in ["None",""] or str(fighters[1]['tags']) not in ["None", ""] :
             tags = ["Tags :", str(fighters[0]['tags']), str(fighters[1]['tags'])]
@@ -124,6 +122,9 @@ def print_2_entries(fighters, deck, mode, all_fields="no"): # used when fighting
         print("."*sizex)
 
         # removed as I don't think it should be displayed all the time
+        #deck = ["Deck :", str(fighters[0]['deck']), str(fighters[1]['deck'])]
+        #side_by_side(deck[0], deck[1], deck[2])
+        #print("."*sizex)
         #importance = ["Importance :", str(fighters[0]['importance_elo']).split("_")[-1], str(fighters[1]['importance_elo']).split("_")[-1]]
         #side_by_side(importance[0], importance[1], importance[2])
         #time = ["Time (high is short) :", str(fighters[0]['time_elo']).split("_")[-1], str(fighters[1]['time_elo']).split("_")[-1]]
@@ -660,6 +661,7 @@ def add_entry_todb(args):
 
         logging.info("Addentry : Pushing entry to db, ID = " + newID)
         print(col_gre + "Addentry : Pushing entry to db, ID = " + newID + col_rst)
+        print("")
         push_dico(newentry, "INSERT")
 
 
@@ -813,8 +815,8 @@ def push_dico(dico, mode):  # used to turn a python friendly dictionnary back in
     if mode == "INSERT" :
 #        columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in dico.keys())
 #        values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in dico.values())
-        columns = ', '.join("`" + str(x) + "`" for x in dico.keys())
-        values = ', '.join("'" + str(x) + "'" for x in dico.values())
+        columns = ', '.join("'" + str(x).replace("'","`") + "'" for x in dico.keys())
+        values = ', '.join("'" + str(x).replace("'","`") + "'" for x in dico.values())
         query = "INSERT INTO LiTOY ( %s ) VALUES ( %s );" % (columns, values)
     if mode == "UPDATE" :
         query = "UPDATE LiTOY SET "
@@ -822,7 +824,10 @@ def push_dico(dico, mode):  # used to turn a python friendly dictionnary back in
         for a,b in dico.items():
             query = query + str(a) + " = \'" + str(b) + "\', "
         query = query[0:len(query)-2] + " WHERE ID = " + str(entry_id) + " ;"
-    logging.info("SQL push_dico:" + query)
+#    if "'" in query :
+#        logging.info("Pushing dictionnary : Replacing ' by ` in the query")
+#        query = query.replace("'","`")
+    logging.info("Pushing dictionnary : SQL : " + query)
     cursor.execute(query)
     db.commit() ;   db.close()
     logging.info('Pushing dictionnary : Done')
@@ -910,17 +915,50 @@ def process_all_metadata(entry, action):  # used to store information related li
 
                     print("               Getting page title...")
                     logging.info("Processing all metadata : identified as link to an article")
-                    reader = URLTitleReader(verify_ssl=True)
-                    title = reader.title(item)
+                    useWB=0
+                    title=""
+                    try :
+                        reader = urltitle.URLTitleReader(verify_ssl=True)
+                        title = reader.title(item)
+                    except urltitle.urltitle.URLTitleError as err :
+                        logging.info("Processing all metadata : error, probably 404 : " + str(err))
+                        useWB=1
+                    if "not found" in title or "404" in title or "error" in title or useWB == 1 :
+                        print(col_yel + "Needs to use the Wayback Machine!" + col_rst)
+                        logging.info("Processing all metadata : dead url, using the wayback machine")
+                        itemBackup = item
+                        item = item.replace("https:/","http:/")
+                        item = item.replace("http:/","")
+                        item = "https://web.archive.org/web/2/" + item
+                        reader = urltitle.URLTitleReader(verify_ssl=True)
+                        title = reader.title(item)
+                        entry["metadata"] = entry["metadata"] + "neededToUseWaybackmachine=__1__"
                     title.replace("'","`")
                     title.replace(",",".")
                     entry["metadata"] = entry["metadata"] + "urlTabTitle=__" + title + "__"
 
-                    print(title)
-                    print("              Estimating reading time...")
+                    print("                   Title : " + title)
+                    print("                        Estimating reading time...")
                     # http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time
                     # https://github.com/assafelovic/reading_time_estimator/blame/master/reading_time_estimator.py
-                    html = requests.get(item).text
+                    html = ""
+                    while html == "":
+                        try :
+                            html = requests.get(item).text
+                        except requests.exceptions.ConnectionError as err :
+                            logging.info("Processing all metadata : error found : " + str(err))
+                            print("Connection reset, retrying using the wayback machine...")
+                            if "https://web.archive.org" not in item:
+                                itemWB = item.replace("https:/","http:/")
+                                itemWB = itemWB.replace("http:/","")
+                                itemWB = "https://web.archive.org/web/2/" + itemWB
+                                html = requests.get(itemWB).text
+                                logging.info("Processing all metadata : wayback machine URL : " + itemWB)
+                                entry["metadata"] = entry["metadata"] + "neededToUseWaybackmachine=__1__"
+                            else :
+                                logging.info("Processing all metadata : error, already using wayback machine!")
+
+                        
                     soup = bs4.BeautifulSoup(html, 'html.parser')
                     texts = soup.findAll(text=True)
                     def is_visible(element):
@@ -944,18 +982,19 @@ def process_all_metadata(entry, action):  # used to store information related li
                             return round(total_words/wpm,1)
                     est = estimate_reading_time("http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time")
                     entry["metadata"] = entry["metadata"] + "estimatedReadingTime=__" + str(est) + "__"
-                    print("                 " + str(est) + "m")
+                    print("                          " + str(est) + "m")  # printing estimation
 
 
-                    if "tube" in item or "yt" in item :
-                        print("Get youtube video duration...")
-                        replacement_link = yt_instance + str(re.search("watch.+", item).group())
-                        html = requests.get(replacement_link).text
-                        soup = bs4.BeautifulSoup(html, "html.parser")
-                        line = re.search("length_seconds.+: \d+\.\d+", str(soup)).group()
-                        vidlen = str(round(int(re.search("\d+", line).group())/60,1))
-                        entry["metadata"] = entry["metadata"] + "videoLength=__" + str(vidlen) + "__"
-                        print(vidlen + "m")
+                    if "tube" in item or "ytb" in item :
+                        if "watch" in item :  # failsafe
+                            print("               Getting youtube video duration...")
+                            replacement_link = yt_instance + str(re.search("watch.+", item).group())
+                            html = requests.get(replacement_link).text
+                            soup = bs4.BeautifulSoup(html, "html.parser")
+                            line = re.search("length_seconds.+: \d+\.\d+", str(soup)).group()
+                            vidlen = str(round(int(re.search("\d+", line).group())/60,1))
+                            entry["metadata"] = entry["metadata"] + "videoLength=__" + str(vidlen) + "__"
+                            print(spacer*3 + vidlen + "m")
 
     if action == "UPDATE" :
         push_dico(entry, action)
