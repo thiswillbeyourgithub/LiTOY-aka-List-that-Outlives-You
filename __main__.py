@@ -412,8 +412,10 @@ def main() :
             if line[0] == "#":
                 print(col_yel + "Ignored content : " + line + col_rst)
                 content[n]=""
-        try :content.remove("")  # remove empty lines
-        except ValueError : pass # no empty lines
+        try :
+            content.remove("")  # remove empty lines
+        except ValueError : 
+            pass # no empty lines
 
         newID = -1
         starttime = time.time()

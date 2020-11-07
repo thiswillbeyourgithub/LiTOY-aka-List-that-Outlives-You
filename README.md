@@ -152,6 +152,7 @@ To see example of the syntax for the import file, read [this file](./example_new
 ### Data structure of the db
 
 ## TODO :
+    * add gif to show demo
     * inspect every time you used the "replace" method to make sure it's coherent
     * if path :
         * if video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
@@ -181,6 +182,7 @@ To see example of the syntax for the import file, read [this file](./example_new
     * --state should show the distribution of elo scores
     * use pyinstaller to try to package the damn thing
     * ask fernand to proof read the README, then show it to ludo
+    * remove code duplication when collecting metadata and scraping url
 
 ### more long term:
     * tupples are faster than lists, they might be used instead of lists sometimes

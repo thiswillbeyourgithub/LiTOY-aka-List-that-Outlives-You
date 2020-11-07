@@ -62,7 +62,7 @@ col_blu = "\033[94m"
 col_yel = "\033[93m"
 col_rst = "\033[0m"
 col_gre = "\033[92m"
-spacer  = " "  # nicer print message
+spacer  = "    "  # nicer print message
 
 
 def print_memento_mori(): # remember you will die
@@ -255,14 +255,14 @@ def compute_Global_score():  # comptes the score that will be used for final ran
 
     # check if the formulas declared in the dictionnary in  settings.py 
     # correspond to function that have been defined
-    decks = list(get_decks()[0]).sort()
-    formulas = deck_and_formula_table.keys()
+    decks = list(get_decks())
+    formulas = list(deck_and_formula_table.keys())
     needed_formula = deck_and_formula_table.values()
     defined_function = globals()
     if decks != formulas :
-        print(col_red + "WARNING : Not all formulas have been found in the settings" + col_rst)
-        logging.info("Not all formulas have been found in the settings")
-    for i in needed_formula :
+        print(col_red + "WARNING : deck list and formula list don't correspond in the settings" + col_rst)
+        logging.info("Compute global : deck list and formula list don't correspond in the settings")
+    for i in needed_formula :  # check only if formula is missing, as the program has to stop otherwise
         if i not in defined_function :
             print("Compute global : Missing formula declaration : " + i)
             logging.info("Compute global : Missing formula declaration : " + i)
@@ -824,9 +824,6 @@ def push_dico(dico, mode):  # used to turn a python friendly dictionnary back in
         for a,b in dico.items():
             query = query + str(a) + " = \'" + str(b) + "\', "
         query = query[0:len(query)-2] + " WHERE ID = " + str(entry_id) + " ;"
-#    if "'" in query :
-#        logging.info("Pushing dictionnary : Replacing ' by ` in the query")
-#        query = query.replace("'","`")
     logging.info("Pushing dictionnary : SQL : " + query)
     cursor.execute(query)
     db.commit() ;   db.close()
@@ -907,13 +904,13 @@ def process_all_metadata(entry, action):  # used to store information related li
 
             elif "http" in item :
                 if "pdf" in item : # if the webpage links to a pdf
-                    print("        found weblink to a pdf : " + item)
+                    print(spacer*1 + "found weblink to a pdf : " + item)
                     logging.info("Processing all metadata : identified as link to a pdf")
                     pass
                 else :
-                    print("        found webpage : " + item)
+                    print(spacer*1 + "found webpage : " + item)
 
-                    print("               Getting page title...")
+                    print(spacer*2 + "Getting page title...")
                     logging.info("Processing all metadata : identified as link to an article")
                     useWB=0
                     title=""
@@ -923,8 +920,8 @@ def process_all_metadata(entry, action):  # used to store information related li
                     except urltitle.urltitle.URLTitleError as err :
                         logging.info("Processing all metadata : error, probably 404 : " + str(err))
                         useWB=1
-                    if "not found" in title or "404" in title or "error" in title or useWB == 1 :
-                        print(col_yel + "Needs to use the Wayback Machine!" + col_rst)
+                    if "not found" in title or "404" in title or "error" in title or useWB == 1 or "forbidden" in title or "403" in title :
+                        print(col_yel + spacer*2 + "Needs to use the Wayback Machine!" + col_rst)
                         logging.info("Processing all metadata : dead url, using the wayback machine")
                         itemBackup = item
                         item = item.replace("https:/","http:/")
@@ -937,8 +934,8 @@ def process_all_metadata(entry, action):  # used to store information related li
                     title.replace(",",".")
                     entry["metadata"] = entry["metadata"] + "urlTabTitle=__" + title + "__"
 
-                    print("                   Title : " + title)
-                    print("                        Estimating reading time...")
+                    print(spacer*3 + "Title : " + title)
+                    print(spacer*4 + "Estimating reading time...")
                     # http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time
                     # https://github.com/assafelovic/reading_time_estimator/blame/master/reading_time_estimator.py
                     html = ""
@@ -947,7 +944,7 @@ def process_all_metadata(entry, action):  # used to store information related li
                             html = requests.get(item).text
                         except requests.exceptions.ConnectionError as err :
                             logging.info("Processing all metadata : error found : " + str(err))
-                            print("Connection reset, retrying using the wayback machine...")
+                            print(spacer*4 + "Connection reset, retrying using the wayback machine...")
                             if "https://web.archive.org" not in item:
                                 itemWB = item.replace("https:/","http:/")
                                 itemWB = itemWB.replace("http:/","")
@@ -957,10 +954,19 @@ def process_all_metadata(entry, action):  # used to store information related li
                                 entry["metadata"] = entry["metadata"] + "neededToUseWaybackmachine=__1__"
                             else :
                                 logging.info("Processing all metadata : error, already using wayback machine!")
+                                print("HUGE ERROR")
+                                sys.exit()
 
-                        
-                    soup = bs4.BeautifulSoup(html, 'html.parser')
+                    soup = bs4.BeautifulSoup(html, 'html5lib')
                     texts = soup.findAll(text=True)
+                    if "403" in " ".join(texts) or "forbidden" in " ".join(texts):
+                        logging.info("Processing all metadata : forbidden url, using wayback machine")
+                        itemWB = item.replace("https:/","http:/")
+                        itemWB = itemWB.replace("http:/","")
+                        itemWB = "https://web.archive.org/web/2/" + itemWB
+                        html = requests.get(itemWB).text
+                        soup = bs4.BeautifulSoup(html, 'html5lib')
+                        texts = soup.findAll(text=True)
                     def is_visible(element):
                         if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
                             return False
@@ -982,13 +988,17 @@ def process_all_metadata(entry, action):  # used to store information related li
                             return round(total_words/wpm,1)
                     est = estimate_reading_time("http://www.assafelovic.com/blog/2017/6/27/estimating-an-articles-reading-time")
                     entry["metadata"] = entry["metadata"] + "estimatedReadingTime=__" + str(est) + "__"
-                    print("                          " + str(est) + "m")  # printing estimation
+                    print(spacer*5 + str(est) + "m")  # printing estimation
 
 
                     if "tube" in item or "ytb" in item :
                         if "watch" in item :  # failsafe
-                            print("               Getting youtube video duration...")
-                            replacement_link = yt_instance + str(re.search("watch.+", item).group())
+                            print(spacer*2 + "Getting youtube video duration...")
+                            try :
+                                replacement_link = yt_instance + str(re.search("watch.+", item).group())
+                            except AttributeError:
+                                logging.info("Processing all metadata : needs to use the other youtube instance!")
+                                replacement_link = yt_instance2 + str(re.search("watch.+", item).group())
                             html = requests.get(replacement_link).text
                             soup = bs4.BeautifulSoup(html, "html.parser")
                             line = re.search("length_seconds.+: \d+\.\d+", str(soup)).group()

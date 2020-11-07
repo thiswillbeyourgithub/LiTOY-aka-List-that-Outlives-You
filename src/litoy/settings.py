@@ -51,8 +51,8 @@ questions = {
 sqlitebrowser_path = "/usr/bin/sqlitebrowser"
 browser_path = "/usr/bin/firefox" # only on linux, otherwise it uses the webbbrowser package
 default_path = "/home/"  # when a file beginning like that is found in an entry, it is recognized as a media 
-#yt_instance = "https://invidious.snopyta.org/"  # substituting youtube url  to remove ads that make it hard to get video duration
-yt_instance = "https://invidious.fdn.fr/" 
+yt_instance = "https://invidious.fdn.fr/"   # substituting youtube url  to remove ads that make it hard to get video duration
+yt_instance2 = "https://invidious.snopyta.org/" # fallback
 
 
 
@@ -92,10 +92,11 @@ default_score      =  1000  # default 1000
 choice_threshold   =  0.10  # default 0.10, means that 10% of the time the card used the least recently  will  be  picked
 
 deck_and_formula_table = {  # this is used to know which function (below) is to be used for each deck when computing the global score
-        "IA&work"   : "sum_elo",
-        "toread"    : "sum_elo",
-        "movies"    : "sum_elo",
-        "order"     : "simple_order_score"
+        "AI"   : "sum_elo",
+        "TODO"   : "sum_elo",
+#        "toread"    : "sum_elo",
+#        "movies"    : "sum_elo",
+#        "order"     : "simple_order_score"
         }
 # syntax : "deckname" : "formula_name"
 
