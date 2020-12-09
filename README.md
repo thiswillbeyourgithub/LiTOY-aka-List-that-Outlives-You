@@ -1,3 +1,6 @@
+# Current state :
+Work in progress, pre alpha stage. Doesn't need that much work and the ground work has been largely finished, but still not usable, see TODO section below.
+
 # LiTOY : the List That Outlives You.
 
 ## Acknowledgement (in no particular order)
@@ -85,6 +88,8 @@ The idea behing LiTOY is simple :
 
 **How can I rename a deck?** See the syntax section below.
 
+**Why didn't you use classes?** I have not learned how to use them properly and figured I might use LiTOY to help me find time to learn it. This is a personnal project anyway, sorry. Feel free to contribute.
+
 
 ## How can I use LiTOY?
 * Read this page thoroughly. Don't be afraid to ask questions.
@@ -152,8 +157,13 @@ To see example of the syntax for the import file, read [this file](./example_new
 ### Data structure of the db
 
 ## TODO :
+    * use pyenv to figure out the environnement needed to run litoy, then specify it in the readme
+    * try to use more fstrings instead of those ridiculous print and +
+    * https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/ + https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/?ref=rp + add exportasjson + change import to importfromtxt + add importfromjson + be explicit that it will erase the db + add periodic backup + when trying to undo, tell to import the previous db and use diff to figure out difference + check if firefox is able to open json files
     * add gif to show demo
     * inspect every time you used the "replace" method to make sure it's coherent
+    * comment rank function
+    * enable --rank to show only entry and rank instead of all information
     * if path :
         * if video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
     * if link :
