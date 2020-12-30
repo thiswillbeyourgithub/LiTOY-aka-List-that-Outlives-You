@@ -5,7 +5,7 @@ Work in progress, pre alpha stage. Doesn't need that much work and the ground wo
 
 ## Acknowledgement (in no particular order)
 * Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
-* Thanks to [Kryzar (Antoine Hugounet)](https://github.com/kryzar) for his insight on UI.
+* Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI.
 
 ## What is LiTOY?
 There are several ways to look at it :
@@ -157,6 +157,8 @@ To see example of the syntax for the import file, read [this file](./example_new
 ### Data structure of the db
 
 ## TODO :
+    * should rather use docstrings, cf https://www.python.org/dev/peps/pep-0257/
+    * use matplotlib.pyplot instead of the werird things for the graph you used before
     * use pyenv to figure out the environnement needed to run litoy, then specify it in the readme
     * try to use more fstrings instead of those ridiculous print and +
     * https://www.geeksforgeeks.org/how-to-convert-python-dictionary-to-json/ + https://www.geeksforgeeks.org/convert-json-to-dictionary-in-python/?ref=rp + add exportasjson + change import to importfromtxt + add importfromjson + be explicit that it will erase the db + add periodic backup + when trying to undo, tell to import the previous db and use diff to figure out difference + check if firefox is able to open json files

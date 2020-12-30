@@ -6,3 +6,4 @@ logs/*
 personnal_entry.md
 debug.log
 sessionLiTOY.vim
+*nvim_patchmode
