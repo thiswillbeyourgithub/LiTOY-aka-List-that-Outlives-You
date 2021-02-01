@@ -1,3 +1,16 @@
+# After finally properly relearning python, I have decided to rewrite completely this thing. It will be called LITOYv2 and will focus on brief well written code, PEP respecting lines, and ease of maintenance. My goal is to make a tool for myself and others. ETA : 2021. If you're interested please don't fork this version.
+
+
+
+# **SEE ABOVE**
+# **SEE ABOVE**
+# **SEE ABOVE**
+# **SEE ABOVE**
+# **SEE ABOVE**
+# **SEE ABOVE**
+
+
+
 # Current state :
 Work in progress, pre alpha stage. Doesn't need that much work and the ground work has been largely finished, but still not usable, see TODO section below.
 
