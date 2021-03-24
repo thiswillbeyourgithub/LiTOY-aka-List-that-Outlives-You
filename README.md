@@ -24,10 +24,10 @@ Work in progress, pre alpha stage. Doesn't need that much work and the ground wo
 There are several ways to look at it :
 * LiTOY is a python script using sqlite to create and manage a list of your goals, be it short, medium or long term but more importantly : it ranks them in a smart and very flexible way using pairwise comparisons and several [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
 * An organizer aiming at centralizing all your goals in a single place while quickly ranking them in an order reflecting user preferences.
-* A way for me to practice my Python (very rusty, still a long way to go, don't hesitate to do PRs or open issue, they will be greately appreciated).
+* A way for me to practice my Python (very rusty, still a long way to go, don't hesitate to do PRs or open issue, they will be greatly appreciated).
 
 
-The idea behing LiTOY is simple : 
+The idea behind LiTOY is simple : 
 1. have all items in the same sqlite database
 2. automatically pick 2 items and prompt the user for which is better according to a user-specified question
 3. adjust the ELO score of each item accordingly
@@ -51,7 +51,7 @@ The idea behing LiTOY is simple :
 * The final ranking could be a weighted sum : `importance_ELO + duration_ELO + 1.2*size_ELO`
 * This should allow the user to watch movies that are taking the most space but are also important while not lasting 4 hours.
 
-### Managing a list where tasks have to be done in a specific order (example : errands, diy builiding)
+### Managing a list where tasks have to be done in a specific order (example : errands, diy building)
 * in this example : the items could only contain : a goal in text format
 * The user could be prompted with the question : "Which task should be done first?", the answer will change the ELO score of each items
 * The final ranking should quickly converge towards the correct order for steps. Probably works for finding the shorted path if you have errands too!
@@ -68,9 +68,9 @@ The idea behing LiTOY is simple :
 
 **Do you accept criticism and/or contribution?** Hell Yeah! All help and criticisms are welcome.
 
-**What are ELO scores? Why did you choose this algorithm?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each oponnent that can then be used to compare opponents that have never met each other. A strength of ELO is that it still behaves well even if some players underperform (or overperform). In the case of LiTOY, you can have some wrong comparisons in your db and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to have a complete understanding of my code.
+**What are ELO scores? Why did you choose this algorithm?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each opponent that can then be used to compare opponents that have never met each other. A strength of ELO is that it still behaves well even if some players underperform (or overperform). In the case of LiTOY, you can have some wrong comparisons in your db and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to have a complete understanding of my code.
 
-**What platform does it run on?** Try to make it as agnostic as possible but I'm on Linux and I might occasionnaly use unix only exec without paying attention. Don't hesitate to tell me if you run into an issue.
+**What platform does it run on?** Try to make it as agnostic as possible but I'm on Linux and I might occasionally use unix only exec without paying attention. Don't hesitate to tell me if you run into an issue.
 
 ** What is manual mode ?** It launches python in a special way that allows yourself to launch script functions directly, very useful for debugging as well as undoing stuffo
 
