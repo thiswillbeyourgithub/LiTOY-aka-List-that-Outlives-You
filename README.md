@@ -1,4 +1,4 @@
-# After finally properly relearning python, I have decided to rewrite completely this thing. It will be called LITOYv2 and will focus on brief well written code, PEP respecting lines, and ease of maintenance. My goal is to make a tool for myself and others. ETA : 2021. If you're interested please don't fork this version.
+# After finally properly relearning python, I have decided to rewrite completely this thing. It will be called LiTOYv2 (then just LiTOY) and will focus on brief well written code, PEP respecting lines, and ease of maintenance. My goal is to make a tool for myself and others. ETA : 2021. If you're interested please don't fork this version.
 
 
 
@@ -170,6 +170,11 @@ To see example of the syntax for the import file, read [this file](./example_new
 ### Data structure of the db
 
 ## TODO :
+    * actually the picking method should be : sort by highest K factor, pick the top one, pick 10 at random, and do the 10 comparisons without repicking, it should lower intellectual cost as you always know one of the card.
+    * use xlsx to store all the information as separate sheet in a single file, one sheet for the entries and one sheet for the global statistics
+    * add a shortcut to "update" an entry, that would disable the current entry, clone its data to a new entry that will need to be sorted again. Useful for when you have multistep entries.
+    * adding a way to export and import as spreadsheet is a good way to allow the user to interact with it, might be better than json in the end
+    * mention somewhere the link with eisenhower matrixes
     * should rather use docstrings, cf https://www.python.org/dev/peps/pep-0257/
     * use matplotlib.pyplot instead of the werird things for the graph you used before
     * use pyenv to figure out the environnement needed to run litoy, then specify it in the readme
