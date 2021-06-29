@@ -119,13 +119,28 @@ from itertools import chain
 import youtube_dl
 import time
 from bs4 import BeautifulSoup
+import math
+import json
+import pdb
+import get_wayback_machine
+from contextlib import suppress
 
-# fonctions
+
+# used to make the whole script interruptible using ctrl+c
+# you can then resume using 'c'
+def debug_signal_handler(signal, frame):
+    import pdb
+    pdb.set_trace()
+import signal
+signal.signal(signal.SIGINT, debug_signal_handler)
+
+
+# misc functions
 def log_(string, onlyLogging=True):
     "appends string to the logging file and sometimes also print it"
     lg.info(f"{time.asctime()}: {string}")
-    if onlyLogging is False:
-        print(string)
+    if onlyLogging is False or 1==1:  # TODO remove this as it was used for debugging
+        pprint(string)
 
 
 def checkIfFileAndDB(path):
@@ -139,12 +154,12 @@ def checkIfFileAndDB(path):
             log_(f"Litoy database not found in file at {path}", False)
             return None
     else:
-        answer = input(f"No database file found at {path}, create it? (y/n)")
+        answer = input(f"No database file found at {path}, do you want me to create it?\n(y/n)>")
         if answer in "yes":
             db_location.touch()
             return None
         else:
-            print("Exiting then")
+            print("Exiting")
             raise SystemExit()
 
 
@@ -152,17 +167,22 @@ def importFromFile(path):
     "checks if text file exists then import it into LiTOY"
     import_file = Path(path)
     if not import_file.exists():
-        log_(f"Import file not found at {path}, exiting")
+        log_(f"Import file not found at {path}, exiting", False)
         raise SystemExit()
-    log_(f"Importing from file {path}")
+    log_(f"Importing from file {path}", False)
     with import_file.open() as f:
         lines = f.readlines()
-    for line in tqdm(lines[0:5]):
+    random.shuffle(lines)  # TODO remove when you're done
+    for line in tqdm(lines, desc="Processing each line", unit="Line",
+                     ascii=True, dynamic_ncols=True, mininterval=1):
+        line.strip()
+        line = line.replace("\n", "")
         if not litoy.checksIfEntryExists(litoy.df, line):
             new_df = add_new_entry(litoy.df, line)
             litoy.save_to_file(new_df)
         else:
-            log_(f"Line already exists in the litoy database : {line}")
+            log_(f"Line already exists in the litoy database : {line}", False)
+
 
 def wrong_arguments_(args):
     "used to exit while printing arguments"
@@ -170,31 +190,39 @@ def wrong_arguments_(args):
     pprint(args)
     raise SystemExit()
 
+
 def add_new_entry(df, content):
     "add a new entry to the pandas dataframe"
     metacontent = get_meta_from_content(content)
-    tags = get_tags_from_content(content)
-    try :
+    tags = sorted(get_tags_from_content(content))
+
+    # moves the field about wayback machine to the tags list
+    with suppress("SyntaxError", "KeyError", "TypeError"):
+        # because this item only exists for webpage
+        if metacontent['wayback_used'] == "1":
+            tags.append("wayback_machine")
+        metacontent.pop("wayback_used")
+    try:
         newID = max(df['ID'])+1
     except ValueError:  # first card
         newID = 1
-    df = df.append({
+    df2 = df.append({
             "ID": newID,
-            "date_added": int(time.time()),
+            "date": int(time.time()),
             "content": content,
-            "metacontent": metacontent,
-            "tags": tags,
-            "starred": "No",
+            "metacontent": json.dumps(metacontent),
+            "tags": json.dumps(tags),
             "iELO": default_score,
             "tELO": default_score,
             "DiELO": default_score,
             "DtELO": default_score,
             "gELO": compute_global_score(default_score, default_score),
-            "ms_spent_comparing": 0,
+            "compar_time": 0,
             "K": sorted(K_values)[-1],
-            "is_disabled":"No"
+            "starred": "No",
+            "disabled": 0,
             }, ignore_index=True)
-    return df
+    return df2
 
 
 def pick_entries(df, mode):
@@ -207,16 +235,20 @@ def pick_entries(df, mode):
     highest_K = df['K'].max
     picked = None
     while picked is None or picked[0] in picked[1]:
-        one_left = df[ df['K'] == highest_K].sample(1)
-        ten_right = df.sample(10)
-    return [one_left, ten_right]
+        one_left = df[df['K'] == highest_K & df['disabled'] == 0].sample(1)
+        ten_right = df[df['disabled'] == 0].sample(10)
+        picked = [one_left, ten_right]
+    return picked
 
-def print_2_entries(entries, mode, all_fields=False):
+
+def print_2_entries(entries_id, mode, all_fields=False):
     """
     shows the two entries that are to be compared
     """
-    # TODO
-    pprint(entries)
+    for i in entries_id:
+        pprint(litoy.df.iloc[i][['ID', 'content', 'tags', "starred",
+                                "iELO", "tELO"]])
+
 
 def show_podium(df):
     """
@@ -225,14 +257,25 @@ def show_podium(df):
     df2 = df.sort_values(by="gELO")[0:5]
     pprint(df2)
 
+
 def show_stats(df):
     "shows statistics on the litoy database"
-    # TODO
+    log_("Printing statistics", False)
+    df = litoy.df
+    df_not_disabled = df[ df['disabled'] == 0 ]
+    pprint(f"Number of entries in LiTOY : {len(df)}, non disabled entries only : {len(df_not_disabled)}")
+    pprint(f"Average importance score : {df_not_disabled['iELO'].mean()}, time score : {df_not_disabled['tELO'].mean()}") 
+    pprint(f"Average global score : {df_not_disabled['gELO'].mean()}") 
+    pprint(f"Average K value : {df_not_disabled['K'].mean()}")
+    pprint(f"Time spent comparing : {df_not_disabled['compar_time'].sum()}")
+    pprint(f"Number of comparison : {df_not_disabled['n_comparison'].sum}, average : {df_not_disabled['n_comparison'].mean()}")
+
 
 def print_syntax_examples():
     "shows the user usage example of LiTOY"
     # TODO
-    log_("Printing syntax example")
+    log_("Printing syntax example", False)
+
 
 def rlinput(prompt, prefill=''): 
     "prompt the user using prefilled text"
@@ -240,9 +283,9 @@ def rlinput(prompt, prefill=''):
     readline.set_startup_hook(lambda: readline.insert_text(prefill))
     readline.parse_and_bind("tab: complete")
     try:
-       return input(prompt)
+        return input(prompt)
     finally:
-      readline.set_startup_hook()
+        readline.set_startup_hook()
 
 def shortcut_and_action(mode, fighters): 
     """
@@ -251,34 +294,34 @@ def shortcut_and_action(mode, fighters):
     """
     def get_action(input):   # get action from the keypress pressed
         found = ""
-        for action, keypress in shortcuts.items(): 
-            if str(input) in keypress: 
-                if found != "" :
-                    log_("Several corresponding shortcuts found! Quitting.")
+        for action, keypress in shortcuts.items():
+            if str(input) in keypress:
+                if found != "":
+                    log_("Several corresponding shortcuts found! Quitting.", False)
                     raise SystemExit()
                 found = action
         if action == "":
-            log_(f"No shortcut found, keypressed was {str(input)}")
+            log_(f"No {str(input)} shortcut found", False)
             action = "show_help"
-        return found 
+        return found
 
     action = ""
     while True:
-        start_time = time.time() # to get time elapsed
+        start_time = time.time()  # to get time elapsed
 
-        if action=="exit_outerloop" :  # not a shortcut, but used as a way to exit the while loop
+        if action == "exit_outerloop":  # not a shortcut, but used as a way
+            # to exit the while loop
             # not to be confused with "quit"
             break
         action = ""
 
-        log_("Shortcut : asking question, mode = {str(mode)}", False)
+        log_(f"Shortcut : asking question, mode = {str(mode)}", False)
         print(f"{questions[mode]} (h or ? for help)")
         keypress = input()
         log_(f"Shortcut : User typed : {keypress}", False)
 
-        if keypress not in list(chain.from_iterable(shortcuts.values())) :
-            print("Shortcut : Error : keypress not found : " + keypress)
-            logging.info("Shortcut : Error : keypress not found : " + keypress)
+        if keypress not in list(chain.from_iterable(shortcuts.values())):
+            log_(f"Shortcut Error : keypress not found : {keypress}")
             action = "show_help"
         else :
             action = str(get_action(keypress))
@@ -327,6 +370,7 @@ def shortcut_and_action(mode, fighters):
         if action == "starLeft":  # useful to get back to it to edit etc after a fight
             # TODO
             pass
+
         if action == "starRight":  # useful to get back to it to edit etc after a fight
             # TODO
             pass
@@ -346,6 +390,7 @@ def shortcut_and_action(mode, fighters):
             raise SystemExit()
         break
 
+
 # functions related to one entry
 def get_tags_from_content(string):
     "extracts tags from a line in the import file"
@@ -354,7 +399,8 @@ def get_tags_from_content(string):
     for word in splitted:
         if word.startswith("tags:"):
             result.append(word[5:])
-    return sorted(list(set(result)))
+    return list(set(result))
+
 
 def get_meta_from_content(string):
     """
@@ -367,67 +413,80 @@ def get_meta_from_content(string):
     splitted = string.split(" ")
     res_dic = {}
     for word in splitted:
-        if word == "type:video": # this forces to analyse as a video
+        if word == "type:video":  # this forces to analyse as a video
             for word in splitted:
                 if word.startswith("http") or word.startswith("www."):
-                    log_("Extracting info from video {word}")
+                    log_(f"Extracting info from video {word}")
                     temp = extract_youtube(word)
-                    res_dic.update({"type":"video",
-                        "length": temp[0],
-                        "title": temp[1],
-                        "url": word})
+                    res_dic.update({"type": "video",
+                                    "length": temp[0],
+                                    "title": temp[1],
+                                    "url": word})
                     return res_dic
 
         if word.startswith("http") or word.startswith("www."):
             if "ytb" in word or "youtube" in word:
-                log_("Extracting info from video {word}")
+                log_(f"Extracting info from video {word}")
                 temp = extract_youtube(word)
-                res_dic.update({"type":"video",
-                    "length": temp[0],
-                    "title": temp[1],
-                    "url": word})
+                res_dic.update({"type": "video",
+                                "length": temp[0],
+                                "title": temp[1],
+                                "url": word})
                 return res_dic
             if word.endswith(".pdf"):
                 log_(f"Extracting pdf from {word}")
                 temp = extract_pdf_url(word)
-                res_dic.update({"type":"pdf",
-                    "length": temp[0],
-                    "title": temp[1],
-                    "url": word})
+                res_dic.update({"type": "pdf",
+                                "length": temp[0],
+                                "title": temp[1],
+                                "url": word})
                 return res_dic
-            # then is probably just an html and should be treated as text
+
+            # if here then is probably just an html and
+            # should be treated as text
             log_(f"Extracting text from webpage {word}")
             temp = extract_webpage(word)
             res_dic.update({"type": "text",
-                "length": temp[0],
-                "title": temp[1],
-                "url": word})
+                            "length": temp[0],
+                            "title": temp[1],
+                            "used_wayback_machine": temp[2],
+                            "url": word})
             return res_dic
+
+
 
         elif "/" in word:  # might be a link to a file
             if word.endswith(".pdf"):
                 log_(f"Extracting pdf from {word}")
                 temp = extract_pdf_local(word)
-                res_dic.update({"type":"pdf",
-                    "length": temp[0],
-                    "title": temp[1],
-                    "url": word})
+                res_dic.update({"type": "pdf",
+                                "length": temp[0],
+                                "title": temp[1],
+                                "url": word})
                 return res_dic
             if word.endswith(".md") or word.endswith(".txt"):
                 log_(f"Extracting data from {word}")
                 temp = extract_txt(word)
-                res_dic.update({"type":"text",
-                    "length": temp[0],
-                    "title": temp[1],
-                    "url": word})
+                res_dic.update({"type": "text",
+                                "length": temp[0],
+                                "title": temp[1],
+                                "url": word})
                 return res_dic
+        else:
+            return ""
 
 
 def extract_youtube(url):
     "extracts video duration in minutes from youtube link, title etc"
-    with youtube_dl.YoutubeDL({}) as ydl:
-         video = ydl.extract_info(url, download=False)
-    return (round(video['duration']/60, 1), video['title'])
+    with youtube_dl.YoutubeDL({"quiet": True}) as ydl:
+        video = ydl.extract_info(url, download=False)
+    try:
+        res = (round(video['duration']/60, 1), video['title'])
+    except KeyError as e:
+        log_(f"Error during information extraction from {url} : {e}", False)
+        res = "Error extracting from youtube"
+        pdb.set_trace()
+    return res
 
 
 def extract_pdf_url(url):
@@ -445,7 +504,7 @@ def extract_pdf_local(path):
             text_content = pdftotext.PDF(f)
             text_content = " ".join(text_content).replace("\n", " ")
     except FileNotFoundError:
-        log_(f"Cannot find {path}, I thought it was a PDF")
+        log_(f"Cannot find {path}, I thought it was a PDF", False)
         return (None, None)
 
     total_words = len(text_content)/average_word_length
@@ -470,13 +529,21 @@ def extract_txt(path):
         return (estimatedReadingTime, title)
 
     except ValueError:
-        log_(f"Cannot find {path}, I thought it was a text file")
+        log_(f"Cannot find {path}, I thought it was a text file", False)
         return (None, None)
 
 
 def extract_webpage(url):
     "extracts reading time from a webpage"
-    res = requests.get(url)
+    wayback_used = 0
+    try :
+        res = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        # if url is dead : use wayback machine
+        wayback_used = 1
+        wb = get_wayback_machine.get(url)
+        url = wb.links['last memento']['url']
+        res = requests.get(url)
     html_page = res.content
     soup = BeautifulSoup(html_page, 'html.parser')
     text_content = ' '.join(soup.find_all(text=True)).replace("\n", " ")
@@ -486,7 +553,7 @@ def extract_webpage(url):
 
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = round(total_words/wpm, 1)
-    return (estimatedReadingTime, title)
+    return (estimatedReadingTime, title, wayback_used)
 
 
 # functions related to scores
@@ -498,18 +565,18 @@ def expected_elo(elo_A, elo_B, Rp=100):
     opponent, the expected score is magnified ten times in comparison to
     the opponent's expected score
     '''
-    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}", False)
+    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}")
     result = 3 / (1 + 10 ** ((elo_B - elo_A) / Rp))
-    log_(f"Expected : result={tr(result)}", False)
+    log_(f"Expected : result={tr(result)}")
     return int(result)
 
 
 def update_elo(elo, exp_score, real_score, K):
     "computes the ELO score"
     log_(f"Update_elo : elo={str(elo)} expected={str(exp_score)}\
-            real_score={str(real_score)} K={str(K)}", False)
+            real_score={str(real_score)} K={str(K)}")
     result = elo + K*(real_score - exp_score)
-    log_(f"Update_elo : result={str(result)}", False)
+    log_(f"Update_elo : result={str(result)}")
     return int(result)
 
 def adjust_K(K0):
@@ -520,7 +587,7 @@ def adjust_K(K0):
     K0 = int(K0)
     log_(f"Adjust_K : K0={str(K0)}", False)
     if K0 == K_values[-1] :
-        log_("Adjust_K : K already at last specified value :\
+        log_(f"Adjust_K : K already at last specified value :\
                 {str(K0)}={str(K_values[-1])}", False)
         return str(K0)
     for i in range(len(K_values)-1):
@@ -528,7 +595,7 @@ def adjust_K(K0):
             log_(f"New K_value : {str(K_values[i+1])}", False)
             return K_values[i+1]
     if K0 not in K_values:
-        log_("error : K not part of K_values : {str(K0)}, reset to\
+        log_(f"error : K not part of K_values : {str(K0)}, reset to\
                 {str(K_values[-1])}", False)
         return str(K_values[-1])
     log_("This should never print")
@@ -542,29 +609,41 @@ def compute_global_score(iELO, tELO):
 class LiTOYClass:
     "Class that interacts with the database using panda etc"
     def __init__(self, db_path):
-        self.path = db_path
         if db_path is None:
+            db_path = args['litoy_db']
+            self.path = db_path
             self.create_database()
+        else:
+            self.path = db_path
         self.df = pd.read_excel(db_path)
+
+    def reload_df(self):
+        self.df = pd.read_excel(self.path)
 
     def save_to_file(self, df):
         Excelwriter = pd.ExcelWriter(args['litoy_db'] , engine="xlsxwriter")
         df.to_excel(Excelwriter, sheet_name="LiTOY", index=False)
         Excelwriter.save()
+        self.reload_df()
 
     def create_database(self):
-        cols = ["ID", "date_added", "content", "metacontent", "tags",
-            "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
-            "ms_spent_comparing", "K", "is_disabled"]
+        cols = ["ID", "date", "content", "metacontent", "tags",
+                "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
+                "compar_time", "n_comparison", "K", "disabled"]
         # iELO stands for "importance ELO", DiELO for "delta iELO",
         # gELO for "global ELO", etc
         df = pd.DataFrame(columns=cols)
         self.save_to_file(df)
+        self.reload_df()
 
     def checksIfEntryExists(self, df, text):
-        text.strip()
-        for c in df['content']:
-            if lev(text, c) <= max(0.2 * len(text), 10):
+        for present in df['content']:
+            present.strip()
+            present = present.replace("\n", "")
+            # tries to avoid computing levenshtein distance for nothing
+            if abs(len(present)-len(text)) <= 10 and\
+                    lev(text, present) <= max(7, 0.1*len(present)):
+                tqdm.write("Line already present in database : {text}")
                 return True
             else:
                 return False
@@ -574,7 +653,6 @@ class LiTOYClass:
         for i in df.index:
             tag_list.append(i['tags'])
         return sorted(list(set(tag_list)))
-
 
     def print_all_entries(self, df, pretty=True):
         for i in df.index:
@@ -628,7 +706,7 @@ if __name__ == "__main__":
             format='%(asctime)s: %(message)s')
     #https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
     log = lg.getLogger()
-    handler = RotatingFileHandler("logs/rotating_log", maxBytes=20*1024*1024, backupCount=2)
+    handler = RotatingFileHandler("logs/rotating_log", maxBytes=20*1024*1024, backupCount=20)
     log.addHandler(handler)
 
     args = parser.parse_args().__dict__
@@ -636,8 +714,8 @@ if __name__ == "__main__":
     # checks if the arguments are sane
     if args['to_import_loc'] is None and args['litoy_db'] is None:
         wrong_arguments_(args)
-#    if str(args['mode']) not in "importance" or str(args['mode']) not in "time":
-        #wrong_arguments_(args)
+    if args['mode'] is not None and (str(args['mode']) not in "importance" or str(args['mode']) not in "time"):
+        wrong_arguments_(args)
     if args['litoy_db'] is None:
         wrong_arguments_(args)
 
@@ -647,9 +725,11 @@ if __name__ == "__main__":
     else:
         litoy = LiTOYClass(args['litoy_db'])
 
+    #TODO : add a line to store the metadata of litoy (including average k 
+    # and average scores) in the logging file to be able to reuse it
     if args['to_import_loc'] is not None:
         importFromFile(args['to_import_loc'])
-        log_("Done importing from file, exiting")
+        log_("Done importing from file, exiting", False)
         raise SystemExit()
 
 
