@@ -77,7 +77,7 @@ which would bring you more in your life?",
         }
 
 shortcuts = {
-        "skip_fight"                 :  ["s","-"],
+        "skip_review"                 :  ["s","-"],
         "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
         "editLeft"                   :  ["e"],
         "editRight"                  :  ["E"],
@@ -126,6 +126,14 @@ import json
 import pdb
 import get_wayback_machine
 from contextlib import suppress
+
+
+global cols
+cols = ["ID", "date", "content", "metacontent", "tags",
+               "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
+               "compar_time", "n_comparison", "K", "disabled"]
+# iELO stands for "importance ELO", DiELO for "delta iELO",
+# gELO for "global ELO", etc
 
 
 # used to make the whole script interruptible using ctrl+c
@@ -244,22 +252,31 @@ def pick_entries(df):
     among those with the highest K factor, then 10 other entries are selected
     at random
     """
-    highest_K = df['K'].max
-    picked = None
-    while picked is None or picked[0] in picked[1]:
-        one_left = df[df['K'] == highest_K & df['disabled'] == 0].sample(1)
-        ten_right = df[df['disabled'] == 0].sample(10)
-        picked = [one_left, ten_right]
+    highest_K = max(df['K'])
+
+    picked = []
+    picked.append(df.loc[ (df['K'] == highest_K) & (df['disabled'] == 0)].sample(1)["ID"].loc[0])
+    picked.extend(df.loc[ (df['disabled'] == 0) ].sample(min(10, len(df.index)-1))["ID"])
+
+    while picked[0].iloc[0] in list(picked[1:]):
+        log_("Picking entries one more time")
+        picked = pick_entries(df)
     return picked
 
 
-def print_2_entries(entries_id, mode, all_fields=False):
+def print_2_entries(id_left, id_right, all_fields=False):
     """
     shows the two entries that are to be compared
     """
-    for i in entries_id:
-        pprint(litoy.df.iloc[i][['ID', 'content', 'tags', "starred",
-                                "iELO", "tELO"]])
+    print(id_left)
+    print(id_right)
+    breakpoint()
+    for i in [id_left, id_right]:
+        entry = litoy.df["ID" == i]
+        pprint(entry[["ID", "content", "tags", "starred", "iELO", "tELO"]])
+        d = entry['metacontent'].to_dict()
+        pprint(d)
+        print("###########################################")
 
 
 def show_podium(df):
@@ -299,7 +316,7 @@ def rlinput(prompt, prefill=''):
     finally:
         readline.set_startup_hook()
 
-def shortcut_and_action(mode, fighters): 
+def shortcut_and_action(entries): 
     """
     makes the link between keypresses and actions
     shortcuts are stored at the top of the file
@@ -349,14 +366,14 @@ def shortcut_and_action(mode, fighters):
             # TODO
 
 
-        if action == "skip_fight":
-            log_("Shortcut : Skipped fight")
+        if action == "skip_review":
+            log_("Shortcut : Skipped review")
             break
 
         if action == "show_more_fields":  # display all the fields from a card
             log_("Shortcut : displaying the entries in full", False)
             print("\n"*10)
-            print_2_entries(fighters, mode, "all") 
+            print_2_entries(entries, mode, "all") 
             continue
 
         if action == "editLeft":  # edit field of the left card
@@ -379,11 +396,11 @@ def shortcut_and_action(mode, fighters):
             # TODO
             pass
 
-        if action == "starLeft":  # useful to get back to it to edit etc after a fight
+        if action == "starLeft":  # useful to get back to it to edit etc after a review
             # TODO
             pass
 
-        if action == "starRight":  # useful to get back to it to edit etc after a fight
+        if action == "starRight":  # useful to get back to it to edit etc after a review
             # TODO
             pass
 
@@ -473,10 +490,17 @@ def extract_youtube(url):
                "length": str(round(video['duration']/60, 1)),
                "title": video['title'],
                "url": url}
-    except (KeyError, youtube_dl.utils.DownloadError, youtube_dl.utils.ExtractorError) as e:
+
+    # I had to used this because the exception was never caught
+    except KeyError as e:
         log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
-        res.update({"type": "video not found",
-                    "url": url})
+        res.update({"type": "video not found", "url": url})
+    except youtube_dl.utils.DownloadError as e:
+        log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
+        res.update({"type": "video not found", "url": url})
+    except youtube_dl.utils.ExtractorError as e:
+        log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
+        res.update({"type": "video not found", "url": url})
     return res
 
 
@@ -523,11 +547,16 @@ def extract_txt(path):
         estimatedReadingTime = str(round(total_words/wpm,1))
 
         title = path.split(sep="/")[-1]
-        return (estimatedReadingTime, title)
+        res = {"type": "text",
+                "length": estimatedReadingTime,
+                "title": title}
+        return res
 
     except ValueError as e:
         log_(f"Cannot find {path} : {e}", False)
-        return (None, None)
+        res = {"type": "txt file not found",
+                "url": path} 
+        return res
 
 def extract_webpage(url):
     """
@@ -547,7 +576,10 @@ def extract_webpage(url):
             url = wb.links['last memento']['url']
         except (requests.exceptions.ConnectionError, AttributeError) as e:
             log_(f"Url could not be found even using wayback machine : {url} : {e}", False)
-            return ("-1", "Not found", "wayback url not found")
+            res = {"title": "Not found",
+                   "length": "-1",
+                   "used_wayback_machine": "wayback url no found"}
+            return res
         res = requests.get(url, headers=headers)
     html_page = res.content
     soup = BeautifulSoup(html_page, 'html.parser')
@@ -640,11 +672,6 @@ class LiTOYClass:
         self.reload_df()
 
     def create_database(self):
-        cols = ["ID", "date", "content", "metacontent", "tags",
-                "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
-                "compar_time", "n_comparison", "K", "disabled"]
-        # iELO stands for "importance ELO", DiELO for "delta iELO",
-        # gELO for "global ELO", etc
         df = pd.DataFrame(columns=cols)
         self.save_to_file(df)
         self.reload_df()
@@ -701,9 +728,9 @@ parser.add_argument("--add", "-a",
         like so : python3 ./__main__.py -a \"do this thing tags:DIY, I\
         really need to do it that way\"")
 parser.add_argument("--review", "-r",
-        metavar = "review_mode",
         dest='review_mode',
         required=False,
+        action="store_true",
         help = "use this to enable review mode instead of importation etc")
 #parser.add_argument("--mode", "-m",
 #        nargs = "?",
@@ -730,13 +757,11 @@ if __name__ == "__main__":
     args = parser.parse_args().__dict__
 
     # checks if the arguments are sane
-    if args['to_import_loc'] is None and args['litoy_db'] is None:
-        wrong_arguments_(args)
-    if args['review_mode'] is not None and (str(args['review_mode']) not in "importance" or str(args['review_mode']) not in "time"):
-        wrong_arguments_(args)
     if args['litoy_db'] is None:
         wrong_arguments_(args)
-    if args['review_mode'] is not None and args['to_import_loc'] is not None:
+    if args['to_import_loc'] is None and args['litoy_db'] is None:
+        wrong_arguments_(args)
+    if args['review_mode'] is True and args['to_import_loc'] is not None:
         wrong_arguments_(args)
 
     if checkIfFileAndDB(args['litoy_db']) is None:
@@ -750,10 +775,18 @@ if __name__ == "__main__":
         raise SystemExit()
 
     if args['review_mode'] is not None:
+        n = len(litoy.df.index)
+        if n < 10:
+            log_(f"You only have {n} item in your database, add more to start \
+                    using LiTOY!", False)
+            raise SystemExit()
         picked = pick_entries(litoy.df)
-        pprint(picked)
-        pdb.set_trace()
-
+        for i in picked[1:]:
+            print_2_entries(picked[0], i)
+            print("?", end="")
+            print("done")
+            raise SystemExit()
+            shortcut_and_action(picked[0], picked[1].loc[i])
 
 
 # TODOS :
