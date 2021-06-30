@@ -98,6 +98,8 @@ K_values           =  [100, 50, 25, 15, 10]  # default [100, 50, 25, 15, 10]
 default_score      =  1000  # default 1000
 global_weights     =  (2, 1)  # global score is 1st number*iELO + 2nd*tELO
 
+headers = {"User-Agent": "Mozilla/5.0"}  # to avoid getting flagged for abusive web scraping
+
 
 ###############################################################################
 # 2. Initialization, definitions etc
@@ -139,8 +141,10 @@ signal.signal(signal.SIGINT, debug_signal_handler)
 def log_(string, onlyLogging=True):
     "appends string to the logging file and sometimes also print it"
     lg.info(f"{time.asctime()}: {string}")
-    if onlyLogging is False or 1==1:  # TODO remove this as it was used for debugging
-        pprint(string)
+    if onlyLogging is False:  # TODO remove this as it was used for debugging
+    #if onlyLogging is False or 1==1:  # TODO remove this as it was used for debugging
+        #pprint(string)  # TODO, might change this later
+        tqdm.write(string)
 
 
 def checkIfFileAndDB(path):
@@ -150,11 +154,11 @@ def checkIfFileAndDB(path):
         log_(f"Database file found at {path}", False)
         try:
             return True
-        except ValueError:
-            log_(f"Litoy database not found in file at {path}", False)
+        except ValueError as e:
+            log_(f"Litoy database not found in file at {path} : {e}", False)
             return None
     else:
-        answer = input(f"No database file found at {path}, do you want me to create it?\n(y/n)>")
+        answer = input(f"No database file found at {path}, do you want me to create it?\ny/n?")
         if answer in "yes":
             db_location.touch()
             return None
@@ -174,7 +178,7 @@ def importFromFile(path):
         lines = f.readlines()
     random.shuffle(lines)  # TODO remove when you're done
     for line in tqdm(lines, desc="Processing each line", unit="Line",
-                     ascii=True, dynamic_ncols=True, mininterval=1):
+                     ascii=False, dynamic_ncols=True, mininterval=1):
         line.strip()
         line = line.replace("\n", "")
         if not litoy.checksIfEntryExists(litoy.df, line):
@@ -193,25 +197,34 @@ def wrong_arguments_(args):
 
 def add_new_entry(df, content):
     "add a new entry to the pandas dataframe"
+    tags = get_tags_from_content(content)
     metacontent = get_meta_from_content(content)
-    tags = sorted(get_tags_from_content(content))
 
-    # moves the field about wayback machine to the tags list
-    with suppress("SyntaxError", "KeyError", "TypeError"):
-        # because this item only exists for webpage
+    with suppress(KeyError):  # in case metacontent doesn't contain those keys
+        # if url not working, reload it after 5 seconds
+        if "forbidden" in str(metacontent['title'].lower()) or \
+                "404" in str(metacontent['title'].lower()) or\
+                "403" in str(metacontent['title'].lower()):
+            log_(f"Waiting 5 seconds because apparent webpage loading limit was reached while inspecting line : {content}", False)
+            time.sleep(5)
+            metacontent = get_meta_from_content(content)
+        # if wayback machine was used : mention it in the tags
         if metacontent['wayback_used'] == "1":
             tags.append("wayback_machine")
+        elif metacontent['wayback_machine'] == "wayback url not found":
+            tags.append("url_not_found")
         metacontent.pop("wayback_used")
+
     try:
         newID = max(df['ID'])+1
     except ValueError:  # first card
         newID = 1
     df2 = df.append({
             "ID": newID,
-            "date": int(time.time()),
+            "date": str(time.time()),
             "content": content,
             "metacontent": json.dumps(metacontent),
-            "tags": json.dumps(tags),
+            "tags": json.dumps(sorted(tags)),
             "iELO": default_score,
             "tELO": default_score,
             "DiELO": default_score,
@@ -225,13 +238,12 @@ def add_new_entry(df, content):
     return df2
 
 
-def pick_entries(df, mode):
+def pick_entries(df):
     """
-    picks entries before a comparison : the left one is chosen randomnly
+    picks entries before a comparison : the left one is chosen randomly
     among those with the highest K factor, then 10 other entries are selected
     at random
     """
-    randomness = random.random()
     highest_K = df['K'].max
     picked = None
     while picked is None or picked[0] in picked[1]:
@@ -410,6 +422,13 @@ def get_meta_from_content(string):
     appears in the content.
     If several links are supplied, only the first one will be used
     """
+    with suppress(UnboundLocalError):
+        since = time.time() - last
+        last = time.time()
+        if since < 2:
+            tqdm.write("Sleeping 2 seconds")
+            time.sleep(2-since)
+
     splitted = string.split(" ")
     res_dic = {}
     for word in splitted:
@@ -418,20 +437,28 @@ def get_meta_from_content(string):
                 if word.startswith("http") or word.startswith("www."):
                     log_(f"Extracting info from video {word}")
                     temp = extract_youtube(word)
-                    res_dic.update({"type": "video",
-                                    "length": temp[0],
-                                    "title": temp[1],
-                                    "url": word})
+                    if temp == "Error":
+                        res_dic.update({"type": "video not found",
+                                        "url": word})
+                    else:
+                        res_dic.update({"type": "video",
+                                        "length": temp[0],
+                                        "title": temp[1],
+                                        "url": word})
                     return res_dic
 
         if word.startswith("http") or word.startswith("www."):
             if "ytb" in word or "youtube" in word:
                 log_(f"Extracting info from video {word}")
                 temp = extract_youtube(word)
-                res_dic.update({"type": "video",
-                                "length": temp[0],
-                                "title": temp[1],
-                                "url": word})
+                if temp == "Error":
+                    res_dic.update({"type": "video not found",
+                                    "url": word})
+                else:
+                    res_dic.update({"type": "video",
+                                    "length": temp[0],
+                                    "title": temp[1],
+                                    "url": word})
                 return res_dic
             if word.endswith(".pdf"):
                 log_(f"Extracting pdf from {word}")
@@ -446,11 +473,15 @@ def get_meta_from_content(string):
             # should be treated as text
             log_(f"Extracting text from webpage {word}")
             temp = extract_webpage(word)
-            res_dic.update({"type": "text",
+            res_dic.update({"type": "webpage",
                             "length": temp[0],
                             "title": temp[1],
                             "used_wayback_machine": temp[2],
                             "url": word})
+            if res_dic['length'] == -1:
+                res_dic.pop("length")
+                res_dic.pop("title")
+                res_dic["type"] = "not found"
             return res_dic
 
 
@@ -473,7 +504,10 @@ def get_meta_from_content(string):
                                 "url": word})
                 return res_dic
         else:
-            return ""
+            log_(f"No metadata were extracted for {word}")
+            res_dic.update({"type": "not found",
+                           "url": word})
+            return res_dic
 
 
 def extract_youtube(url):
@@ -481,17 +515,16 @@ def extract_youtube(url):
     with youtube_dl.YoutubeDL({"quiet": True}) as ydl:
         video = ydl.extract_info(url, download=False)
     try:
-        res = (round(video['duration']/60, 1), video['title'])
-    except KeyError as e:
-        log_(f"Error during information extraction from {url} : {e}", False)
-        res = "Error extracting from youtube"
-        pdb.set_trace()
+        res = (str(round(video['duration']/60, 1)), video['title'])
+    except (KeyError, youtube_dl.utils.DownloadError) as e:
+        log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
+        res = "Error"
     return res
 
 
 def extract_pdf_url(url):
     "extracts reading time from an online pdf"
-    downloaded = requests.get(url)
+    downloaded = requests.get(url, headers=headers)
     open("./.temporary.pdf", "wb").write(downloaded.content)
     (a, b) = extract_pdf_local("./.temporary.pdf")
     Path("./.temporary.pdf").unlink()
@@ -508,7 +541,7 @@ def extract_pdf_local(path):
         return (None, None)
 
     total_words = len(text_content)/average_word_length
-    estimatedReadingTime = round(total_words/wpm,1)
+    estimatedReadingTime = str(round(total_words/wpm,1))
 
     title = path.split(sep="/")[-1]
     return (estimatedReadingTime, title)
@@ -523,27 +556,36 @@ def extract_txt(path):
         text_content = ' '.join(lines).replace("\n", " ")
 
         total_words = len(text_content)/average_word_length
-        estimatedReadingTime = round(total_words/wpm,1)
+        estimatedReadingTime = str(round(total_words/wpm,1))
 
         title = path.split(sep="/")[-1]
         return (estimatedReadingTime, title)
 
-    except ValueError:
-        log_(f"Cannot find {path}, I thought it was a text file", False)
+    except ValueError as e:
+        log_(f"Cannot find {path} : {e}", False)
         return (None, None)
 
 
 def extract_webpage(url):
-    "extracts reading time from a webpage"
-    wayback_used = 0
+    """
+    extracts reading time from a webpage, output is a tupple containing 
+    estimation of the reading time ; title of the page ; if the wayback
+    machine was used
+    """
     try :
-        res = requests.get(url)
+        wayback_used = 0
+        res = requests.get(url, headers=headers)
     except requests.exceptions.ConnectionError:
         # if url is dead : use wayback machine
+        tqdm.write(f"Using the wayback machine for {url}")
         wayback_used = 1
         wb = get_wayback_machine.get(url)
-        url = wb.links['last memento']['url']
-        res = requests.get(url)
+        try:  # if url was never saved
+            url = wb.links['last memento']['url']
+        except (requests.exceptions.ConnectionError, AttributeError) as e:
+            log_(f"Url could not be found even using wayback machine : {url} : {e}", False)
+            return ("-1", "Not found", "wayback url not found")
+        res = requests.get(url, headers=headers)
     html_page = res.content
     soup = BeautifulSoup(html_page, 'html.parser')
     text_content = ' '.join(soup.find_all(text=True)).replace("\n", " ")
@@ -552,7 +594,7 @@ def extract_webpage(url):
         title = t.get_text()
 
     total_words = len(text_content)/average_word_length
-    estimatedReadingTime = round(total_words/wpm, 1)
+    estimatedReadingTime = str(round(total_words/wpm, 1))
     return (estimatedReadingTime, title, wayback_used)
 
 
@@ -687,13 +729,18 @@ parser.add_argument("--add", "-a",
         help = "directly add an entry by putting it inside quotation mark\
         like so : python3 ./__main__.py -a \"do this thing tags:DIY, I\
         really need to do it that way\"")
-parser.add_argument("--mode", "-m",
-        nargs = "?",
-        metavar = "mode",
-        dest='mode',
-        type = str,
+parser.add_argument("--review", "-r",
+        metavar = "review_mode",
+        dest='review_mode',
         required=False,
-        help = "comparison mode, can be either \'importance\' or \'time\'")
+        help = "use this to enable review mode instead of importation etc")
+#parser.add_argument("--mode", "-m",
+#        nargs = "?",
+#        metavar = "mode",
+#        dest='mode',
+#        type = str,
+#        required=False,
+#        help = "comparison mode, can be either \'importance\' or \'time\'")
 
 ###############################################################################
 # 3. Main routine
@@ -718,19 +765,23 @@ if __name__ == "__main__":
         wrong_arguments_(args)
     if args['litoy_db'] is None:
         wrong_arguments_(args)
+    if args['review_mode'] is not None and args['to_import_loc'] is not None:
+        wrong_arguments_(args)
 
-    test = checkIfFileAndDB(args['litoy_db'])
-    if test is None:
+    if checkIfFileAndDB(args['litoy_db']) is None:
         litoy = LiTOYClass(None)
     else:
         litoy = LiTOYClass(args['litoy_db'])
 
-    #TODO : add a line to store the metadata of litoy (including average k 
-    # and average scores) in the logging file to be able to reuse it
     if args['to_import_loc'] is not None:
         importFromFile(args['to_import_loc'])
         log_("Done importing from file, exiting", False)
         raise SystemExit()
+
+    if args['review_mode'] is not None:
+        picked = pick_entries(litoy.df)
+        pprint(picked)
+        pdb.set_trace()
 
 
 
@@ -739,3 +790,4 @@ if __name__ == "__main__":
 # * use type hints from the beginning
 # * use docstrings everywhere
 # * use mypy
+# * store metadata of litoy into the log file : average k and average score
