@@ -1,4 +1,4 @@
-# After finally properly relearning python, I have decided to rewrite completely this thing. It will be called LiTOYv2 (then just LiTOY) and will focus on brief well written code, PEP respecting lines, and ease of maintenance. My goal is to make a tool for myself and others. ETA : 2021. If you're interested please don't fork this version.
+# After finally properly relearning python, I have decided to rewrite completely this thing. It will temporarily be called LiTOYv2 (then just LiTOY) and will focus on brief well written code, PEP respecting lines, and ease of maintenance. My goal is to make a tool for myself and others. ETA : 2021. If you're interested please don't fork this version. Current progress can be found in the file ./LiTOYv2.py
 
 
 
