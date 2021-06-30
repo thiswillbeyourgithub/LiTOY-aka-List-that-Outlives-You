@@ -430,83 +430,37 @@ def get_meta_from_content(string):
             time.sleep(2-since)
 
     splitted = string.split(" ")
-    res_dic = {}
     for word in splitted:
         if word == "type:video":  # this forces to analyse as a video
             for word in splitted:
                 if word.startswith("http") or word.startswith("www."):
                     log_(f"Extracting info from video {word}")
-                    temp = extract_youtube(word)
-                    if temp == "Error":
-                        res_dic.update({"type": "video not found",
-                                        "url": word})
-                    else:
-                        res_dic.update({"type": "video",
-                                        "length": temp[0],
-                                        "title": temp[1],
-                                        "url": word})
-                    return res_dic
+                    return extract_youtube(word)
 
         if word.startswith("http") or word.startswith("www."):
             if "ytb" in word or "youtube" in word:
                 log_(f"Extracting info from video {word}")
-                temp = extract_youtube(word)
-                if temp == "Error":
-                    res_dic.update({"type": "video not found",
-                                    "url": word})
-                else:
-                    res_dic.update({"type": "video",
-                                    "length": temp[0],
-                                    "title": temp[1],
-                                    "url": word})
-                return res_dic
+                return extract_youtube(word)
+
             if word.endswith(".pdf"):
                 log_(f"Extracting pdf from {word}")
-                temp = extract_pdf_url(word)
-                res_dic.update({"type": "pdf",
-                                "length": temp[0],
-                                "title": temp[1],
-                                "url": word})
-                return res_dic
+                return extract_pdf_url(word)
 
-            # if here then is probably just an html and
-            # should be treated as text
+            # if here then is probably just an html and should be treated as text
             log_(f"Extracting text from webpage {word}")
-            temp = extract_webpage(word)
-            res_dic.update({"type": "webpage",
-                            "length": temp[0],
-                            "title": temp[1],
-                            "used_wayback_machine": temp[2],
-                            "url": word})
-            if res_dic['length'] == -1:
-                res_dic.pop("length")
-                res_dic.pop("title")
-                res_dic["type"] = "not found"
-            return res_dic
-
-
+            return extract_webpage(word)
 
         elif "/" in word:  # might be a link to a file
             if word.endswith(".pdf"):
                 log_(f"Extracting pdf from {word}")
-                temp = extract_pdf_local(word)
-                res_dic.update({"type": "pdf",
-                                "length": temp[0],
-                                "title": temp[1],
-                                "url": word})
-                return res_dic
+                return extract_pdf_local(word)
+
             if word.endswith(".md") or word.endswith(".txt"):
                 log_(f"Extracting data from {word}")
-                temp = extract_txt(word)
-                res_dic.update({"type": "text",
-                                "length": temp[0],
-                                "title": temp[1],
-                                "url": word})
-                return res_dic
+                return extract_txt(word)
         else:
             log_(f"No metadata were extracted for {word}")
-            res_dic.update({"type": "not found",
-                           "url": word})
+            res_dic = {"type": "not found", "url": word}
             return res_dic
 
 
@@ -515,10 +469,14 @@ def extract_youtube(url):
     with youtube_dl.YoutubeDL({"quiet": True}) as ydl:
         video = ydl.extract_info(url, download=False)
     try:
-        res = (str(round(video['duration']/60, 1)), video['title'])
-    except (KeyError, youtube_dl.utils.DownloadError) as e:
+        res = {"type": "video",
+               "length": str(round(video['duration']/60, 1)),
+               "title": video['title'],
+               "url": url}
+    except (KeyError, youtube_dl.utils.DownloadError, youtube_dl.utils.ExtractorError) as e:
         log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
-        res = "Error"
+        res.update({"type": "video not found",
+                    "url": url})
     return res
 
 
@@ -526,9 +484,10 @@ def extract_pdf_url(url):
     "extracts reading time from an online pdf"
     downloaded = requests.get(url, headers=headers)
     open("./.temporary.pdf", "wb").write(downloaded.content)
-    (a, b) = extract_pdf_local("./.temporary.pdf")
+    temp_dic = extract_pdf_local("./.temporary.pdf")
+    temp_dic["type"] = "online pdf"
     Path("./.temporary.pdf").unlink()
-    return (a, b)
+    return temp_dic
 
 def extract_pdf_local(path):
     "extracts reading time from a local pdf file"
@@ -538,13 +497,18 @@ def extract_pdf_local(path):
             text_content = " ".join(text_content).replace("\n", " ")
     except FileNotFoundError:
         log_(f"Cannot find {path}, I thought it was a PDF", False)
-        return (None, None)
+        return {"type": "pdf not found",
+                "url": path}
 
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = str(round(total_words/wpm,1))
 
     title = path.split(sep="/")[-1]
-    return (estimatedReadingTime, title)
+    res = {"type": "local pdf",
+            "length": estimatedReadingTime,
+            "title": title,
+            "url": path}
+    return res
 
 
 def extract_txt(path):
@@ -564,7 +528,6 @@ def extract_txt(path):
     except ValueError as e:
         log_(f"Cannot find {path} : {e}", False)
         return (None, None)
-
 
 def extract_webpage(url):
     """
@@ -595,8 +558,16 @@ def extract_webpage(url):
 
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = str(round(total_words/wpm, 1))
-    return (estimatedReadingTime, title, wayback_used)
-
+    res = {"title": title,
+            "type": "webpage",
+            "length": estimatedReadingTime,
+            "used_wayback_machine": wayback_used,
+            "url": url}
+    if res['length'] == "-1":
+        res.pop("length")
+        res.pop("title")
+        res["type"] = "not found"
+    return res
 
 # functions related to scores
 def expected_elo(elo_A, elo_B, Rp=100):
@@ -761,7 +732,7 @@ if __name__ == "__main__":
     # checks if the arguments are sane
     if args['to_import_loc'] is None and args['litoy_db'] is None:
         wrong_arguments_(args)
-    if args['mode'] is not None and (str(args['mode']) not in "importance" or str(args['mode']) not in "time"):
+    if args['review_mode'] is not None and (str(args['review_mode']) not in "importance" or str(args['review_mode']) not in "time"):
         wrong_arguments_(args)
     if args['litoy_db'] is None:
         wrong_arguments_(args)
