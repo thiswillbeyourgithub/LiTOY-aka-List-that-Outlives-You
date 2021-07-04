@@ -1,9 +1,35 @@
 #!/usr/bin/env python3.9
 
+import argparse
+import time
+from itertools import chain
+from pathlib import Path
+
+from pprint import pprint
+from tqdm import tqdm
+
+import get_wayback_machine
+import json
+import pandas as pd
+import pdftotext
+import requests
+import youtube_dl
+from bs4 import BeautifulSoup
+
+import logging as lg
+import pdb
+import signal
+from contextlib import suppress
+from logging.handlers import RotatingFileHandler
+from youtube_dl.utils import ExtractorError, DownloadError
+
+from other_functions import get_terminal_size
+(sizex, sizey) = get_terminal_size()
+
 ###############################################################################
 # Summary of each section
 # 0. Banner and license
-# 1. User defined settings
+# 1. User settings
 # 2. fonctions etc
 # 3. Main routine
 
@@ -54,7 +80,7 @@
 
 
 ###############################################################################
-# 1. User defined settings
+# 1. User settings
 
 # lifebar arguments :
 disable_lifebar     = "no"
@@ -63,6 +89,8 @@ user_age            = 24
 user_life_expected  = 90
 useless_last_years  = 20
 
+# save very often a copy of the whole database as a json file
+json_auto_save=True
 
 # for reading time estimation :
 wpm = 200
@@ -76,22 +104,20 @@ which would bring you more in your life?",
         "time": "Which task takes the less time to complete?",
         }
 
-shortcuts = {
-        "skip_review"                 :  ["s", "-"],
-        "answer_level"                :  ["1", "2", "3", "4", "5", "a", "z",\
-                                          "e", "r", "r", "t"],
-        "edit_left"                   :  ["e"],
-        "edit_right"                  :  ["E"],
-        "undo"                        :  ["u"],
-        "show_all_fields"             :  ["M"],
-        "star_left"                   :  ["x"],
-        "star_right"                  :  ["X"],
-        "disable_left"                :  ["d"],
-        "disable_right"               :  ["D"],
-        "open_media"                  :  ["o", "O"],
-        "show_help"                   :  ["h", "?"],
-        "quit"                        :  ["q"]
-        }
+shortcuts = { "skip_review"      : ["s", "-"],
+              "answer_level"     : ["1", "2", "3", "4", "5",\
+                                    "a", "z", "e", "r", "t"],
+              "edit_left"        : ["e"],
+              "edit_right"       : ["E"],
+              "undo"             : ["u"],
+              "show_all_fields"  : ["M"],
+              "star_left"        : ["x"],
+              "star_right"       : ["X"],
+              "disable_left"     : ["d"],
+              "disable_right"    : ["D"],
+              "open_media"       : ["o", "O"],
+              "show_help"        : ["h", "?"],
+              "quit"             : ["q"] }
 
 # ELO :
 K_values           =  [100, 50, 25, 15, 10]  # default [100, 50, 25, 15, 10]
@@ -106,57 +132,38 @@ col_blu = "\033[94m"
 col_yel = "\033[93m"
 col_rst = "\033[0m"
 col_gre = "\033[92m"
-spacer  = "    "  # nicer print message
+spacer = "    "  # nicer print message
 
 ###############################################################################
 # 2. Initialization, definitions etc
 
 # imports
-import argparse
-import pandas as pd
-import logging as lg
-from logging.handlers import RotatingFileHandler
-import argparse
-import random
-import requests
-from pathlib import Path
-from pprint import pprint
-from tqdm import tqdm
-from Levenshtein import distance as lev
-import pdftotext
-from itertools import chain
-import youtube_dl
-import time
-from bs4 import BeautifulSoup
-import math
-import json
-import pdb
-import get_wayback_machine
-from contextlib import suppress
-from youtube_dl.utils import ExtractorError, DownloadError
-import platform
 
 
 global cols
 cols = ["ID", "date", "content", "metacontent", "tags",
-               "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
-               "compar_time", "n_comparison", "K", "disabled"]
+        "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
+        "compar_time", "n_comparison", "K", "disabled"]
+# TODO : mention that in the README
 # iELO stands for "importance ELO", DiELO for "delta iELO",
 # gELO for "global ELO", etc
 
 
-# used to make the whole script interruptible using ctrl+c
-# you can then resume using 'c'
 def debug_signal_handler(signal, frame):
-    import pdb
+    """
+    used to make the whole script interruptible using ctrl+c
+    you can then resume using 'c'
+    """
     pdb.set_trace()
-import signal
 signal.signal(signal.SIGINT, debug_signal_handler)
 
 
 # misc functions
 def log_(string, onlyLogging=True):
-    "appends string to the logging file and sometimes also print it"
+    """
+    appends string to the logging file, if onlyLogging=False then
+    will also print to user using tqdm.write
+    """
     lg.info(f"{time.asctime()}: {string}")
     if onlyLogging is False or args["verbose"] is not False:
         tqdm.write(string)
@@ -173,7 +180,8 @@ def checkIfFileAndDB(path):
             log_(f"Litoy database not found in file at {path} : {e}", False)
             return None
     else:
-        answer = input(f"No database file found at {path}, do you want me to create it?\ny/n?")
+        answer = input(f"No database file found at {path}, do you want me to\
+create it?\ny/n?")
         if answer in "yes":
             db_location.touch()
             return None
@@ -191,6 +199,7 @@ def importFromFile(path):
     log_(f"Importing from file {path}", False)
     with import_file.open() as f:
         lines = f.readlines()
+    lines = [li for li in lines if not str(li).startswith("#")]
     for line in tqdm(lines, desc="Processing line by line", unit="line",
                      ascii=False, dynamic_ncols=True, mininterval=0):
         line.strip()
@@ -216,7 +225,8 @@ def add_new_entry(df, content):
         if "forbidden" in str(metacontent['title'].lower()) or \
                 "404" in str(metacontent['title'].lower()) or\
                 "403" in str(metacontent['title'].lower()):
-            log_(f"Waiting 5 seconds because apparent webpage loading limit was reached while inspecting line : {content}", False)
+            log_(f"Waiting 5 seconds because apparent webpage loading limit\
+was reached while inspecting line : {content}", False)
             time.sleep(5)
             metacontent = get_meta_from_content(content)
         # if wayback machine was used : mention it in the tags
@@ -231,7 +241,7 @@ def add_new_entry(df, content):
     except ValueError:  # first card
         newID = 1
     new_dic = {
-               "date": str(time.time()),
+               "date": str(int(time.time())),
                "content": content,
                "metacontent": json.dumps(metacontent),
                "tags": json.dumps(sorted(tags)),
@@ -261,27 +271,39 @@ def pick_entries(df):
     highest_K = max(df['K'])
 
     picked_ids = []
-    picked_ids.append(int(df.loc[ (df.K == highest_K) & (df.disabled == 0)].sample(1).index[0]))
-    picked_ids.extend(df.loc[ (df['disabled'] == 0) ].sample(min(10, len(df.index)-1)).index)
+    choice = df.loc[(df.K == highest_K) & (df.disabled == 0)]
+    picked_ids.append(int(choice.sample(1).index[0]))
+    choice2 = df.loc[(df['disabled'] == 0) ]
+    picked_ids.extend(choice2.sample(min(10, len(df.index)-1)).index)
 
     while picked_ids[0] in list(picked_ids[1:]):
-        log_("Picking entries one more time")
+        log_("Picking entries one more time to avoid comparing to self")
         picked_ids = pick_entries(df)
     return picked_ids
 
 
 def print_memento_mori(): # remember you will die
+    """
+    print a reminder to the user that life is short and times
+    is always passing by faster as time goes on
+    """
     if disable_lifebar == "no" :
         seg1 = useless_first_years
         seg2 = user_age - useless_first_years
         seg3 = user_life_expected - user_age - useless_last_years
         seg4 = useless_last_years
         resize = 1/user_life_expected*(sizex-17)
-        print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + col_gre + "-"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
+        print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) +\
+                "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) +\
+                col_red + "X"*(int(seg2*resize)) + col_gre +\
+                "-"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) +\
+                col_rst)
 
 
 def print_2_entries(id_left, id_right, mode, all_fields="no"):
-    """ shows the two entries to compare side by side """
+    """
+    shows the two entries to compare side by side
+    """
     print(col_blu + "#"*sizex + col_rst)
     print_memento_mori()
     print(col_blu + "#"*sizex + col_rst)
@@ -297,9 +319,13 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
         while a or b:
             inc+=1
             if inc == 1:
-                print(str(col) + str(rowname) + " "*space + "|" + a[:col_width].ljust(col_width) + " "*space + "|" + b[:col_width] + col_rst)
+                print(str(col) + str(rowname) + " "*space + "|" +\
+                        a[:col_width].ljust(col_width) + " "*space +\
+                        "|" + b[:col_width] + col_rst)
             else :
-                print(str(col) + " "*(len(rowname)+space) + "|" + a[:col_width].ljust(col_width) + " "*space + "|" + b[:col_width] + col_rst)
+                print(str(col) + " "*(len(rowname)+space) + "|" +\
+                        a[:col_width].ljust(col_width) + " "*space +\
+                        "|" + b[:col_width] + col_rst)
             a = a[col_width:]
             b = b[col_width:]
 
@@ -314,7 +340,8 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
             side_by_side("Tags :", entry_left.tags, entry_right.tags)
             print("."*sizex)
         if int(entry_left.starred) + int(entry_right.starred) != 0:
-            side_by_side("Starred:", entry_left.starred, entry_right.starred, col=col_yel)
+            side_by_side("Starred:", entry_left.starred, entry_right.starred,\
+                         col=col_yel)
             print("."*sizex)
 
         side_by_side("Entry :", entry_left.content, entry_right.content)
@@ -323,7 +350,8 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
             side_by_side("iELO :", entry_left.iELO, entry_right.iELO)
             print("."*sizex)
         else:
-            side_by_side("tELO (high is quick) :", entry_left.tELO, entry_right.tELO)
+            side_by_side("tELO (high is quick) :",\
+                    entry_left.tELO, entry_right.tELO)
             print("."*sizex)
 
     if all_fields=="all": # print all fields, used more for debugging
@@ -342,87 +370,9 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
     side_by_side("Title :", js[0]["title"], js[1]["title"])
     side_by_side("Length :", js[0]["length"], js[1]["length"])
     side_by_side("Path :", js[0]["url"], js[1]["url"])
-        
 
     print(col_blu + "#"*sizex + col_rst)
 
-import os
-import shlex
-import struct
-import platform
-import subprocess
-def get_terminal_size():
-    """
-    only used to get terminal size, to adjust the width when printing lines
-    - get width and height of console
-    - works on linux,os x,windows,cygwin(windows)
-    originally retrieved from:
-    http://stackoverflow.com/questions/566746/how-to-get-console-window-width-in-python
-    then from here : https://gist.github.com/jtriley/1108174
-    """
-    current_os = platform.system()
-    tuple_xy = None
-    if current_os == 'Windows':
-        tuple_xy = _get_terminal_size_windows()
-        if tuple_xy is None:
-            tuple_xy = _get_terminal_size_tput()
-            # needed for window's python in cygwin's xterm!
-    if current_os in ['Linux', 'Darwin'] or current_os.startswith('CYGWIN'):
-        tuple_xy = _get_terminal_size_linux()
-    if tuple_xy is None:
-        print("Using default screen size")
-        tuple_xy = (80, 25)      # default value
-    return [int(tuple_xy[0]), int(tuple_xy[1])]
-def _get_terminal_size_windows():
-    try:
-        from ctypes import windll, create_string_buffer
-        # stdin handle is -10
-        # stdout handle is -11
-        # stderr handle is -12
-        h = windll.kernel32.GetStdHandle(-12)
-        csbi = create_string_buffer(22)
-        res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
-        if res:
-            (bufx, bufy, curx, cury, wattr,
-             left, top, right, bottom,
-             maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
-            sizex = right - left + 1
-            sizey = bottom - top + 1
-            return int(sizex), int(sizey)
-    except:
-        pass
-def _get_terminal_size_tput():
-    # get terminal width
-    # src: http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window
-    try:
-        cols = int(subprocess.check_call(shlex.split('tput cols')))
-        rows = int(subprocess.check_call(shlex.split('tput lines')))
-        return (cols, rows)
-    except:
-        pass
-def _get_terminal_size_linux():
-    def ioctl_GWINSZ(fd):
-        try:
-            import fcntl, termios
-            cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
-            return cr
-        except Exception as e:
-            print(e)
-    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
-    if not cr:
-        try:
-            fd = os.open(os.ctermid(), os.O_RDONLY)
-            cr = ioctl_GWINSZ(fd)
-            os.close(fd)
-        except:
-            pass
-    if not cr:
-        try:
-            cr = (os.environ['LINES'], os.environ['COLUMNS'])
-        except:
-            return None
-    return int(cr[1]), int(cr[0])
-(sizex, sizey) = get_terminal_size()
 
 def show_podium(df):
     """
@@ -449,7 +399,9 @@ def show_stats(df):
 
 
 def rlinput(prompt, prefill=''): 
-    "prompt the user using prefilled text"
+    """
+    prompt the user using prefilled text, but doesn't work on windows
+    """
     # https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible
     readline.set_startup_hook(lambda: readline.insert_text(prefill))
     readline.parse_and_bind("tab: complete")
@@ -468,7 +420,7 @@ def shortcut_and_action(id_left, id_right, mode):
     log_(f"Waiting for shortcut for {entry_left.name} vs {entry_right.name} for {mode}")
 
     def fetch_action(input):
-        """deduce action from user keypress"""
+        "deduce action from user keypress"
         found = ""
         for action, keypress in shortcuts.items():
             if str(input) in keypress:
@@ -482,14 +434,14 @@ def shortcut_and_action(id_left, id_right, mode):
         return found
 
     def star(entry):
-        """stars an entry during review"""
+        "stars an entry during comparison"
         df = litoy.df.copy()
         df.loc[entry.name, "starred"] = 1
         litoy.save_to_file(df)
         log_(f"Starred entry {entry.name}", False)
 
     def disable(entry):
-        """disables an entry during review"""
+        "disables an entry during comparison"
         assert entry["disabled"] == 0
         df = litoy.df.copy()
         df.loc[entry.name, "disabled"] = 1
@@ -497,6 +449,7 @@ def shortcut_and_action(id_left, id_right, mode):
         log_(f"Disabled entry {entry.name}", False)
 
     def edit(entry):
+        "edit an entry during comparison"
         log_(f"Editing entry {entry.name}")
         while True:
             chosenfield = str(input("What field do you want to edit?\n>"))
@@ -517,7 +470,6 @@ def shortcut_and_action(id_left, id_right, mode):
 
     action = ""
     start_time = time.time()
-
     while True:
         if action == "exit_outerloop": break
         action = "" 
@@ -561,8 +513,8 @@ def shortcut_and_action(id_left, id_right, mode):
             eR_new[Delo_fld] = eR_new[elo_fld] - eR_old[elo_fld]
             eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO)
             eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO)
-            eL_new["compar_time"] = eL_new["compar_time"] + date
-            eR_new["compar_time"] = eR_new["compar_time"] + date
+            eL_new["compar_time"] = round(eL_new["compar_time"] + date - start_time, 3)
+            eR_new["compar_time"] = round(eR_new["compar_time"] + date - start_time, 3)
             eL_new["n_comparison"]+=1
             eR_new["n_comparison"]+=1
 
@@ -833,7 +785,7 @@ def adjust_K(K0):
                 {str(K0)}={str(K_values[-1])}")
         return str(K0)
     for i in range(len(K_values)-1):
-        if int(K_values[i]) == int(K0) :
+        if int(K_values[i]) == int(K0):
             log_(f"New K_value : {str(K_values[i+1])}")
             return K_values[i+1]
     if K0 not in K_values:
@@ -841,10 +793,30 @@ def adjust_K(K0):
                 {str(K_values[-1])}")
         return str(K_values[-1])
     log_("This should never print")
-    raise SystemExit() 
+    raise SystemExit()
+
 
 def compute_global_score(iELO, tELO):
-    return int(global_weights[0]*int(iELO) +  global_weights[1]*int(tELO))
+    "returns weight adjusted sum of importance score and time score"
+    return int(global_weights[0]*int(iELO) + global_weights[1]*int(tELO))
+
+
+def json_periodic_save():
+    """
+    If json_auto_save is set to True, this function will save the whole litoy
+    database in a new json file at startup. The idea is to avoid data loss
+    by corrupting the xlsx file
+    """
+    if json_auto_save is True and len(litoy.df.index)>5:
+        json_dir = f'{str(Path(".").absolute())}/logs/json_backups/'
+        json_name = str(int(time.time()))
+        jfile = Path(f"{json_dir}{json_name}")
+        if jfile.exists():
+            print("json file already exists!")
+            raise SystemExit()
+        jfile.touch()
+        log_(f"json periodic save to file {json_name}")
+        litoy.df.to_json(jfile, compression="bz2", index=True)
 
 
 # class
@@ -858,15 +830,22 @@ class LiTOYClass:
         else:
             self.path = db_path
             # just in case:
-            try : self.df = pd.read_excel(db_path).set_index("ID")
-            except KeyError: self.df = pd.read_excel(db_path)
+            try:
+                self.df = pd.read_excel(db_path).set_index("ID")
+            except KeyError:
+                self.df = pd.read_excel(db_path)
 
     def reload_df(self):
-        try : self.df = pd.read_excel(self.path).set_index("ID")
-        except KeyError: self.df = pd.read_excel(self.path)
+        "used to reload the df from the file"
+        try :
+            self.df = pd.read_excel(self.path).set_index("ID")
+        except KeyError:
+            self.df = pd.read_excel(self.path)
 
     def save_to_file(self, df):
-        Excelwriter = pd.ExcelWriter(f"{args['litoy_db']}.temp.xlsx" , engine="xlsxwriter")
+        "used to save the dataframe to an excel file"
+        Excelwriter = pd.ExcelWriter(f"{args['litoy_db']}.temp.xlsx",
+                                     engine="xlsxwriter")
         df.to_excel(Excelwriter, sheet_name="LiTOY", index=True)
         Excelwriter.save()
 
@@ -878,23 +857,25 @@ class LiTOYClass:
         self.reload_df()
 
     def create_database(self):
+        "used to create the excel database"
         df = pd.DataFrame(columns=cols).set_index("ID")
         self.save_to_file(df)
         self.reload_df()
 
     def checksIfEntryExists(self, df, new):
+        "checks if an entry already exists before adding it"
         # strangely, this was faster than using lapply
         for current in list(df['content']):
             current.strip()
             current = current.replace("\n", "")
-            # tries to avoid computing levenshtein distance for nothing
-            if abs(len(current)-len(new)) <= 10 and\
-                    lev(new, current) <= 3:
-                tqdm.write(f"\nLine already current in database : \n{new}\n{current}\n")
+            if current == new:
+                tqdm.write(f"\nLine already current in database :\
+\n{new}\n{current}\n")
                 return True
         return False
 
     def get_tags(self, df):
+        "gets the list of tags already present in the db"
         tags_list = list(df["tags"])
         tags_list = [json.loads(t) for t in tags_list]
         found_at_least_one = 1
@@ -912,46 +893,48 @@ class LiTOYClass:
 # arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--import-from-file", "-i",
-        nargs="?",
-        metavar = "import_path",
-        dest='to_import_loc',
-        type = str,
-        required=False,
-        help = "path of the text file to import to litoy database")
+                    nargs="?",
+                    metavar="import_path",
+                    dest='import_ff_arg',
+                    type=str,
+                    required=False,
+                    help="path of the text file to import to litoy database")
 parser.add_argument("--litoy-db", "-l",
-        nargs = "?",
-        metavar = "litoy_db",
-        dest='litoy_db',
-        type = str,
-        required=False,
-        help = "path to the litoy database")
+                    nargs="?",
+                    metavar="litoy_db",
+                    dest='litoy_db',
+                    type=str,
+                    required=False,
+                    help="path to the litoy database")
 parser.add_argument("--add", "-a",
-        action = "store_true",
-        dest='entry_to_add',
-        required=False,
-        help = "directly add an entry by putting it inside quotation mark\
-        like so : python3 ./__main__.py -a \"do this thing tags:DIY, I\
-        really need to do it that way\"")
+                    action="store_true",
+                    dest='entry_to_add',
+                    required=False,
+                    help="directly add an entry by putting it inside quotation\
+mark like so : python3 ./__main__.py -a \"do this\
+thing tags:DIY, I\
+                    really need to do it that way\"")
 parser.add_argument("--verbose", "-v",
-        dest='verbose',
-        required=False,
-        action="store_true",
-        help = "debug flag, to print more information during runtime")
+                    dest='verbose',
+                    required=False,
+                    action="store_true",
+                    help="debug flag : prints more information during runtime")
 parser.add_argument("--review", "-r",
-        dest='review_mode',
-        required=False,
-        action="store_true",
-        help = "use this to enable review mode instead of importation etc")
+                    dest='review_mode',
+                    required=False,
+                    action="store_true",
+                    help="use this to enable review mode instead of\
+importation etc")
 parser.add_argument("--podium", "-p",
-        dest='podium',
-        required=False,
-        action="store_true",
-        help = "use this to show the current podium")
+                    dest='podium',
+                    required=False,
+                    action="store_true",
+                    help="use this to show the current podium")
 parser.add_argument("--show-stats", "-s",
-        dest='show_stats',
-        required=False,
-        action="store_true",
-        help = "use this to show show current database statistics")
+                    dest='show_stats',
+                    required=False,
+                    action="store_true",
+                    help="use this to show show current database statistics")
 
 ###############################################################################
 # 3. Main routine
@@ -962,7 +945,7 @@ if __name__ == "__main__":
                    filename='logs/rotating_log',
                    filemode='a',
                    format='%(asctime)s: %(message)s')
-    #https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
+    # https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
     log = lg.getLogger()
     handler = RotatingFileHandler("logs/rotating_log",
                                   maxBytes=20*1024*1024, backupCount=20)
@@ -976,9 +959,9 @@ if __name__ == "__main__":
     if not args['litoy_db'].endswith(".xlsx"):
         log_(f"Not a valid xlsx filename : {args['litoy_db']}\n\
                 Please add '.xlsx' at the end of the filename")
-    if args['to_import_loc'] is None and args['litoy_db'] is None:
+    if args['import_ff_arg'] is None and args['litoy_db'] is None:
         wrong_arguments_(args)
-    if args['review_mode'] is True and args['to_import_loc'] is not None:
+    if args['review_mode'] is True and args['import_ff_arg'] is not None:
         wrong_arguments_(args)
 
     # initialize litoy class:
@@ -987,9 +970,25 @@ if __name__ == "__main__":
     else:
         litoy = LiTOYClass(args['litoy_db'])
 
-    if args['to_import_loc'] is not None:
-        importFromFile(args['to_import_loc'])
+    # finally the actual code:
+    json_periodic_save()  # periodic save
+
+    if args['import_ff_arg'] is not None:
+        importFromFile(args['import_ff_arg'])
         log_("Done importing from file, exiting", False)
+        json_periodic_save()
+        raise SystemExit()
+
+    if args["entry_to_add"] is True:
+        cur_tags = litoy.get_tags(litoy.df)
+        entry_to_add = input(f"Current tags: {cur_tags}\n\
+Text content of the entry?\n>")
+        log_(f'Adding entry {entry_to_add}')
+        if len(entry_to_add.split(sep=" ")) == 1:  # avoids bugs
+            print("There is no point in adding single word entries. Quitting")
+            raise SystemExit()
+        add_new_entry(litoy.df, entry_to_add)
+        log_("Done.", False)
         raise SystemExit()
 
     if args['review_mode'] is True:
@@ -1007,39 +1006,27 @@ if __name__ == "__main__":
         for i in picked_ids[1:]:
             for m in ["importance", "time"]:
                 print("\n"*10)
-                print_2_entries(int(picked_ids[0]), int(i), mode=m, all_fields=disp_flds)
+                print_2_entries(int(picked_ids[0]),
+                                int(i),
+                                mode=m,
+                                all_fields=disp_flds)
                 state = ""
                 state = shortcut_and_action(picked_ids[0], i, mode=m)
-                if state == "disable_right": break
+                if state == "disable_right":
+                    break
                 if state == "disable_left":
-                    log_("Stopping because you suspended the left entry", False)
+                    log_("Stopping because you suspended left entry", False)
                     raise SystemExit()
 
     if args["podium"] is True:
         log_("Showing podium")
         show_podium(litoy.df)
+        raise SystemExit()
 
     if args["show_stats"] is True:
         log_("Showing statistics")
         show_stats(litoy.df)
+        raise SystemExit()
 
-    if args["entry_to_add"] is True:
-        cur_tags = litoy.get_tags(litoy.df)
-        entry_to_add = input(f"Current tags: {cur_tags}\nText content of the entry?\n>")
-        log_(f'Adding entry {entry_to_add}')
-        if len(entry_to_add.split(sep=" "))==1:  # avoids bugs
-            print("There is no point in adding single word entries. Quitting")
-            raise SystemExit()
-        add_new_entry(litoy.df, entry_to_add)
-
-
-# TODOS :
-# * ignore lines starting with #
-# * respect pep8
-# * use docstrings everywhere
-# * use type hints from the beginning and mypy
-# * store metadata of litoy into the log file : average k and average score
-# * store the get_terminal_size function in another file in src
-# * make a way more precise index : with all function names etc
-# * add undo function
-# * remove obsolete files from old LiTOY, remake the README
+    log_("Insufficient arguments?", False)
+    wrong_arguments_(args)
