@@ -428,7 +428,7 @@ def shortcut_and_action(mode, fighters):
                         print("Wrong field name")
                         logging.info("Shortcut : edit : wrong field name")
                         continue
-                    if platform.system is not "Windows" :
+                    if platform.system() is not "Windows" :
                         new_value = str(rlinput("Enter the desired new value for field '" + chosenfield +"'\n", prefill=old_value))
                     else :
                         logging.info("Shortcut : edit : Windows user, no prefilled input")
