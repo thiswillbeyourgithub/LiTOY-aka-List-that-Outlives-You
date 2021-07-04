@@ -1,11 +1,9 @@
-# Current state :
-Work in progress, beta stage. PRs and issues are extremely appreciated.
-
 # LiTOY : the List That Outlives You.
 
-## Acknowledgement (in no particular order)
-* Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
-* Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI.
+### Current state :
+* hobby in progress
+* beta stage
+* PRs and issues are extremely appreciated.
 
 ## What is LiTOY?
 There are several ways to look at it :
@@ -32,7 +30,7 @@ The idea behind LiTOY is simple :
 
 **Do you accept criticism and/or contribution?** All help and criticisms are very appreciated.
 
-**What are ELO scores? Why did you choose this algorithm?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each opponent that can then be used to compare opponents that have never met each other. The main selling point of ELO is that it still behaves well even if some players occasionally under perform (or over perform). In the case of LiTOY, you can have some incoherent comparisons in your db and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to completely understand (i.e. grok) my code.
+**What are ELO scores? Why did you choose this algorithm?** A ranking system initially devised for chess. The idea is that if you have chess players A, B and C : if `A beats B` and `B beats C` then you don't really have to organize a fight between A and C to know which is better. It does so by assigning a score to each opponent that can then be used to compare opponents that have never met each other. The main selling point of ELO is that it still behaves well even if some players occasionally under perform (or over perform). In the case of LiTOY, you can have some incoherent comparisons in your database and it will not throw off the whole ranking. Also, ELO is dead easy to implement and I wanted to completely understand (i.e. grok) my code.
 
 **What platform does it run on?** I tried to make it as agnostic as possible but I'm on Linux and hate other systems. Normally the code should run fine on other systems but please do tell me if you run into an issue.
 
@@ -44,7 +42,7 @@ The idea behind LiTOY is simple :
 
 ** Any killer features you want to brag about?** LiTOY automatically retrieves lots of metadata from the links. Like reading time from a pdf, a webpage, duration of a video etc.
 
-**Do you care to explain all the different fields in the db?** 
+**Do you care to explain all the different fields in the database?** 
 * `ID` used for the pandas index as well as the line number in excel. This should in theory never change for a given entry (even if you edit the content of the entry).
 * `date` date in unix time in second of the creation of this entry
 * `content` the text content of the entry
@@ -69,7 +67,7 @@ The idea behind LiTOY is simple :
 
 **Can I open the database using libreoffice?** Yes, it's why I chose this format. But close LiTOY first and don't forget to save your changes. Note that you can automatically save the whole database as a json file too.
 
-## How to use:
+## How can I use LiTOY?
 * Read this page thoroughly. Don't be afraid to ask questions.
 * make sure you have python 3.9 installed
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY/ && cd LiTOY`
@@ -101,15 +99,16 @@ The idea behind LiTOY is simple :
     * make a way more precise index : with all function names etc
     * add undo function : at least tell to go through the logs or the passed litoy json files
     * mention somewhere the link with eisenhower matrixes
-    * use pyenv to figure out the environnement needed to run litoy, then specify it in the readme
+    * use pyenv to figure out the environment needed to run litoy, then specify it in the readme
     * add gif to show demo
     * if local video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
     * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
     * use pyinstaller to try to package the damn thing
     * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
- ### periodic checks :
-     * check if mypy is fine
 
 
 
+## Acknowledgement (not ordered)
+* Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
+* Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI.
