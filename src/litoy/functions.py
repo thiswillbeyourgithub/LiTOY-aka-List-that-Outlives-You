@@ -1069,14 +1069,14 @@ def find_media(entry, action=""):  # finds media in the entry, action can be "au
 
 
 
-# from here : https://gist.github.com/jtriley/1108174
-# only used to get terminal size, to adjust the width when printing lines
 def get_terminal_size():
-    """ getTerminalSize()
-     - get width and height of console
-     - works on linux,os x,windows,cygwin(windows)
-     originally retrieved from:
-     http://stackoverflow.com/questions/566746/how-to-get-console-window-width-in-python
+    """
+    only used to get terminal size, to adjust the width when printing lines
+    - get width and height of console
+    - works on linux,os x,windows,cygwin(windows)
+    originally retrieved from:
+    http://stackoverflow.com/questions/566746/how-to-get-console-window-width-in-python
+    then from here : https://gist.github.com/jtriley/1108174
     """
     current_os = platform.system()
     tuple_xy = None
