@@ -7,7 +7,6 @@
 # 2. fonctions etc
 # 3. Main routine
 
-# TODO : make a way more precise index : with all function names etc
 ###############################################################################
 # 0. Banner and license
 
@@ -78,20 +77,20 @@ which would bring you more in your life?",
         }
 
 shortcuts = {
-        "skip_review"                 :  ["s","-"],
-        "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
+        "skip_review"                 :  ["s", "-"],
+        "answer_level"                :  ["1", "2", "3", "4", "5", "a", "z",\
+                                          "e", "r", "r", "t"],
         "edit_left"                   :  ["e"],
         "edit_right"                  :  ["E"],
-        "undo"                       :  ["u"],
-        "show_more_fields"           :  ["M"],
+        "undo"                        :  ["u"],
+        "show_all_fields"             :  ["M"],
         "star_left"                   :  ["x"],
         "star_right"                  :  ["X"],
         "disable_left"                :  ["d"],
-        "disable_light"               :  ["U"],
-        "open_media_left"             :  ["o"],
-        "open_media_right"            :  ["O"],
-        "show_help"                  :  ["h","?"],
-        "quit"                       :  ["q"]
+        "disable_right"               :  ["D"],
+        "open_media"                  :  ["o", "O"],
+        "show_help"                   :  ["h", "?"],
+        "quit"                        :  ["q"]
         }
 
 # ELO :
@@ -159,7 +158,7 @@ signal.signal(signal.SIGINT, debug_signal_handler)
 def log_(string, onlyLogging=True):
     "appends string to the logging file and sometimes also print it"
     lg.info(f"{time.asctime()}: {string}")
-    if onlyLogging is False or args["debug"] is not False:
+    if onlyLogging is False or args["verbose"] is not False:
         tqdm.write(string)
 
 
@@ -192,15 +191,12 @@ def importFromFile(path):
     log_(f"Importing from file {path}", False)
     with import_file.open() as f:
         lines = f.readlines()
-    random.shuffle(lines)  # TODO remove ?
-    for line in tqdm(lines, desc="Processing each line", unit="Line",
-                     ascii=False, dynamic_ncols=True, mininterval=1):
+    for line in tqdm(lines, desc="Processing line by line", unit="line",
+                     ascii=False, dynamic_ncols=True, mininterval=0):
         line.strip()
         line = line.replace("\n", "")
         if not litoy.checksIfEntryExists(litoy.df, line):
             add_new_entry(litoy.df, line)
-        else:
-            log_(f"Line already exists in the litoy database : {line}", False)
 
 
 def wrong_arguments_(args):
@@ -231,10 +227,10 @@ def add_new_entry(df, content):
         metacontent.pop("wayback_used")
 
     try:
-        newID = max(df['ID'])+1
+        newID = max(df.index)+1
     except ValueError:  # first card
         newID = 1
-    new_dic = {"ID": newID,
+    new_dic = {
                "date": str(time.time()),
                "content": content,
                "metacontent": json.dumps(metacontent),
@@ -247,11 +243,12 @@ def add_new_entry(df, content):
                "compar_time": 0,
                "n_comparison": 0,
                "K": sorted(K_values)[-1],
-               "starred": "No",
+               "starred": 0,
                "disabled": 0,
                }
     log_(f"Adding new entry : {new_dic}")
-    df = df.append(new_dic, ignore_index=True)
+    for k, v in new_dic.items():
+        df.loc[newID, k] = v
     litoy.save_to_file(df)
 
 
@@ -264,8 +261,8 @@ def pick_entries(df):
     highest_K = max(df['K'])
 
     picked_ids = []
-    picked_ids.append(int(df.loc[ (df['K'] == highest_K) & (df['disabled'] == 0)].sample(1)["ID"]))
-    picked_ids.extend(df.loc[ (df['disabled'] == 0) ].sample(min(10, len(df.index)-1))["ID"])
+    picked_ids.append(int(df.loc[ (df.K == highest_K) & (df.disabled == 0)].sample(1).index[0]))
+    picked_ids.extend(df.loc[ (df['disabled'] == 0) ].sample(min(10, len(df.index)-1)).index)
 
     while picked_ids[0] in list(picked_ids[1:]):
         log_("Picking entries one more time")
@@ -283,13 +280,16 @@ def print_memento_mori(): # remember you will die
         print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + col_gre + "-"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
 
 
-def print_2_entries(entry_left, entry_right, mode, all_fields="no"):
+def print_2_entries(id_left, id_right, mode, all_fields="no"):
     """ shows the two entries to compare side by side """
     print(col_blu + "#"*sizex + col_rst)
     print_memento_mori()
     print(col_blu + "#"*sizex + col_rst)
+
     def side_by_side(rowname, a, b, space=2, col=""):
-        """ from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python """
+        """
+        from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
+        """
         rowname = rowname.ljust(30)
         a = str(a) ; b = str(b)
         col_width=int((int(sizex)-len(rowname))/2-int(space)*2)
@@ -303,17 +303,17 @@ def print_2_entries(entry_left, entry_right, mode, all_fields="no"):
             a = a[col_width:]
             b = b[col_width:]
 
-    entry_left =  litoy.df.iloc[entry_left]
-    entry_right = litoy.df.iloc[entry_right]
+    entry_left =  litoy.df.loc[id_left, :].copy()
+    entry_right = litoy.df.loc[id_right, :].copy()
 
     if all_fields != "all":
-        side_by_side("IDs :", entry_left.ID, entry_right.ID)
+        side_by_side("IDs :", entry_left.name, entry_right.name)
         print("."*sizex)
 
         if "".join(entry_left.tags + entry_right.tags) != "":
             side_by_side("Tags :", entry_left.tags, entry_right.tags)
             print("."*sizex)
-        if "".join(entry_left.starred + entry_right.starred) != "NoNo":
+        if int(entry_left.starred) + int(entry_right.starred) != 0:
             side_by_side("Starred:", entry_left.starred, entry_right.starred, col=col_yel)
             print("."*sizex)
 
@@ -331,20 +331,20 @@ def print_2_entries(entry_left, entry_right, mode, all_fields="no"):
             side_by_side(str(c), str(entry_left[c]), str(entry_right[c]))
 
     # metadata :
-    j = []
-    j.append(json.loads(entry_left.metacontent))
-    j.append(json.loads(entry_right.metacontent))
-    with suppress(KeyError):
-        side_by_side("Media type :", j[0]["type"], j[1]["type"])
-        side_by_side("Title :", j[0]["Title"], j[1]["Title"])
-        side_by_side("Length :", j[0]["length"], j[1]["length"])
-        side_by_side("Path :", j[0]["url"], j[1]["url"])
+    js = []
+    js.append(json.loads(entry_left.metacontent))
+    js.append(json.loads(entry_right.metacontent))
+    for x in [0, 1]:
+        for y in ["type", "title", "length", "url"]:
+            if y not in js[x].keys():
+                js[x][y] = ""
+    side_by_side("Media type :", js[0]["type"], js[1]["type"])
+    side_by_side("Title :", js[0]["title"], js[1]["title"])
+    side_by_side("Length :", js[0]["length"], js[1]["length"])
+    side_by_side("Path :", js[0]["url"], js[1]["url"])
         
 
     print(col_blu + "#"*sizex + col_rst)
-
-
-#############################
 
 import os
 import shlex
@@ -458,13 +458,17 @@ def rlinput(prompt, prefill=''):
     finally:
         readline.set_startup_hook()
 
-def shortcut_and_action(entry_left, entry_right, mode): 
+def shortcut_and_action(id_left, id_right, mode): 
     """
     makes the link between keypresses and actions
     shortcuts are stored at the top of the file
     """
-    log_(f"Waiting for shortcut for {entry_left} vs {entry_right} for {mode}")
-    def get_action(input):   # get action from the keypress pressed
+    entry_left =  litoy.df.loc[id_left, :]
+    entry_right = litoy.df.loc[id_right, :]
+    log_(f"Waiting for shortcut for {entry_left.name} vs {entry_right.name} for {mode}")
+
+    def fetch_action(input):
+        """deduce action from user keypress"""
         found = ""
         for action, keypress in shortcuts.items():
             if str(input) in keypress:
@@ -473,99 +477,139 @@ def shortcut_and_action(entry_left, entry_right, mode):
                     raise SystemExit()
                 found = action
         if action == "":
-            log_(f"No {str(input)} shortcut found", False)
+            log_(f"No {str(input)} shortcut found")
             action = "show_help"
         return found
 
+    def star(entry):
+        """stars an entry during review"""
+        df = litoy.df.copy()
+        df.loc[entry.name, "starred"] = 1
+        litoy.save_to_file(df)
+        log_(f"Starred entry {entry.name}", False)
+
+    def disable(entry):
+        """disables an entry during review"""
+        assert entry["disabled"] == 0
+        df = litoy.df.copy()
+        df.loc[entry.name, "disabled"] = 1
+        litoy.save_to_file(df)
+        log_(f"Disabled entry {entry.name}", False)
+
+    def edit(entry):
+        log_(f"Editing entry {entry.name}")
+        while True:
+            chosenfield = str(input("What field do you want to edit?\n>"))
+            try :
+                old_value = str(entry[chosenfield])
+            except KeyError:
+                log_("Shortcut : edit : wrong field name", False)
+                continue
+            if platform.system() == "Windows" :
+                new_value = str(input("Enter the desired new value for field '" + chosenfield +"'\n"))
+            else :
+                new_value = str(rlinput("Enter the desired new value for field '" + chosenfield +"'\n", prefill=old_value))
+            df = litoy.df.copy()
+            df.loc[entry.name, chosenfield] = new_value
+            litoy.save_to_file(df)
+            log_(f'Edited field "{chosenfield}", old_value="{old_value}", new_value="{new_value}', False)
+            break
+
     action = ""
-    entry_left =  litoy.df.iloc[entry_left]
-    entry_right = litoy.df.iloc[entry_right]
+    start_time = time.time()
 
     while True:
-        start_time = time.time()  # to get time elapsed
-
-        if action == "exit_outerloop":  # not a shortcut, but used as a way
-            # to exit the while loop
-            # not to be confused with "quit"
-            break
-        action = ""
-
-        log_(f"Shortcut : asking question, mode : {mode}", False)
-        print(f"{questions[mode]} (h or ? for help)")
+        if action == "exit_outerloop": break
+        action = "" 
+        log_(f"Shortcut : asking question, mode : {mode}")
+        print(f"{col_gre}{questions[mode]} (h or ? for help){col_rst}")
         keypress = input()
-        log_(f"Shortcut : User typed : {keypress}", False)
 
         if keypress not in list(chain.from_iterable(shortcuts.values())):
             log_(f"Shortcut Error : keypress not found : {keypress}")
             action = "show_help"
         else :
-            action = str(get_action(keypress))
-            log_(f"Shortcut found : Action={action}", False)
+            action = str(fetch_action(keypress))
+            log_(f"Shortcut found : Action={action}")
 
         if action == "answer_level" : # where the actual comparison takes place
-            if keypress=="a": keypress="1"
-            if keypress=="z": keypress="2"
-            if keypress=="e": keypress="3"
-            if keypress=="r": keypress="4"
-            if keypress=="t": keypress="5"
+            if keypress=="a": keypress=1
+            if keypress=="z": keypress=2
+            if keypress=="e": keypress=3
+            if keypress=="r": keypress=4
+            if keypress=="t": keypress=5
+            keypress = int(keypress)
+            date = time.time()
+            assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
 
-            # TODO
+            eL_old = entry_left ; eR_old = entry_right
+            eL_new =  eL_old.copy() ; eR_new = eR_old.copy()
+
+            if mode=="importance" : elo_fld = "iELO" ; Delo_fld = "DiELO"
+            else : elo_fld = "tELO" ; Delo_fld = "DtELO"
+            eloL = int(eL_old[elo_fld])
+            eloR = int(eR_old[elo_fld])
+
+            eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR), keypress, eL_old.K)
+            eR_new[elo_fld] = update_elo(eloR, expected_elo(eloR, eloL), keypress, eR_old.K)
+            log_(f"Elo : left : old = {eloL} new = {eL_new[elo_fld]} ;\
+                    right : old = {eloR} new = {eR_new[elo_fld]}", False)
+
+            eL_new["K"] = adjust_K(eL_old.K)
+            eR_new["K"] = adjust_K(eR_old.K)
+            eL_new[Delo_fld] = eL_new[elo_fld] - eL_old[elo_fld]
+            eR_new[Delo_fld] = eR_new[elo_fld] - eR_old[elo_fld]
+            eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO)
+            eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO)
+            eL_new["compar_time"] = eL_new["compar_time"] + date
+            eR_new["compar_time"] = eR_new["compar_time"] + date
+            eL_new["n_comparison"]+=1
+            eR_new["n_comparison"]+=1
+
+            breakpoint()
+
+            df = litoy.df.copy()
+            df.iloc[eL_new.name] = eL_new
+            df.iloc[eR_new.name] = eR_new
+            litoy.save_to_file(df)
+            log_(f"Done comparing {entry_left.name} and {entry_right.name}", False)
+            continue
+
 
 
         if action == "skip_review":
-            log_("Shortcut : Skipped review")
+            log_("Shortcut : Skipped review", False)
             break
 
-        if action == "show_more_fields":  # display all the fields from a card
-            log_("Shortcut : displaying the entries in full", False)
+        if action == "show_all_fields":
+            log_("Shortcut : displaying the entries in full")
             print("\n"*10)
-            print_2_entries(entries, mode, "all") 
+            print_2_entries(int(entry_left.name), int(entry_right.name), mode, "all") 
             continue
 
-        if action == "editLeft":  # edit field of the left card
-            #TODO
-            pass
+        if action == "open_media":
+            log_("Openning media")            
+            for ent in [entry_left, entry_right]:
+                js = json.loads(ent.metacontent)
+                try:
+                    path = str(js["url"])
+                    if platform.system() == "Linux":
+                        if platform.system() == "Windows": os.startfile(path)
+                        elif platform.system() == "Darwin": subprocess.Popen(["open", path])
+                        else: subprocess.Popen(["xdg-open", path], stdout=open(os.devnull, 'wb'))
+                except KeyError as e:
+                    log_(f"url not found : {e}", False)
+            continue
 
-        if action == "editRight":  # edit field of the right card
-            #TODO
-            pass
-
-        if action == "undo":
-            # TODO
-            pass
-
-        if action == "open_media_left":
-            # TODO
-            pass
-
-        if action == "open_media_right":
-            # TODO
-            pass
-
-        if action == "star_left":  # useful to get back to it to edit etc after a review
-            # TODO
-            pass
-
-        if action == "star_right":  # useful to get back to it to edit etc after a review
-            # TODO
-            pass
-
-        def disable(entry):
-            df = litoy.df
-            assert entry["disabled"] == "No"
-            entry["disabled"] = "Yes"
-            litoy.df.update(entry)
-            litoy.save_to_file(df)
-
-
-        if action == "disable_left":
-            disable(entry_left)
-
-        if action == "disable_right":
-            disable(entry_right)
+        if action == "edit_left": edit(entry_left) ; continue
+        if action == "edit_right": edit(entry_right) ; continue
+        if action == "star_left": star(entry_left) ; continue
+        if action == "star_right": star(entry_right) ; continue
+        if action == "disable_left": disable(entry_left) ; return(action)
+        if action == "disable_right": disable(entry_right) ; return(action)
 
         if action == "show_help":
-            log_("Shortcut : showing help", False)
+            log_("Printing help :", False)
             pprint(shortcuts)
             continue
 
@@ -573,7 +617,6 @@ def shortcut_and_action(entry_left, entry_right, mode):
             log_("Shortcut : quitting")
             print("Quitting.")
             raise SystemExit()
-        break
 
 
 # functions related to one entry
@@ -642,16 +685,17 @@ def get_meta_from_content(string):
 
 def extract_youtube(url):
     "extracts video duration in minutes from youtube link, title etc"
+    res = {}
     with youtube_dl.YoutubeDL({"quiet": True}) as ydl:
-        video = ydl.extract_info(url, download=False)
-    try:
-        res = {"type": "video",
-               "length": str(round(video['duration']/60, 1)),
-               "title": video['title'],
-               "url": url}
-    except (KeyError, DownloadError, ExtractorError) as e:
-        log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
-        res.update({"type": "video not found", "url": url})
+        try:
+            video = ydl.extract_info(url, download=False)
+            res = {"type": "video",
+                   "length": str(round(video['duration']/60, 1)),
+                   "title": video['title'],
+                   "url": url}
+        except (KeyError, DownloadError, ExtractorError) as e:
+            log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
+            res.update({"type": "video not found", "url": url})
     return res
 
 
@@ -700,6 +744,7 @@ def extract_txt(path):
         title = path.split(sep="/")[-1]
         res = {"type": "text",
                 "length": estimatedReadingTime,
+                "url": path,
                 "title": title}
         return res
 
@@ -727,7 +772,8 @@ def extract_webpage(url):
             url = wb.links['last memento']['url']
         except (requests.exceptions.ConnectionError, AttributeError) as e:
             log_(f"Url could not be found even using wayback machine : {url} : {e}", False)
-            res = {"title": "Not found",
+            res = {"title": "web page not found",
+                   "url": url,
                    "length": "-1",
                    "used_wayback_machine": "wayback url no found"}
             return res
@@ -749,7 +795,7 @@ def extract_webpage(url):
     if res['length'] == "-1":
         res.pop("length")
         res.pop("title")
-        res["type"] = "not found"
+        res["type"] = "webpage not found"
     return res
 
 # functions related to scores
@@ -763,7 +809,7 @@ def expected_elo(elo_A, elo_B, Rp=100):
     '''
     log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}")
     result = 3 / (1 + 10 ** ((elo_B - elo_A) / Rp))
-    log_(f"Expected : result={tr(result)}")
+    log_(f"Expected : result={str(result)}")
     return int(result)
 
 
@@ -781,21 +827,21 @@ def adjust_K(K0):
     until lowest value is reached
     """
     K0 = int(K0)
-    log_(f"Adjust_K : K0={str(K0)}", False)
+    log_(f"Adjust_K : K0={str(K0)}")
     if K0 == K_values[-1] :
         log_(f"Adjust_K : K already at last specified value :\
-                {str(K0)}={str(K_values[-1])}", False)
+                {str(K0)}={str(K_values[-1])}")
         return str(K0)
     for i in range(len(K_values)-1):
         if int(K_values[i]) == int(K0) :
-            log_(f"New K_value : {str(K_values[i+1])}", False)
+            log_(f"New K_value : {str(K_values[i+1])}")
             return K_values[i+1]
     if K0 not in K_values:
         log_(f"error : K not part of K_values : {str(K0)}, reset to\
-                {str(K_values[-1])}", False)
+                {str(K_values[-1])}")
         return str(K_values[-1])
     log_("This should never print")
-    raise SystemExit()  # should not be encounted
+    raise SystemExit() 
 
 def compute_global_score(iELO, tELO):
     return int(global_weights[0]*int(iELO) +  global_weights[1]*int(tELO))
@@ -811,33 +857,42 @@ class LiTOYClass:
             self.create_database()
         else:
             self.path = db_path
-        self.df = pd.read_excel(db_path)
+            # just in case:
+            try : self.df = pd.read_excel(db_path).set_index("ID")
+            except KeyError: self.df = pd.read_excel(db_path)
 
     def reload_df(self):
-        self.df = pd.read_excel(self.path)
+        try : self.df = pd.read_excel(self.path).set_index("ID")
+        except KeyError: self.df = pd.read_excel(self.path)
 
     def save_to_file(self, df):
-        Excelwriter = pd.ExcelWriter(args['litoy_db'] , engine="xlsxwriter")
-        df.to_excel(Excelwriter, sheet_name="LiTOY", index=False)
+        Excelwriter = pd.ExcelWriter(f"{args['litoy_db']}.temp.xlsx" , engine="xlsxwriter")
+        df.to_excel(Excelwriter, sheet_name="LiTOY", index=True)
         Excelwriter.save()
+
+        # this way, interruption of LiTOY are less likely to corrupt the db
+        to_rename = Path(f"{args['litoy_db']}.temp.xlsx")
+        to_remove = Path(args['litoy_db'])
+        to_remove.unlink()
+        to_rename.rename(args['litoy_db'])
         self.reload_df()
 
     def create_database(self):
-        df = pd.DataFrame(columns=cols)
+        df = pd.DataFrame(columns=cols).set_index("ID")
         self.save_to_file(df)
         self.reload_df()
 
-    def checksIfEntryExists(self, df, text):
-        for present in df['content']:
-            present.strip()
-            present = present.replace("\n", "")
+    def checksIfEntryExists(self, df, new):
+        # strangely, this was faster than using lapply
+        for current in list(df['content']):
+            current.strip()
+            current = current.replace("\n", "")
             # tries to avoid computing levenshtein distance for nothing
-            if abs(len(present)-len(text)) <= 10 and\
-                    lev(text, present) <= max(7, 0.1*len(present)):
-                tqdm.write("Line already present in database : {text}")
+            if abs(len(current)-len(new)) <= 10 and\
+                    lev(new, current) <= 3:
+                tqdm.write(f"\nLine already current in database : \n{new}\n{current}\n")
                 return True
-            else:
-                return False
+        return False
 
     def get_tags(self, df):
         tags_list = list(df["tags"])
@@ -877,11 +932,11 @@ parser.add_argument("--add", "-a",
         help = "directly add an entry by putting it inside quotation mark\
         like so : python3 ./__main__.py -a \"do this thing tags:DIY, I\
         really need to do it that way\"")
-parser.add_argument("--debug", "-d",
-        dest='debug',
+parser.add_argument("--verbose", "-v",
+        dest='verbose',
         required=False,
         action="store_true",
-        help = "use this to be more verbose")
+        help = "debug flag, to print more information during runtime")
 parser.add_argument("--review", "-r",
         dest='review_mode',
         required=False,
@@ -918,6 +973,9 @@ if __name__ == "__main__":
     # checks if the arguments are sane
     if args['litoy_db'] is None:
         wrong_arguments_(args)
+    if not args['litoy_db'].endswith(".xlsx"):
+        log_(f"Not a valid xlsx filename : {args['litoy_db']}\n\
+                Please add '.xlsx' at the end of the filename")
     if args['to_import_loc'] is None and args['litoy_db'] is None:
         wrong_arguments_(args)
     if args['review_mode'] is True and args['to_import_loc'] is not None:
@@ -942,14 +1000,20 @@ if __name__ == "__main__":
             raise SystemExit()
         picked_ids = pick_entries(litoy.df)
         log_(f"Picked the following entries : {picked_ids}")
-        if args["debug"] is True:
+        if args["verbose"] is True:
             disp_flds = "all"
         else:
             disp_flds = "no"
         for i in picked_ids[1:]:
             for m in ["importance", "time"]:
-                print_2_entries(picked_ids[0], i, mode=m, all_fields=disp_flds)
-                shortcut_and_action(picked_ids[0], i, mode=m)
+                print("\n"*10)
+                print_2_entries(int(picked_ids[0]), int(i), mode=m, all_fields=disp_flds)
+                state = ""
+                state = shortcut_and_action(picked_ids[0], i, mode=m)
+                if state == "disable_right": break
+                if state == "disable_left":
+                    log_("Stopping because you suspended the left entry", False)
+                    raise SystemExit()
 
     if args["podium"] is True:
         log_("Showing podium")
@@ -971,8 +1035,10 @@ if __name__ == "__main__":
 
 # TODOS :
 # * respect pep8
-# * use type hints from the beginning
 # * use docstrings everywhere
-# * use mypy
+# * use type hints from the beginning and mypy
 # * store metadata of litoy into the log file : average k and average score
 # * store the get_terminal_size function in another file in src
+# * make a way more precise index : with all function names etc
+# * add undo function
+# * remove obsolete files from old LiTOY, remake the README
