@@ -7,6 +7,7 @@
 # 2. fonctions etc
 # 3. Main routine
 
+# TODO : make a way more precise index : with all function names etc
 ###############################################################################
 # 0. Banner and license
 
@@ -79,16 +80,16 @@ which would bring you more in your life?",
 shortcuts = {
         "skip_review"                 :  ["s","-"],
         "answer_level"               :  ["1","2","3","4","5","a","z","e","r","r","t"],
-        "editLeft"                   :  ["e"],
-        "editRight"                  :  ["E"],
+        "edit_left"                   :  ["e"],
+        "edit_right"                  :  ["E"],
         "undo"                       :  ["u"],
         "show_more_fields"           :  ["M"],
-        "starLeft"                   :  ["x"],
-        "starRight"                  :  ["X"],
-        "disableLeft"                :  ["d"],
-        "disableRight"               :  ["U"],
-        "open_mediaLeft"             :  ["o"],
-        "open_mediaRight"            :  ["O"],
+        "star_left"                   :  ["x"],
+        "star_right"                  :  ["X"],
+        "disable_left"                :  ["d"],
+        "disable_light"               :  ["U"],
+        "open_media_left"             :  ["o"],
+        "open_media_right"            :  ["O"],
         "show_help"                  :  ["h","?"],
         "quit"                       :  ["q"]
         }
@@ -100,6 +101,13 @@ global_weights     =  (2, 1)  # global score is 1st number*iELO + 2nd*tELO
 
 headers = {"User-Agent": "Mozilla/5.0"}  # to avoid getting flagged for abusive web scraping
 
+# color codes :
+col_red = "\033[91m"
+col_blu = "\033[94m"
+col_yel = "\033[93m"
+col_rst = "\033[0m"
+col_gre = "\033[92m"
+spacer  = "    "  # nicer print message
 
 ###############################################################################
 # 2. Initialization, definitions etc
@@ -126,6 +134,8 @@ import json
 import pdb
 import get_wayback_machine
 from contextlib import suppress
+from youtube_dl.utils import ExtractorError, DownloadError
+import platform
 
 
 global cols
@@ -149,9 +159,7 @@ signal.signal(signal.SIGINT, debug_signal_handler)
 def log_(string, onlyLogging=True):
     "appends string to the logging file and sometimes also print it"
     lg.info(f"{time.asctime()}: {string}")
-    if onlyLogging is False:  # TODO remove this as it was used for debugging
-    #if onlyLogging is False or 1==1:  # TODO remove this as it was used for debugging
-        #pprint(string)  # TODO, might change this later
+    if onlyLogging is False or args["debug"] is not False:
         tqdm.write(string)
 
 
@@ -159,7 +167,7 @@ def checkIfFileAndDB(path):
     "checks if the file and database already exists, if not create the file"
     db_location = Path(path)
     if db_location.exists():
-        log_(f"Database file found at {path}", False)
+        log_(f"Database file found at {path}")
         try:
             return True
         except ValueError as e:
@@ -184,14 +192,13 @@ def importFromFile(path):
     log_(f"Importing from file {path}", False)
     with import_file.open() as f:
         lines = f.readlines()
-    random.shuffle(lines)  # TODO remove when you're done
+    random.shuffle(lines)  # TODO remove ?
     for line in tqdm(lines, desc="Processing each line", unit="Line",
                      ascii=False, dynamic_ncols=True, mininterval=1):
         line.strip()
         line = line.replace("\n", "")
         if not litoy.checksIfEntryExists(litoy.df, line):
-            new_df = add_new_entry(litoy.df, line)
-            litoy.save_to_file(new_df)
+            add_new_entry(litoy.df, line)
         else:
             log_(f"Line already exists in the litoy database : {line}", False)
 
@@ -227,23 +234,25 @@ def add_new_entry(df, content):
         newID = max(df['ID'])+1
     except ValueError:  # first card
         newID = 1
-    df2 = df.append({
-            "ID": newID,
-            "date": str(time.time()),
-            "content": content,
-            "metacontent": json.dumps(metacontent),
-            "tags": json.dumps(sorted(tags)),
-            "iELO": default_score,
-            "tELO": default_score,
-            "DiELO": default_score,
-            "DtELO": default_score,
-            "gELO": compute_global_score(default_score, default_score),
-            "compar_time": 0,
-            "K": sorted(K_values)[-1],
-            "starred": "No",
-            "disabled": 0,
-            }, ignore_index=True)
-    return df2
+    new_dic = {"ID": newID,
+               "date": str(time.time()),
+               "content": content,
+               "metacontent": json.dumps(metacontent),
+               "tags": json.dumps(sorted(tags)),
+               "iELO": default_score,
+               "tELO": default_score,
+               "DiELO": default_score,
+               "DtELO": default_score,
+               "gELO": compute_global_score(default_score, default_score),
+               "compar_time": 0,
+               "n_comparison": 0,
+               "K": sorted(K_values)[-1],
+               "starred": "No",
+               "disabled": 0,
+               }
+    log_(f"Adding new entry : {new_dic}")
+    df = df.append(new_dic, ignore_index=True)
+    litoy.save_to_file(df)
 
 
 def pick_entries(df):
@@ -254,56 +263,189 @@ def pick_entries(df):
     """
     highest_K = max(df['K'])
 
-    picked = []
-    picked.append(df.loc[ (df['K'] == highest_K) & (df['disabled'] == 0)].sample(1)["ID"].loc[0])
-    picked.extend(df.loc[ (df['disabled'] == 0) ].sample(min(10, len(df.index)-1))["ID"])
+    picked_ids = []
+    picked_ids.append(int(df.loc[ (df['K'] == highest_K) & (df['disabled'] == 0)].sample(1)["ID"]))
+    picked_ids.extend(df.loc[ (df['disabled'] == 0) ].sample(min(10, len(df.index)-1))["ID"])
 
-    while picked[0].iloc[0] in list(picked[1:]):
+    while picked_ids[0] in list(picked_ids[1:]):
         log_("Picking entries one more time")
-        picked = pick_entries(df)
-    return picked
+        picked_ids = pick_entries(df)
+    return picked_ids
 
 
-def print_2_entries(id_left, id_right, all_fields=False):
+def print_memento_mori(): # remember you will die
+    if disable_lifebar == "no" :
+        seg1 = useless_first_years
+        seg2 = user_age - useless_first_years
+        seg3 = user_life_expected - user_age - useless_last_years
+        seg4 = useless_last_years
+        resize = 1/user_life_expected*(sizex-17)
+        print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) + "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) + col_red + "X"*(int(seg2*resize)) + col_gre + "-"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) + col_rst)
+
+
+def print_2_entries(entry_left, entry_right, mode, all_fields="no"):
+    """ shows the two entries to compare side by side """
+    print(col_blu + "#"*sizex + col_rst)
+    print_memento_mori()
+    print(col_blu + "#"*sizex + col_rst)
+    def side_by_side(rowname, a, b, space=2, col=""):
+        """ from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python """
+        rowname = rowname.ljust(30)
+        a = str(a) ; b = str(b)
+        col_width=int((int(sizex)-len(rowname))/2-int(space)*2)
+        inc = 0
+        while a or b:
+            inc+=1
+            if inc == 1:
+                print(str(col) + str(rowname) + " "*space + "|" + a[:col_width].ljust(col_width) + " "*space + "|" + b[:col_width] + col_rst)
+            else :
+                print(str(col) + " "*(len(rowname)+space) + "|" + a[:col_width].ljust(col_width) + " "*space + "|" + b[:col_width] + col_rst)
+            a = a[col_width:]
+            b = b[col_width:]
+
+    entry_left =  litoy.df.iloc[entry_left]
+    entry_right = litoy.df.iloc[entry_right]
+
+    if all_fields != "all":
+        side_by_side("IDs :", entry_left.ID, entry_right.ID)
+        print("."*sizex)
+
+        if "".join(entry_left.tags + entry_right.tags) != "":
+            side_by_side("Tags :", entry_left.tags, entry_right.tags)
+            print("."*sizex)
+        if "".join(entry_left.starred + entry_right.starred) != "NoNo":
+            side_by_side("Starred:", entry_left.starred, entry_right.starred, col=col_yel)
+            print("."*sizex)
+
+        side_by_side("Entry :", entry_left.content, entry_right.content)
+        print("."*sizex)
+        if mode=="importance":
+            side_by_side("iELO :", entry_left.iELO, entry_right.iELO)
+            print("."*sizex)
+        else:
+            side_by_side("tELO (high is quick) :", entry_left.tELO, entry_right.tELO)
+            print("."*sizex)
+
+    if all_fields=="all": # print all fields, used more for debugging
+        for c in litoy.df.columns:
+            side_by_side(str(c), str(entry_left[c]), str(entry_right[c]))
+
+    # metadata :
+    j = []
+    j.append(json.loads(entry_left.metacontent))
+    j.append(json.loads(entry_right.metacontent))
+    with suppress(KeyError):
+        side_by_side("Media type :", j[0]["type"], j[1]["type"])
+        side_by_side("Title :", j[0]["Title"], j[1]["Title"])
+        side_by_side("Length :", j[0]["length"], j[1]["length"])
+        side_by_side("Path :", j[0]["url"], j[1]["url"])
+        
+
+    print(col_blu + "#"*sizex + col_rst)
+
+
+#############################
+
+import os
+import shlex
+import struct
+import platform
+import subprocess
+def get_terminal_size():
     """
-    shows the two entries that are to be compared
+    only used to get terminal size, to adjust the width when printing lines
+    - get width and height of console
+    - works on linux,os x,windows,cygwin(windows)
+    originally retrieved from:
+    http://stackoverflow.com/questions/566746/how-to-get-console-window-width-in-python
+    then from here : https://gist.github.com/jtriley/1108174
     """
-    print(id_left)
-    print(id_right)
-    breakpoint()
-    for i in [id_left, id_right]:
-        entry = litoy.df["ID" == i]
-        pprint(entry[["ID", "content", "tags", "starred", "iELO", "tELO"]])
-        d = entry['metacontent'].to_dict()
-        pprint(d)
-        print("###########################################")
-
+    current_os = platform.system()
+    tuple_xy = None
+    if current_os == 'Windows':
+        tuple_xy = _get_terminal_size_windows()
+        if tuple_xy is None:
+            tuple_xy = _get_terminal_size_tput()
+            # needed for window's python in cygwin's xterm!
+    if current_os in ['Linux', 'Darwin'] or current_os.startswith('CYGWIN'):
+        tuple_xy = _get_terminal_size_linux()
+    if tuple_xy is None:
+        print("Using default screen size")
+        tuple_xy = (80, 25)      # default value
+    return [int(tuple_xy[0]), int(tuple_xy[1])]
+def _get_terminal_size_windows():
+    try:
+        from ctypes import windll, create_string_buffer
+        # stdin handle is -10
+        # stdout handle is -11
+        # stderr handle is -12
+        h = windll.kernel32.GetStdHandle(-12)
+        csbi = create_string_buffer(22)
+        res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
+        if res:
+            (bufx, bufy, curx, cury, wattr,
+             left, top, right, bottom,
+             maxx, maxy) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+            sizex = right - left + 1
+            sizey = bottom - top + 1
+            return int(sizex), int(sizey)
+    except:
+        pass
+def _get_terminal_size_tput():
+    # get terminal width
+    # src: http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window
+    try:
+        cols = int(subprocess.check_call(shlex.split('tput cols')))
+        rows = int(subprocess.check_call(shlex.split('tput lines')))
+        return (cols, rows)
+    except:
+        pass
+def _get_terminal_size_linux():
+    def ioctl_GWINSZ(fd):
+        try:
+            import fcntl, termios
+            cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+            return cr
+        except Exception as e:
+            print(e)
+    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+    if not cr:
+        try:
+            fd = os.open(os.ctermid(), os.O_RDONLY)
+            cr = ioctl_GWINSZ(fd)
+            os.close(fd)
+        except:
+            pass
+    if not cr:
+        try:
+            cr = (os.environ['LINES'], os.environ['COLUMNS'])
+        except:
+            return None
+    return int(cr[1]), int(cr[0])
+(sizex, sizey) = get_terminal_size()
 
 def show_podium(df):
     """
     shows the highest ranked things to do in LiTOY
     """
-    df2 = df.sort_values(by="gELO")[0:5]
-    pprint(df2)
+    if args["debug"] is True:  # print all fields
+        pprint(df.sort_values(by="gELO")[0:5])
+    else:
+        df2 = df[["ID", "content", "gELO", "iELO", "tELO", "tags"]].copy()
+        pprint(df2.sort_values(by="gELO")[0:5])
 
 
 def show_stats(df):
     "shows statistics on the litoy database"
     log_("Printing statistics", False)
-    df = litoy.df
+    df = litoy.df.copy()
     df_not_disabled = df[ df['disabled'] == 0 ]
     pprint(f"Number of entries in LiTOY : {len(df)}, non disabled entries only : {len(df_not_disabled)}")
     pprint(f"Average importance score : {df_not_disabled['iELO'].mean()}, time score : {df_not_disabled['tELO'].mean()}") 
     pprint(f"Average global score : {df_not_disabled['gELO'].mean()}") 
     pprint(f"Average K value : {df_not_disabled['K'].mean()}")
     pprint(f"Time spent comparing : {df_not_disabled['compar_time'].sum()}")
-    pprint(f"Number of comparison : {df_not_disabled['n_comparison'].sum}, average : {df_not_disabled['n_comparison'].mean()}")
-
-
-def print_syntax_examples():
-    "shows the user usage example of LiTOY"
-    # TODO
-    log_("Printing syntax example", False)
+    pprint(f"Number of comparison : {df_not_disabled['n_comparison'].sum()}, average : {df_not_disabled['n_comparison'].mean()}")
 
 
 def rlinput(prompt, prefill=''): 
@@ -316,11 +458,12 @@ def rlinput(prompt, prefill=''):
     finally:
         readline.set_startup_hook()
 
-def shortcut_and_action(entries): 
+def shortcut_and_action(entry_left, entry_right, mode): 
     """
     makes the link between keypresses and actions
     shortcuts are stored at the top of the file
     """
+    log_(f"Waiting for shortcut for {entry_left} vs {entry_right} for {mode}")
     def get_action(input):   # get action from the keypress pressed
         found = ""
         for action, keypress in shortcuts.items():
@@ -335,6 +478,9 @@ def shortcut_and_action(entries):
         return found
 
     action = ""
+    entry_left =  litoy.df.iloc[entry_left]
+    entry_right = litoy.df.iloc[entry_right]
+
     while True:
         start_time = time.time()  # to get time elapsed
 
@@ -344,7 +490,7 @@ def shortcut_and_action(entries):
             break
         action = ""
 
-        log_(f"Shortcut : asking question, mode = {str(mode)}", False)
+        log_(f"Shortcut : asking question, mode : {mode}", False)
         print(f"{questions[mode]} (h or ? for help)")
         keypress = input()
         log_(f"Shortcut : User typed : {keypress}", False)
@@ -354,7 +500,7 @@ def shortcut_and_action(entries):
             action = "show_help"
         else :
             action = str(get_action(keypress))
-            log_(f"Shortcut : Action={action}", False)
+            log_(f"Shortcut found : Action={action}", False)
 
         if action == "answer_level" : # where the actual comparison takes place
             if keypress=="a": keypress="1"
@@ -388,25 +534,35 @@ def shortcut_and_action(entries):
             # TODO
             pass
 
-        if action == "open_mediaLeft":
+        if action == "open_media_left":
             # TODO
             pass
 
-        if action == "open_mediaRight":
+        if action == "open_media_right":
             # TODO
             pass
 
-        if action == "starLeft":  # useful to get back to it to edit etc after a review
+        if action == "star_left":  # useful to get back to it to edit etc after a review
             # TODO
             pass
 
-        if action == "starRight":  # useful to get back to it to edit etc after a review
+        if action == "star_right":  # useful to get back to it to edit etc after a review
             # TODO
             pass
 
-        if action == "disable":  # disable an entry
-            # TODO
-            pass
+        def disable(entry):
+            df = litoy.df
+            assert entry["disabled"] == "No"
+            entry["disabled"] = "Yes"
+            litoy.df.update(entry)
+            litoy.save_to_file(df)
+
+
+        if action == "disable_left":
+            disable(entry_left)
+
+        if action == "disable_right":
+            disable(entry_right)
 
         if action == "show_help":
             log_("Shortcut : showing help", False)
@@ -423,11 +579,15 @@ def shortcut_and_action(entries):
 # functions related to one entry
 def get_tags_from_content(string):
     "extracts tags from a line in the import file"
-    splitted = string.split(" ")
+    splitted = string.split(" ") 
     result = []
     for word in splitted:
         if word.startswith("tags:"):
-            result.append(word[5:])
+            temp = str(word[5:])
+            # removes non letter from tags, usually ,
+            while not temp.isalnum():
+                temp = temp[:-1]
+            result.append(temp)
     return list(set(result))
 
 
@@ -477,8 +637,7 @@ def get_meta_from_content(string):
                 return extract_txt(word)
         else:
             log_(f"No metadata were extracted for {word}")
-            res_dic = {"type": "not found", "url": word}
-            return res_dic
+            return {}
 
 
 def extract_youtube(url):
@@ -490,15 +649,7 @@ def extract_youtube(url):
                "length": str(round(video['duration']/60, 1)),
                "title": video['title'],
                "url": url}
-
-    # I had to used this because the exception was never caught
-    except KeyError as e:
-        log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
-        res.update({"type": "video not found", "url": url})
-    except youtube_dl.utils.DownloadError as e:
-        log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
-        res.update({"type": "video not found", "url": url})
-    except youtube_dl.utils.ExtractorError as e:
+    except (KeyError, DownloadError, ExtractorError) as e:
         log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
         res.update({"type": "video not found", "url": url})
     return res
@@ -689,17 +840,18 @@ class LiTOYClass:
                 return False
 
     def get_tags(self, df):
-        tag_list = []
-        for i in df.index:
-            tag_list.append(i['tags'])
-        return sorted(list(set(tag_list)))
-
-    def print_all_entries(self, df, pretty=True):
-        for i in df.index:
-            if pretty is True:
-                pprint(df.iloc[i])
-            else:
-                print(df.iloc[i])
+        tags_list = list(df["tags"])
+        tags_list = [json.loads(t) for t in tags_list]
+        found_at_least_one = 1
+        while found_at_least_one != 0:
+            found_at_least_one = 0
+            for item in tags_list:
+                if isinstance(item, list):
+                    found_at_least_one += 1
+                    tags_list.extend([*item])
+                    tags_list.remove(item)
+        tags_list = sorted(list(set(tags_list)))
+        return tags_list
 
 
 # arguments
@@ -719,26 +871,32 @@ parser.add_argument("--litoy-db", "-l",
         required=False,
         help = "path to the litoy database")
 parser.add_argument("--add", "-a",
-        nargs = "?",
-        type = str,
-        metavar='new_entry',
+        action = "store_true",
         dest='entry_to_add',
         required=False,
         help = "directly add an entry by putting it inside quotation mark\
         like so : python3 ./__main__.py -a \"do this thing tags:DIY, I\
         really need to do it that way\"")
+parser.add_argument("--debug", "-d",
+        dest='debug',
+        required=False,
+        action="store_true",
+        help = "use this to be more verbose")
 parser.add_argument("--review", "-r",
         dest='review_mode',
         required=False,
         action="store_true",
         help = "use this to enable review mode instead of importation etc")
-#parser.add_argument("--mode", "-m",
-#        nargs = "?",
-#        metavar = "mode",
-#        dest='mode',
-#        type = str,
-#        required=False,
-#        help = "comparison mode, can be either \'importance\' or \'time\'")
+parser.add_argument("--podium", "-p",
+        dest='podium',
+        required=False,
+        action="store_true",
+        help = "use this to show the current podium")
+parser.add_argument("--show-stats", "-s",
+        dest='show_stats',
+        required=False,
+        action="store_true",
+        help = "use this to show show current database statistics")
 
 ###############################################################################
 # 3. Main routine
@@ -746,12 +904,13 @@ parser.add_argument("--review", "-r",
 
 if __name__ == "__main__":
     lg.basicConfig(level=lg.INFO,
-            filename = 'logs/rotating_log',
-            filemode='a',
-            format='%(asctime)s: %(message)s')
+                   filename='logs/rotating_log',
+                   filemode='a',
+                   format='%(asctime)s: %(message)s')
     #https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
     log = lg.getLogger()
-    handler = RotatingFileHandler("logs/rotating_log", maxBytes=20*1024*1024, backupCount=20)
+    handler = RotatingFileHandler("logs/rotating_log",
+                                  maxBytes=20*1024*1024, backupCount=20)
     log.addHandler(handler)
 
     args = parser.parse_args().__dict__
@@ -764,6 +923,7 @@ if __name__ == "__main__":
     if args['review_mode'] is True and args['to_import_loc'] is not None:
         wrong_arguments_(args)
 
+    # initialize litoy class:
     if checkIfFileAndDB(args['litoy_db']) is None:
         litoy = LiTOYClass(None)
     else:
@@ -774,19 +934,39 @@ if __name__ == "__main__":
         log_("Done importing from file, exiting", False)
         raise SystemExit()
 
-    if args['review_mode'] is not None:
+    if args['review_mode'] is True:
         n = len(litoy.df.index)
         if n < 10:
             log_(f"You only have {n} item in your database, add more to start \
                     using LiTOY!", False)
             raise SystemExit()
-        picked = pick_entries(litoy.df)
-        for i in picked[1:]:
-            print_2_entries(picked[0], i)
-            print("?", end="")
-            print("done")
+        picked_ids = pick_entries(litoy.df)
+        log_(f"Picked the following entries : {picked_ids}")
+        if args["debug"] is True:
+            disp_flds = "all"
+        else:
+            disp_flds = "no"
+        for i in picked_ids[1:]:
+            for m in ["importance", "time"]:
+                print_2_entries(picked_ids[0], i, mode=m, all_fields=disp_flds)
+                shortcut_and_action(picked_ids[0], i, mode=m)
+
+    if args["podium"] is True:
+        log_("Showing podium")
+        show_podium(litoy.df)
+
+    if args["show_stats"] is True:
+        log_("Showing statistics")
+        show_stats(litoy.df)
+
+    if args["entry_to_add"] is True:
+        cur_tags = litoy.get_tags(litoy.df)
+        entry_to_add = input(f"Current tags: {cur_tags}\nText content of the entry?\n>")
+        log_(f'Adding entry {entry_to_add}')
+        if len(entry_to_add.split(sep=" "))==1:  # avoids bugs
+            print("There is no point in adding single word entries. Quitting")
             raise SystemExit()
-            shortcut_and_action(picked[0], picked[1].loc[i])
+        add_new_entry(litoy.df, entry_to_add)
 
 
 # TODOS :
@@ -795,3 +975,4 @@ if __name__ == "__main__":
 # * use docstrings everywhere
 # * use mypy
 # * store metadata of litoy into the log file : average k and average score
+# * store the get_terminal_size function in another file in src
