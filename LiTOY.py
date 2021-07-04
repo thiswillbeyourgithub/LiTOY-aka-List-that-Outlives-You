@@ -1034,6 +1034,7 @@ if __name__ == "__main__":
 
 
 # TODOS :
+# * ignore lines starting with #
 # * respect pep8
 # * use docstrings everywhere
 # * use type hints from the beginning and mypy
