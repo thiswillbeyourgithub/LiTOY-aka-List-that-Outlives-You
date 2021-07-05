@@ -96,7 +96,6 @@ The idea behind LiTOY is simple :
     * use type hints from the beginning and mypy
     * add gif to show demo
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
-    * use pyinstaller to try to package the damn thing
 
 
 
