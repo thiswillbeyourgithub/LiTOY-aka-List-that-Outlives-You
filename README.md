@@ -77,6 +77,7 @@ The idea behind LiTOY is simple :
 * manually edit the settings at the top of `LiTOY.py`
 * run `pip3.9 install -r requirements.txt`
 * `python3.9 ./LiTOY.py --help`
+*I recommend setting an alias in your shell, mine is `alias litoy = 'cd /litoy/folder && python3.9 ./LiTOY.py -l personnal_database.xlsx'` then I just have to type `litoy -r`
 
 ### Syntax and usage example:
 
