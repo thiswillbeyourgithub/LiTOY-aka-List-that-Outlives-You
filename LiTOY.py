@@ -7,6 +7,7 @@ import random
 import readline
 import platform
 import subprocess
+import sys
 import os
 from itertools import chain
 from pathlib import Path
@@ -206,6 +207,8 @@ def log_(string, onlyLogging=True):
     appends string to the logging file, if onlyLogging=False then
     will also print to user using tqdm.write
     """
+    caller_name = str(sys._getframe().f_back.f_code.co_name)
+    if not caller_name.startswith("<"): string = f"{caller_name}: {string}"
     log.info(f"{time.asctime()}: {string}")
     if onlyLogging is False or args["verbose"] is not False:
         tqdm.write(string)
