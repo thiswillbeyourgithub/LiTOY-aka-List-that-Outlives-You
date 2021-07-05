@@ -208,8 +208,11 @@ def log_(string, onlyLogging=True):
     will also print to user using tqdm.write
     """
     caller_name = str(sys._getframe().f_back.f_code.co_name)
-    if not caller_name.startswith("<"): string = f"{caller_name}: {string}"
-    log.info(f"{time.asctime()}: {string}")
+    if not caller_name.startswith("<"):
+        prefix = f"{caller_name}: "
+    else:
+        prefix = ""
+    log.info(f"{time.asctime()}: {prefix}{string}")
     if onlyLogging is False or args["verbose"] is not False:
         tqdm.write(string)
 
@@ -266,13 +269,14 @@ def add_new_entry(df, content):
     tags = get_tags_from_content(content)
     metacontent = get_meta_from_content(content)
 
-    with suppress(KeyError, TypeError):  # in case metacontent doesn't contain those keys
-        # if url not working, reload it after 5 seconds
+    # in case metacontent doesn't contain those keys, ignore exceptions:
+    with suppress(KeyError, TypeError): 
+        # if url not working, reload it after 5 seconds :
         if "forbidden" in str(metacontent['title']).lower() or \
                 "404" in str(metacontent['title']).lower() or\
                 "403" in str(metacontent['title']).lower():
             log_(f"Waiting 5 seconds because apparent webpage loading limit\
-was reached while inspecting line : {content}", False)
+                was reached while inspecting line : {content}", False)
             time.sleep(5)
             metacontent = get_meta_from_content(content)
         # if wayback machine was used : mention it in the tags
@@ -873,6 +877,7 @@ def extract_webpage(url):
     soup = BeautifulSoup(html_page, 'html.parser')
     text_content = ' '.join(soup.find_all(text=True)).replace("\n", " ")
 
+    title = "No title"
     for t in soup.find_all('title'):
         title = t.get_text()
 
