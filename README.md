@@ -38,9 +38,9 @@ The idea behind LiTOY is simple :
 
 **How can I undo X?** It is not really possible for now. But you can access the logs and see what you did wrong. Hopefully this can help you repair damage. Rollback features might be added sometime in the future. If you have any issue feel free to open one, especially if you think your action was not recorded in the log.
 
-**What are answer level number ?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 5 means you favor the right one. 3 is obviously the middle ground but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
+**What are answer level number ?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 4 means you favor the right one. 3 is obviously the middle ground but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
 
-** Any killer features you want to brag about?** LiTOY automatically retrieves lots of metadata from the links. Like reading time from a pdf, a webpage, duration of a video etc.
+** Any killer features you want to brag about?** LiTOY automatically retrieves lots of metadata from the links. Like reading time from a pdf, a webpage, duration of a video etc. Also, it's mostly in one single file, making it somewhat easier to understand how it works and to maintain.
 
 **Do you care to explain all the different fields in the database?** 
 * `ID` used for the pandas index as well as the line number in excel. This should in theory never change for a given entry (even if you edit the content of the entry).
@@ -102,7 +102,6 @@ The idea behind LiTOY is simple :
     * use pyenv to figure out the environment needed to run litoy, then specify it in the readme
     * add gif to show demo
     * if local video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
-    * randomly add a warning that YOU'RE GONNA DIE SOMEDAY, along with some stats as to how probable it is
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
     * use pyinstaller to try to package the damn thing
     * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/

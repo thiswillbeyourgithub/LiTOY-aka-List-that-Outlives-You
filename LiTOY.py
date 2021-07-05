@@ -2,9 +2,10 @@
 
 import argparse
 import time
+import random
 from itertools import chain
 from pathlib import Path
-
+from other_functions import get_terminal_size
 from pprint import pprint
 from tqdm import tqdm
 
@@ -22,9 +23,6 @@ import signal
 from contextlib import suppress
 from logging.handlers import RotatingFileHandler
 from youtube_dl.utils import ExtractorError, DownloadError
-
-from other_functions import get_terminal_size
-(sizex, sizey) = get_terminal_size()
 
 ###############################################################################
 # Summary of each section
@@ -105,7 +103,7 @@ which would bring you more in your life?",
         }
 
 shortcuts = { "skip_review"      : ["s", "-"],
-              "answer_level"     : ["1", "2", "3", "4", "5",\
+              "answer_level"     : ["1", "2", "3", "4", "5",
                                     "a", "z", "e", "r", "t"],
               "edit_left"        : ["e"],
               "edit_right"       : ["E"],
@@ -293,11 +291,15 @@ def print_memento_mori(): # remember you will die
         seg3 = user_life_expected - user_age - useless_last_years
         seg4 = useless_last_years
         resize = 1/user_life_expected*(sizex-17)
-        print("Your life ("+ col_red + str(int((seg2)/(seg2 + seg3)*100)) +\
-                "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) +\
-                col_red + "X"*(int(seg2*resize)) + col_gre +\
-                "-"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) +\
-                col_rst)
+        if random.random() > 0.99:
+            string = "REMEMBER THAT TIME IS RUNNING OUT"
+            for i in range(5):
+                print(f"{col_red}{string}     {string}{col_rst}")
+        print("Your life (" + col_red + str(int((seg2)/(seg2 + seg3)*100)) +\
+              "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) +\
+              col_red + "X"*(int(seg2*resize)) + col_gre +\
+              "-"*(int(seg3*resize)) + col_yel + "_"*int(seg4*resize) +\
+              col_rst)
 
 
 def print_2_entries(id_left, id_right, mode, all_fields="no"):
@@ -313,11 +315,12 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
         from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
         """
         rowname = rowname.ljust(30)
-        a = str(a) ; b = str(b)
-        col_width=int((int(sizex)-len(rowname))/2-int(space)*2)
+        a = str(a)
+        b = str(b)
+        col_width = int((int(sizex)-len(rowname))/2-int(space)*2)
         inc = 0
         while a or b:
-            inc+=1
+            inc += 1
             if inc == 1:
                 print(str(col) + str(rowname) + " "*space + "|" +\
                         a[:col_width].ljust(col_width) + " "*space +\
@@ -366,10 +369,10 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
         for y in ["type", "title", "length", "url"]:
             if y not in js[x].keys():
                 js[x][y] = ""
-    side_by_side("Media type :", js[0]["type"], js[1]["type"])
     side_by_side("Title :", js[0]["title"], js[1]["title"])
     side_by_side("Length :", js[0]["length"], js[1]["length"])
     side_by_side("Path :", js[0]["url"], js[1]["url"])
+    side_by_side("Media type :", js[0]["type"], js[1]["type"])
 
     print(col_blu + "#"*sizex + col_rst)
 
@@ -471,11 +474,10 @@ def shortcut_and_action(id_left, id_right, mode):
     action = ""
     start_time = time.time()
     while True:
-        if action == "exit_outerloop": break
         action = "" 
         log_(f"Shortcut : asking question, mode : {mode}")
         print(f"{col_gre}{questions[mode]} (h or ? for help){col_rst}")
-        keypress = input()
+        keypress = input(">")
 
         if keypress not in list(chain.from_iterable(shortcuts.values())):
             log_(f"Shortcut Error : keypress not found : {keypress}")
@@ -485,12 +487,12 @@ def shortcut_and_action(id_left, id_right, mode):
             log_(f"Shortcut found : Action={action}")
 
         if action == "answer_level" : # where the actual comparison takes place
-            if keypress=="a": keypress=1
-            if keypress=="z": keypress=2
-            if keypress=="e": keypress=3
-            if keypress=="r": keypress=4
-            if keypress=="t": keypress=5
-            keypress = int(keypress)
+            if keypress == "a": keypress = 1
+            if keypress == "z": keypress = 2
+            if keypress == "e": keypress = 3
+            if keypress == "r": keypress = 4
+            if keypress == "t": keypress = 5
+            keypress = int(keypress)-0.5
             date = time.time()
             assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
 
@@ -502,8 +504,8 @@ def shortcut_and_action(id_left, id_right, mode):
             eloL = int(eL_old[elo_fld])
             eloR = int(eR_old[elo_fld])
 
-            eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR), keypress, eL_old.K)
-            eR_new[elo_fld] = update_elo(eloR, expected_elo(eloR, eloL), keypress, eR_old.K)
+            eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR), 5-keypress, eL_old.K)
+            eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR), keypress, eR_old.K)
             log_(f"Elo : left : old = {eloL} new = {eL_new[elo_fld]} ;\
                     right : old = {eloR} new = {eR_new[elo_fld]}", False)
 
@@ -518,14 +520,12 @@ def shortcut_and_action(id_left, id_right, mode):
             eL_new["n_comparison"]+=1
             eR_new["n_comparison"]+=1
 
-            breakpoint()
-
             df = litoy.df.copy()
             df.iloc[eL_new.name] = eL_new
             df.iloc[eR_new.name] = eR_new
             litoy.save_to_file(df)
             log_(f"Done comparing {entry_left.name} and {entry_right.name}", False)
-            continue
+            break
 
 
 
@@ -754,14 +754,14 @@ def extract_webpage(url):
 def expected_elo(elo_A, elo_B, Rp=100):
     '''
     Calculate expected score of A in a best of 3 match against B
-    Expected score of B in a best of 3 match against A is given by
+    Expected score of B in a best of 5 match against A is given by
     1-expected(A,B,Rp). For each Rp rating points of advantage over the 
     opponent, the expected score is magnified ten times in comparison to
     the opponent's expected score
     '''
-    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}")
-    result = 3 / (1 + 10 ** ((elo_B - elo_A) / Rp))
-    log_(f"Expected : result={str(result)}")
+    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}", False)
+    result = 5 / (1 + 10 ** ((elo_B - elo_A) / Rp))
+    log_(f"Expected score : result={str(result)}", False)
     return int(result)
 
 
@@ -792,7 +792,7 @@ def adjust_K(K0):
         log_(f"error : K not part of K_values : {str(K0)}, reset to\
                 {str(K_values[-1])}")
         return str(K_values[-1])
-    log_("This should never print")
+    log_("This should never print", False)
     raise SystemExit()
 
 
@@ -953,6 +953,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args().__dict__
 
+    (sizex, sizey) = get_terminal_size()
+
     # checks if the arguments are sane
     if args['litoy_db'] is None:
         wrong_arguments_(args)
@@ -1005,6 +1007,7 @@ Text content of the entry?\n>")
             disp_flds = "no"
         for i in picked_ids[1:]:
             for m in ["importance", "time"]:
+                (sizex, sizey) = get_terminal_size()  # dynamic sizing
                 print("\n"*10)
                 print_2_entries(int(picked_ids[0]),
                                 int(i),
@@ -1017,6 +1020,8 @@ Text content of the entry?\n>")
                 if state == "disable_left":
                     log_("Stopping because you suspended left entry", False)
                     raise SystemExit()
+        log_("Finished reviewing session. Quitting.", False)
+        raise SystemExit()
 
     if args["podium"] is True:
         log_("Showing podium")
