@@ -1,8 +1,13 @@
 #!/usr/bin/env python3.9
 
+
 import argparse
 import time
 import random
+import readline
+import platform
+import subprocess
+import os
 from itertools import chain
 from pathlib import Path
 from other_functions import get_terminal_size
@@ -16,19 +21,57 @@ import pdftotext
 import requests
 import youtube_dl
 from bs4 import BeautifulSoup
+from moviepy.editor import VideoFileClip
 
-import logging as lg
+import logging
+from logging.handlers import RotatingFileHandler
 import pdb
 import signal
 from contextlib import suppress
-from logging.handlers import RotatingFileHandler
 from youtube_dl.utils import ExtractorError, DownloadError
 
 ###############################################################################
 # Summary of each section
 # 0. Banner and license
 # 1. User settings
-# 2. fonctions etc
+# 2. Fonctions, Classes, etc :
+#          def debug_signal_handler(signal, frame):
+#          def log_(string, onlyLogging=True):
+#          def checkIfFileAndDB(path):
+#          def importFromFile(path):
+#          def wrong_arguments_(args):
+#          def add_new_entry(df, content):
+#          def pick_entries(df):
+#          def print_memento_mori(): # remember you will die
+#          def print_2_entries(id_left, id_right, mode, all_fields="no"):
+#              def side_by_side(rowname, a, b, space=2, col=""):
+#          def show_podium(df):
+#          def show_stats(df, printing=True):
+#          def rlinput(prompt, prefill=''): 
+#          def shortcut_and_action(id_left, id_right, mode, progress): 
+#              def fetch_action(input):
+#              def star(entry):
+#              def disable(entry):
+#              def edit(entry):
+#          def get_tags_from_content(string):
+#          def get_meta_from_content(string):
+#          def extract_youtube(url):
+#          def extract_local_video(link):
+#          def extract_pdf_url(url):
+#          def extract_pdf_local(path):
+#          def extract_txt(path):
+#          def extract_webpage(url):
+#          def expected_elo(elo_A, elo_B, Rp=100):
+#          def update_elo(elo, exp_score, real_score, K):
+#          def adjust_K(K0):
+#          def compute_global_score(iELO, tELO):
+#          def json_periodic_save():
+#              def __init__(self, db_path):
+#              def reload_df(self):
+#              def save_to_file(self, df):
+#              def create_database(self):
+#              def checksIfEntryExists(self, df, new):
+#              def get_tags(self, df):
 # 3. Main routine
 
 ###############################################################################
@@ -90,6 +133,9 @@ useless_last_years  = 20
 # save very often a copy of the whole database as a json file
 json_auto_save=True
 
+# number of entries to pick for review at each launch (default=10)
+n_to_review=10
+
 # for reading time estimation :
 wpm = 200
 average_word_length = 6
@@ -107,13 +153,14 @@ shortcuts = { "skip_review"      : ["s", "-"],
                                     "a", "z", "e", "r", "t"],
               "edit_left"        : ["e"],
               "edit_right"       : ["E"],
+              "reload_media"     : ["R"],
               "undo"             : ["u"],
               "show_all_fields"  : ["M"],
               "star_left"        : ["x"],
               "star_right"       : ["X"],
               "disable_left"     : ["d"],
               "disable_right"    : ["D"],
-              "open_media"       : ["o", "O"],
+              "open_media"       : ["o"],
               "show_help"        : ["h", "?"],
               "quit"             : ["q"] }
 
@@ -133,10 +180,7 @@ col_gre = "\033[92m"
 spacer = "    "  # nicer print message
 
 ###############################################################################
-# 2. Initialization, definitions etc
-
-# imports
-
+# 2. Functions, classes, etc
 
 global cols
 cols = ["ID", "date", "content", "metacontent", "tags",
@@ -162,7 +206,7 @@ def log_(string, onlyLogging=True):
     appends string to the logging file, if onlyLogging=False then
     will also print to user using tqdm.write
     """
-    lg.info(f"{time.asctime()}: {string}")
+    log.info(f"{time.asctime()}: {string}")
     if onlyLogging is False or args["verbose"] is not False:
         tqdm.write(string)
 
@@ -175,7 +219,7 @@ def checkIfFileAndDB(path):
         try:
             return True
         except ValueError as e:
-            log_(f"Litoy database not found in file at {path} : {e}", False)
+            log_(f"ERROR: Litoy database not found in file at {path} : {e}", False)
             return None
     else:
         answer = input(f"No database file found at {path}, do you want me to\
@@ -192,12 +236,13 @@ def importFromFile(path):
     "checks if text file exists then import it into LiTOY"
     import_file = Path(path)
     if not import_file.exists():
-        log_(f"Import file not found at {path}, exiting", False)
+        log_(f"ERROR: Import file not found at {path}, exiting", False)
         raise SystemExit()
     log_(f"Importing from file {path}", False)
     with import_file.open() as f:
         lines = f.readlines()
-    lines = [li for li in lines if not str(li).startswith("#")]
+    lines = [li for li in lines if not str(li).startswith("#") and\
+            str(li) != "" and str(li) != "\n"]
     for line in tqdm(lines, desc="Processing line by line", unit="line",
                      ascii=False, dynamic_ncols=True, mininterval=0):
         line.strip()
@@ -208,7 +253,7 @@ def importFromFile(path):
 
 def wrong_arguments_(args):
     "used to exit while printing arguments"
-    print("Exiting because called with wrong arguments :")
+    print("Exiting because called with wrong arguments \nYour arguments:")
     pprint(args)
     raise SystemExit()
 
@@ -218,11 +263,11 @@ def add_new_entry(df, content):
     tags = get_tags_from_content(content)
     metacontent = get_meta_from_content(content)
 
-    with suppress(KeyError):  # in case metacontent doesn't contain those keys
+    with suppress(KeyError, TypeError):  # in case metacontent doesn't contain those keys
         # if url not working, reload it after 5 seconds
-        if "forbidden" in str(metacontent['title'].lower()) or \
-                "404" in str(metacontent['title'].lower()) or\
-                "403" in str(metacontent['title'].lower()):
+        if "forbidden" in str(metacontent['title']).lower() or \
+                "404" in str(metacontent['title']).lower() or\
+                "403" in str(metacontent['title']).lower():
             log_(f"Waiting 5 seconds because apparent webpage loading limit\
 was reached while inspecting line : {content}", False)
             time.sleep(5)
@@ -263,20 +308,30 @@ was reached while inspecting line : {content}", False)
 def pick_entries(df):
     """
     picks entries before a comparison : the left one is chosen randomly
-    among those with the highest K factor, then 10 other entries are selected
-    at random
+    among those with the highest pick factor, then n_to_review other entries
+    are selected at random among the half with the highest pick factor.
+    Note that the pick factor goes down fast.
     """
-    highest_K = max(df['K'])
-
     picked_ids = []
-    choice = df.loc[(df.K == highest_K) & (df.disabled == 0)]
-    picked_ids.append(int(choice.sample(1).index[0]))
-    choice2 = df.loc[(df['disabled'] == 0) ]
-    picked_ids.extend(choice2.sample(min(10, len(df.index)-1)).index)
+    df = litoy.df.loc[df.disabled == 0].copy()
+    df["pick_score"] = df.K + df.DiELO*0.01 + df.DtELO*0.01
+    df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
+    choiceL = df.iloc[0]
+    choiceR = df.iloc[1:int(len(df.index)-1/2)].sample(n_to_review)
+    picked_ids.append(int(choiceL.name))
+    picked_ids.extend(choiceR.sample(min(n_to_review, len(df.index)-1)).index)
 
+#    legacy code:
+#    highest_K = max(df['K'])
+#    choiceL = df.loc[(df.K == highest_K) & (df.disabled == 0)]
+#    picked_ids.append(int(choiceL.sample(1).index[0]))
+#    choiceR = df.loc[(df['disabled'] == 0) ]
+#    picked_ids.extend(choiceR.sample(min(n_to_review, len(df.index)-1)).index)
+#
     while picked_ids[0] in list(picked_ids[1:]):
         log_("Picking entries one more time to avoid comparing to self")
         picked_ids = pick_entries(df)
+    print(picked_ids)
     return picked_ids
 
 
@@ -384,21 +439,29 @@ def show_podium(df):
     if args["debug"] is True:  # print all fields
         pprint(df.sort_values(by="gELO")[0:5])
     else:
-        df2 = df[["ID", "content", "gELO", "iELO", "tELO", "tags"]].copy()
+        df2 = df[["ID", "content", "gELO", "iELO", "tELO", "tags"]]
         pprint(df2.sort_values(by="gELO")[0:5])
 
 
-def show_stats(df):
-    "shows statistics on the litoy database"
-    log_("Printing statistics", False)
+def show_stats(df, printing=True):
+    """
+    shows statistics on the litoy database, but is also used to write at each
+    launch the state of the database for later analysis
+    """
     df = litoy.df.copy()
-    df_not_disabled = df[ df['disabled'] == 0 ]
-    pprint(f"Number of entries in LiTOY : {len(df)}, non disabled entries only : {len(df_not_disabled)}")
-    pprint(f"Average importance score : {df_not_disabled['iELO'].mean()}, time score : {df_not_disabled['tELO'].mean()}") 
-    pprint(f"Average global score : {df_not_disabled['gELO'].mean()}") 
-    pprint(f"Average K value : {df_not_disabled['K'].mean()}")
-    pprint(f"Time spent comparing : {df_not_disabled['compar_time'].sum()}")
-    pprint(f"Number of comparison : {df_not_disabled['n_comparison'].sum()}, average : {df_not_disabled['n_comparison'].mean()}")
+    df_nd = df[df['disabled'] == 0]
+    if printing is True:
+        action = print
+    else:
+        action = log_
+    action(f"Number of entries in LiTOY : {len(df)}, non disabled entries only : {len(df_nd)}")
+    action("Average / standard deviation :")
+    action(f"Importance score : {round(df_nd.iELO.mean(),1)} {round(df_nd.iELO.std(), 2)}")
+    action(f"Time score : {round(df_nd.tELO.mean(), 1)} {round(df_nd.tELO.std(), 2)}") 
+    action(f"Global score : {round(df_nd.gELO.mean(), 1)} {round(df_nd.gELO.std(), 2)}") 
+    action(f"K value : {round(df_nd.K.mean(), 1)} {round(df_nd.K.std(), 2)}")
+    action(f"Time spent comparing : {round(df_nd.compar_time.sum(), 1)}, {round(df_nd.compar_time.std(), 2)}")
+    action(f"Number of comparison : {round(df_nd.n_comparison.sum(), 1)} {round(df_nd['n_comparison'].mean(), 2)}")
 
 
 def rlinput(prompt, prefill=''): 
@@ -413,13 +476,13 @@ def rlinput(prompt, prefill=''):
     finally:
         readline.set_startup_hook()
 
-def shortcut_and_action(id_left, id_right, mode): 
+def shortcut_and_action(id_left, id_right, mode, progress): 
     """
     makes the link between keypresses and actions
     shortcuts are stored at the top of the file
     """
-    entry_left =  litoy.df.loc[id_left, :]
-    entry_right = litoy.df.loc[id_right, :]
+    entry_left =  litoy.df.loc[id_left, :].copy()
+    entry_right = litoy.df.loc[id_right, :].copy()
     log_(f"Waiting for shortcut for {entry_left.name} vs {entry_right.name} for {mode}")
 
     def fetch_action(input):
@@ -428,11 +491,11 @@ def shortcut_and_action(id_left, id_right, mode):
         for action, keypress in shortcuts.items():
             if str(input) in keypress:
                 if found != "":
-                    log_("Several corresponding shortcuts found! Quitting.", False)
+                    log_("ERROR: Several corresponding shortcuts found! Quitting.", False)
                     raise SystemExit()
                 found = action
         if action == "":
-            log_(f"No {str(input)} shortcut found")
+            log_(f"ERROR: No {str(input)} shortcut found")
             action = "show_help"
         return found
 
@@ -459,7 +522,7 @@ def shortcut_and_action(id_left, id_right, mode):
             try :
                 old_value = str(entry[chosenfield])
             except KeyError:
-                log_("Shortcut : edit : wrong field name", False)
+                log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
             if platform.system() == "Windows" :
                 new_value = str(input("Enter the desired new value for field '" + chosenfield +"'\n"))
@@ -468,19 +531,19 @@ def shortcut_and_action(id_left, id_right, mode):
             df = litoy.df.copy()
             df.loc[entry.name, chosenfield] = new_value
             litoy.save_to_file(df)
-            log_(f'Edited field "{chosenfield}", old_value="{old_value}", new_value="{new_value}', False)
+            log_(f'Edited field "{chosenfield}", {old_value} => {new_value}', False)
             break
 
     action = ""
     start_time = time.time()
     while True:
         action = "" 
-        log_(f"Shortcut : asking question, mode : {mode}")
-        print(f"{col_gre}{questions[mode]} (h or ? for help){col_rst}")
+        log_(f"Asking question, mode : {mode}")
+        print(f"{col_gre}{progress}/{n_to_review} {questions[mode]} (h or ? for help){col_rst}")
         keypress = input(">")
 
         if keypress not in list(chain.from_iterable(shortcuts.values())):
-            log_(f"Shortcut Error : keypress not found : {keypress}")
+            log_(f"ERROR: keypress not found : {keypress}")
             action = "show_help"
         else :
             action = str(fetch_action(keypress))
@@ -506,8 +569,8 @@ def shortcut_and_action(id_left, id_right, mode):
 
             eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR), 5-keypress, eL_old.K)
             eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR), keypress, eR_old.K)
-            log_(f"Elo : left : old = {eloL} new = {eL_new[elo_fld]} ;\
-                    right : old = {eloR} new = {eR_new[elo_fld]}", False)
+            log_(f"Elo : left : {eloL} => {eL_new[elo_fld]} ;\n\
+                    right : {eloR} => {eR_new[elo_fld]}", False)
 
             eL_new["K"] = adjust_K(eL_old.K)
             eR_new["K"] = adjust_K(eR_old.K)
@@ -530,11 +593,11 @@ def shortcut_and_action(id_left, id_right, mode):
 
 
         if action == "skip_review":
-            log_("Shortcut : Skipped review", False)
+            log_("Skipped review", False)
             break
 
         if action == "show_all_fields":
-            log_("Shortcut : displaying the entries in full")
+            log_("Displaying the entries in full")
             print("\n"*10)
             print_2_entries(int(entry_left.name), int(entry_right.name), mode, "all") 
             continue
@@ -550,8 +613,34 @@ def shortcut_and_action(id_left, id_right, mode):
                         elif platform.system() == "Darwin": subprocess.Popen(["open", path])
                         else: subprocess.Popen(["xdg-open", path], stdout=open(os.devnull, 'wb'))
                 except KeyError as e:
-                    log_(f"url not found : {e}", False)
+                    log_(f"url not found in entry {ent.name} : {e}")
+            time.sleep(1.5)  # better display
+            print("\n"*10)
+            print_2_entries(int(entry_left.name),
+                            int(entry_right.name),
+                            mode=mode)
             continue
+
+        if action == "reload_media":
+            log_("Reloading media")
+            for ent in [entry_left, entry_right]:
+                content = ent["content"]
+
+                old = args["verbose"]
+                args["verbose"] = True
+                metacontent = get_meta_from_content(content)
+                args["verbose"] = old
+
+                entry_left["metacontent"] = json.dumps(metacontent)
+                df = litoy.df.copy()
+                df.loc[ent.name, "metacontent"] = json.dumps(metacontent)
+                litoy.save_to_file(df)
+                log_(f"New metacontent value for {ent.name} : {metacontent}")
+            print_2_entries(int(entry_left.name),
+                            int(entry_right.name),
+                            mode=mode)
+            continue
+
 
         if action == "edit_left": edit(entry_left) ; continue
         if action == "edit_right": edit(entry_right) ; continue
@@ -559,6 +648,13 @@ def shortcut_and_action(id_left, id_right, mode):
         if action == "star_right": star(entry_right) ; continue
         if action == "disable_left": disable(entry_left) ; return(action)
         if action == "disable_right": disable(entry_right) ; return(action)
+
+        if action == "undo":
+            print("Undo function is not yet implemented,\
+                  manually correct the database using libreoffice calc after looking at\
+                  the logs. Or take a look at the saved json files")
+            input("<press enter to continue>")
+            continue
 
         if action == "show_help":
             log_("Printing help :", False)
@@ -598,7 +694,7 @@ def get_meta_from_content(string):
         since = time.time() - last
         last = time.time()
         if since < 2:
-            tqdm.write("Sleeping 2 seconds")
+            log_(f"Sleeping for {2-since} seconds", false)
             time.sleep(2-since)
 
     splitted = string.split(" ")
@@ -609,6 +705,12 @@ def get_meta_from_content(string):
                     log_(f"Extracting info from video {word}")
                     return extract_youtube(word)
 
+        if word == "type:local_video":  # fetch local video files
+            for part in string.split("\""):
+                if "/" in part:
+                    log_(f"Extracting info from local video {part}")
+                    return extract_local_video(part)
+
         if word.startswith("http") or word.startswith("www."):
             if "ytb" in word or "youtube" in word:
                 log_(f"Extracting info from video {word}")
@@ -618,20 +720,27 @@ def get_meta_from_content(string):
                 log_(f"Extracting pdf from {word}")
                 return extract_pdf_url(word)
 
-            # if here then is probably just an html and should be treated as text
+            # if here then is probably just an html
+            # and should be treated as text
             log_(f"Extracting text from webpage {word}")
             return extract_webpage(word)
 
-        elif "/" in word:  # might be a link to a file
-            if word.endswith(".pdf"):
-                log_(f"Extracting pdf from {word}")
-                return extract_pdf_local(word)
+    if "/" in string:  # might be a link to a file
+        for part in string.split("\""):
+            if ".mp4" in part or ".mov" in part or ".avi" in part:
+                if "/" in part:
+                    log_(f"Extracting info from local video {part}")
+                    return extract_local_video(part)
 
-            if word.endswith(".md") or word.endswith(".txt"):
-                log_(f"Extracting data from {word}")
-                return extract_txt(word)
+            if ".pdf" in part:
+                log_(f"Extracting pdf from {part}")
+                return extract_pdf_local(part)
+
+            if ".md" in part or ".txt" in part:
+                log_(f"Extracting text data from {part}")
+                return extract_txt(part)
         else:
-            log_(f"No metadata were extracted for {word}")
+            log_(f"No metadata were extracted for {string}")
             return {}
 
 
@@ -646,9 +755,33 @@ def extract_youtube(url):
                    "title": video['title'],
                    "url": url}
         except (KeyError, DownloadError, ExtractorError) as e:
-            log_(f"Video link skipped because : error during information extraction from {url} : {e}", False)
+            log_(f"ERROR: Video link skipped because : error during information\
+                    extraction from {url} : {e}", False)
             res.update({"type": "video not found", "url": url})
     return res
+
+
+def extract_local_video(link):
+    """
+    extracts video duration in minutes from local files
+    https://stackoverflow.com/questions/3844430/how-to-get-the-duration-of-a-video-in-python
+    """
+    vid = Path(link)
+    if not vid.exists():
+        link = link.replace("\\", "")
+        vid = Path(link)
+    if not vid.exists():
+        log_(f"ERROR : Thought this was a local video but file was not found!\
+                : {link}", False)
+        return {"type": "local video not found",
+                "url": link}
+    clip = VideoFileClip(link)
+    duration = round(clip.duration/60, 1)
+    dic = {"type": "local video",
+           "title": clip.filename,
+           "length": duration,
+           "url": link}
+    return dic
 
 
 def extract_pdf_url(url):
@@ -660,14 +793,17 @@ def extract_pdf_url(url):
     Path("./.temporary.pdf").unlink()
     return temp_dic
 
+
 def extract_pdf_local(path):
     "extracts reading time from a local pdf file"
+    if not Path(path).exists():
+        path = path.replace(" ", "\\ ")
     try:
         with open(path, "rb") as f:
             text_content = pdftotext.PDF(f)
             text_content = " ".join(text_content).replace("\n", " ")
     except FileNotFoundError:
-        log_(f"Cannot find {path}, I thought it was a PDF", False)
+        log_(f"ERROR: Cannot find {path}, I thought it was a PDF", False)
         return {"type": "pdf not found",
                 "url": path}
 
@@ -701,7 +837,7 @@ def extract_txt(path):
         return res
 
     except ValueError as e:
-        log_(f"Cannot find {path} : {e}", False)
+        log_(f"ERROR: Cannot find {path} : {e}", False)
         res = {"type": "txt file not found",
                 "url": path} 
         return res
@@ -723,7 +859,7 @@ def extract_webpage(url):
         try:  # if url was never saved
             url = wb.links['last memento']['url']
         except (requests.exceptions.ConnectionError, AttributeError) as e:
-            log_(f"Url could not be found even using wayback machine : {url} : {e}", False)
+            log_(f"ERROR: url could not be found even using wayback machine : {url} : {e}", False)
             res = {"title": "web page not found",
                    "url": url,
                    "length": "-1",
@@ -759,18 +895,16 @@ def expected_elo(elo_A, elo_B, Rp=100):
     opponent, the expected score is magnified ten times in comparison to
     the opponent's expected score
     '''
-    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}", False)
     result = 5 / (1 + 10 ** ((elo_B - elo_A) / Rp))
-    log_(f"Expected score : result={str(result)}", False)
+    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}, expected score : {str(result)}", False)
     return int(result)
 
 
 def update_elo(elo, exp_score, real_score, K):
     "computes the ELO score"
-    log_(f"Update_elo : elo={str(elo)} expected={str(exp_score)}\
-            real_score={str(real_score)} K={str(K)}")
     result = elo + K*(real_score - exp_score)
-    log_(f"Update_elo : result={str(result)}")
+    log_(f"Update_elo : elo={str(elo)} expected={str(exp_score)}\
+            real_score={str(real_score)} K={str(K)} ; result={str(result)}")
     return int(result)
 
 def adjust_K(K0):
@@ -789,10 +923,10 @@ def adjust_K(K0):
             log_(f"New K_value : {str(K_values[i+1])}")
             return K_values[i+1]
     if K0 not in K_values:
-        log_(f"error : K not part of K_values : {str(K0)}, reset to\
+        log_(f"ERROR: K not part of K_values : {str(K0)}, reset to\
                 {str(K_values[-1])}")
         return str(K_values[-1])
-    log_("This should never print", False)
+    log_("ERROR: This should never print", False)
     raise SystemExit()
 
 
@@ -809,13 +943,14 @@ def json_periodic_save():
     """
     if json_auto_save is True and len(litoy.df.index)>5:
         json_dir = f'{str(Path(".").absolute())}/logs/json_backups/'
-        json_name = str(int(time.time()))
+        json_name = str(int(time.time())) + ".json"
+        Path(json_dir).mkdir(parents=True, exist_ok=True)
         jfile = Path(f"{json_dir}{json_name}")
         if jfile.exists():
             print("json file already exists!")
             raise SystemExit()
         jfile.touch()
-        log_(f"json periodic save to file {json_name}")
+        log_(f"automatically saving database as json file {json_name}")
         litoy.df.to_json(jfile, compression="bz2", index=True)
 
 
@@ -869,8 +1004,7 @@ class LiTOYClass:
             current.strip()
             current = current.replace("\n", "")
             if current == new:
-                tqdm.write(f"\nLine already current in database :\
-\n{new}\n{current}\n")
+                log_(f"Entry already in database : {current}", False)
                 return True
         return False
 
@@ -906,14 +1040,21 @@ parser.add_argument("--litoy-db", "-l",
                     type=str,
                     required=False,
                     help="path to the litoy database")
+parser.add_argument("--disable", "-d",
+                    nargs=1,
+                    metavar="id_to_disable",
+                    dest='id_to_disable',
+                    type=int,
+                    required=False,
+                    help="supply an ID of an entry to disable it (useful \
+                         when you have finished a task")
 parser.add_argument("--add", "-a",
                     action="store_true",
                     dest='entry_to_add',
                     required=False,
                     help="directly add an entry by putting it inside quotation\
-mark like so : python3 ./__main__.py -a \"do this\
-thing tags:DIY, I\
-                    really need to do it that way\"")
+                    mark like so : python3 ./__main__.py -a \"do this thing\
+                    tags:DIY, I really need to do it that way\"")
 parser.add_argument("--verbose", "-v",
                     dest='verbose',
                     required=False,
@@ -941,25 +1082,27 @@ parser.add_argument("--show-stats", "-s",
 
 
 if __name__ == "__main__":
-    lg.basicConfig(level=lg.INFO,
+    (sizex, sizey) = get_terminal_size()
+    Path("./logs").mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(level=logging.INFO,
                    filename='logs/rotating_log',
                    filemode='a',
-                   format='%(asctime)s: %(message)s')
+                   format='')
+                   #format='%(asctime)s: %(message)s')
     # https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
-    log = lg.getLogger()
     handler = RotatingFileHandler("logs/rotating_log",
-                                  maxBytes=20*1024*1024, backupCount=20)
+                                  maxBytes=20*1024*1024,
+                                  backupCount=20)
+    log = logging.getLogger()
+    log.handlers.pop()  # otherwise all lines are duplicated
     log.addHandler(handler)
 
-    args = parser.parse_args().__dict__
-
-    (sizex, sizey) = get_terminal_size()
-
     # checks if the arguments are sane
+    args = parser.parse_args().__dict__
     if args['litoy_db'] is None:
         wrong_arguments_(args)
     if not args['litoy_db'].endswith(".xlsx"):
-        log_(f"Not a valid xlsx filename : {args['litoy_db']}\n\
+        log_(f"ERROR: Not a valid xlsx filename : {args['litoy_db']}\n\
                 Please add '.xlsx' at the end of the filename")
     if args['import_ff_arg'] is None and args['litoy_db'] is None:
         wrong_arguments_(args)
@@ -974,6 +1117,7 @@ if __name__ == "__main__":
 
     # finally the actual code:
     json_periodic_save()  # periodic save
+    log_("\n"*10 + "##################### STARTUP")
 
     if args['import_ff_arg'] is not None:
         importFromFile(args['import_ff_arg'])
@@ -989,14 +1133,18 @@ Text content of the entry?\n>")
         if len(entry_to_add.split(sep=" ")) == 1:  # avoids bugs
             print("There is no point in adding single word entries. Quitting")
             raise SystemExit()
-        add_new_entry(litoy.df, entry_to_add)
-        log_("Done.", False)
+        if not litoy.checksIfEntryExists(litoy.df, entry_to_add):
+            add_new_entry(litoy.df, entry_to_add)
+        else:
+            raise SystemExit()
+        log_("Done adding entry.", False)
         raise SystemExit()
 
     if args['review_mode'] is True:
+        show_stats(litoy.df, printing=False)
         n = len(litoy.df.index)
         if n < 10:
-            log_(f"You only have {n} item in your database, add more to start \
+            log_(f"ERROR: you only have {n} item in your database, add more to start \
                     using LiTOY!", False)
             raise SystemExit()
         picked_ids = pick_entries(litoy.df)
@@ -1005,7 +1153,7 @@ Text content of the entry?\n>")
             disp_flds = "all"
         else:
             disp_flds = "no"
-        for i in picked_ids[1:]:
+        for (progress, i) in enumerate(picked_ids[1:]):
             for m in ["importance", "time"]:
                 (sizex, sizey) = get_terminal_size()  # dynamic sizing
                 print("\n"*10)
@@ -1014,13 +1162,26 @@ Text content of the entry?\n>")
                                 mode=m,
                                 all_fields=disp_flds)
                 state = ""
-                state = shortcut_and_action(picked_ids[0], i, mode=m)
+                state = shortcut_and_action(picked_ids[0], i, mode=m, progress=progress)
                 if state == "disable_right":
                     break
                 if state == "disable_left":
-                    log_("Stopping because you suspended left entry", False)
+                    log_("Stopping because you suspended left entry\n\
+                            if you want to keep doing reviews, relaunch LiTOY.", False)
                     raise SystemExit()
-        log_("Finished reviewing session. Quitting.", False)
+        log_("Finished reviewing session.\nQuitting.", False)
+        raise SystemExit()
+
+    if args['id_to_disable'] is not None:
+        "disables an entry at launch, use this when the task has been accomplished"
+        idtd = int(args['id_to_disable'][0])
+        df = litoy.df.copy()
+        if int(df.loc[idtd, "disabled"]) != 0:
+            log_(f"Entry with ID {idtd} is already disabled", False)
+            raise SystemExit()
+        df.loc[int(idtd), "disabled"] = 1
+        litoy.save_to_file(df)
+        log_(f'Disabled entry {idtd}: {df.loc[idtd, "content"]}', False)
         raise SystemExit()
 
     if args["podium"] is True:
@@ -1029,9 +1190,9 @@ Text content of the entry?\n>")
         raise SystemExit()
 
     if args["show_stats"] is True:
-        log_("Showing statistics")
+        log_("Showing statistics :")
         show_stats(litoy.df)
         raise SystemExit()
 
-    log_("Insufficient arguments?", False)
+    log_("ERROR: Insufficient arguments?", False)
     wrong_arguments_(args)

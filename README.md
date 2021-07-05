@@ -11,6 +11,7 @@ There are several ways to look at it :
 * A way to always follow the gradient of optimally-spent time : using LiTOY you always do what's most important and quick to do.
 * An organizer aiming at centralizing all your goals in a single place while quickly ranking them in an order reflecting user preferences.
 * A way for me to increase my Python skills.
+* A way to get better at creating [Eisenhower Matrices](https://productiveclub.com/eisenhower-matrix/).
 
 
 The idea behind LiTOY is simple : 
@@ -40,7 +41,9 @@ The idea behind LiTOY is simple :
 
 **What are answer level number ?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 4 means you favor the right one. 3 is obviously the middle ground but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
 
-** Any killer features you want to brag about?** LiTOY automatically retrieves lots of metadata from the links. Like reading time from a pdf, a webpage, duration of a video etc. Also, it's mostly in one single file, making it somewhat easier to understand how it works and to maintain.
+**Any killer features you want to brag about?** LiTOY automatically retrieves lots of metadata from the links. Like reading time from a pdf, a webpage, duration of a video etc. Also, it's mostly in one single file, making it somewhat easier to understand how it works and to maintain.
+
+**Is there a way to ask litoy to fetch metadata for a video that is not on youtube?** Yes, just add somewhere `type:video` in the entry. you can also use `type:local_video` for local files using `ffmpeg`. Don't hesitate to use quotation marks (`"`) to avoid running into issues with unix spaces in links.
 
 **Do you care to explain all the different fields in the database?** 
 * `ID` used for the pandas index as well as the line number in excel. This should in theory never change for a given entry (even if you edit the content of the entry).
@@ -81,7 +84,7 @@ The idea behind LiTOY is simple :
    * adds a new entry to deck todo with the tag diy 
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --review
-   * automatically pick 10 cards and compare them (20 comparison to do because you have 2 questions each time)
+   * automatically pick 10 cards and compare them (20 comparison to do because you have 2 questions each time, this can be changed in the settings)
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --import-from-file file.txt`
     * Automatically imports from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
@@ -89,22 +92,10 @@ The idea behind LiTOY is simple :
 
 
 ## TODO :
-    * inspect logs to see discrepancies, ensure that all data is retained for further processing
-    * check that type:video is implemented 
-    * change the picking to use delta score
-    * add a shortcut to reload metadata
-    * add a way to disable an entry directly
     * use type hints from the beginning and mypy
-    * store metadata of litoy into the log file : average k and average score
-    * make a way more precise index : with all function names etc
-    * add undo function : at least tell to go through the logs or the passed litoy json files
-    * mention somewhere the link with eisenhower matrixes
-    * use pyenv to figure out the environment needed to run litoy, then specify it in the readme
     * add gif to show demo
-    * if local video => ffmpeg : https://github.com/kkroening/ffmpeg-python + get file size
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
     * use pyinstaller to try to package the damn thing
-    * investigate wether to user this to manage settings :  https://pypi.org/project/simple-settings/
 
 
 
