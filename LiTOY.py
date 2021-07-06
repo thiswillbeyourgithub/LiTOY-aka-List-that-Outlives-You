@@ -604,7 +604,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
             eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR),
                                          keypress, eR_old.K)
             log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R:\
-{eloR}=>{eR_new[elo_fld]}", False)
+{eloR}=>{eR_new[elo_fld]}")
 
             eL_new["K"] = adjust_K(eL_old.K)
             eR_new["K"] = adjust_K(eR_old.K)
@@ -623,7 +623,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
             df.loc[id_left, :] = eL_new
             df.loc[id_right, :] = eR_new
             litoy.save_to_file(df)
-            log_(f"Done comparing {id_left} and {id_right}", False)
+            log_(f"Done comparing {id_left} and {id_right}")
             break
 
         if action == "skip_review":
@@ -953,7 +953,7 @@ def expected_elo(elo_A, elo_B, Rp=100):
     '''
     result = 5 / (1 + 10 ** ((elo_B - elo_A) / Rp))
     log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}, expected\
-score : {str(result)}", False)
+score : {str(result)}")
     return int(result)
 
 
