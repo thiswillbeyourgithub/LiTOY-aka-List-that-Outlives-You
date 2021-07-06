@@ -795,6 +795,7 @@ def extract_pdf_url(url):
     open("./.temporary.pdf", "wb").write(downloaded.content)
     temp_dic = extract_pdf_local("./.temporary.pdf")
     temp_dic["type"] = "online pdf"
+    temp_dic["url"] = url
     Path("./.temporary.pdf").unlink()
     return temp_dic
 
