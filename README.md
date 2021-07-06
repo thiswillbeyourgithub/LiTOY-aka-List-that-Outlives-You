@@ -10,6 +10,8 @@ Current state
 * All functions include docstrings
 * Type hinting the code is planned but not yet done
 
+[!./screenshot.png]
+
 Table of contents
 =================
 * [Current state](#Current-state)
