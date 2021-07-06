@@ -528,8 +528,8 @@ Quitting.", False)
 
     def disable(entry_id):
         "disables an entry during comparison"
-        assert entry_id["disabled"] == 0
         df = litoy.df.copy()
+        assert df.loc[entry_id, "disabled"] == 0
         df.loc[entry_id, "disabled"] = 1
         litoy.save_to_file(df)
         log_(f"Disabled entry {entry_id}", False)
