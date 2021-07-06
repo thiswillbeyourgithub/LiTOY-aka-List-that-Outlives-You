@@ -141,7 +141,7 @@ n_to_review = 10
 wpm = 200
 average_word_length = 6
 
-# used when comparing
+# used when reviewing
 questions = {
         "importance": "What steps will make you likely to achieve your goals?",
 #        "importance": "What steps will make you likely to achieve your goals?\
@@ -190,7 +190,7 @@ spacer = "    "  # nicer print message
 global cols
 cols = ["ID", "date", "content", "metacontent", "tags",
         "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
-        "compar_time", "n_comparison", "K", "disabled"]
+        "review_time", "n_review", "K", "disabled"]
 # TODO : mention that in the README
 # iELO stands for "importance ELO", DiELO for "delta iELO",
 # gELO for "global ELO", etc
@@ -304,8 +304,8 @@ def add_new_entry(df, content):
                "DiELO": default_score,
                "DtELO": default_score,
                "gELO": compute_global_score(default_score, default_score),
-               "compar_time": 0,
-               "n_comparison": 0,
+               "review_time": 0,
+               "n_review": 0,
                "K": sorted(K_values)[-1],
                "starred": 0,
                "disabled": 0,
@@ -318,10 +318,10 @@ def add_new_entry(df, content):
 
 def pick_entries(df):
     """
-    picks entries before a comparison : the left one is chosen randomly
-    among those with the highest pick factor, then n_to_review other entries
+    Pick entries for the reviews : the left one is chosen randomly
+    among those with the highest pick_factor, then n_to_review other entries
     are selected at random among the half with the highest pick factor.
-    Note that the pick_score goes down fast.
+    Note: the pick_score goes down fast.
     """
     picked_ids = []
     df = litoy.df.loc[df.disabled == 0].copy()
@@ -365,9 +365,7 @@ def print_memento_mori():
 
 
 def print_2_entries(id_left, id_right, mode, all_fields="no"):
-    """
-    shows the two entries to compare side by side
-    """
+    "Show the two entries to review side by side"
     print(col_blu + "#"*sizex + col_rst)
     print_memento_mori()
     print(col_blu + "#"*sizex + col_rst)
@@ -463,16 +461,16 @@ def show_stats(df, printing=True):
     """
     df = litoy.df.copy()
     df_nd = df[df['disabled'] == 0]
-    df_virg = df[df['n_comparison'] == 0]
+    df_virg = df[df['n_review'] == 0]
     if printing is True:
         action = print
     else:
         action = log_
     action(f"Number of entries in LiTOY : {len(df)}, and of non disabled entries \
 only : {len(df_nd)}")
-    action(f"Number of entries that have never been compared : {len(df_virg)}")
-    action(f"Total number of comparison : {round(df_nd.n_comparison.sum(), 1)} \
-average : {round(df_nd['n_comparison'].mean(), 2)}")
+    action(f"Number of entries that have never been reviewed : {len(df_virg)}")
+    action(f"Total number of review : {round(df_nd.n_review.sum(), 1)} \
+average : {round(df_nd['n_review'].mean(), 2)}")
     action("")
     action("Average / standard deviation / median :")
     action(f"Importance score : {round(df_nd.iELO.mean(),1)} / \
@@ -485,8 +483,8 @@ average : {round(df_nd['n_comparison'].mean(), 2)}")
     action(f"Delta scores : {round(mean(pooled),1)} / {round(stdev(pooled),2)}\
 / {round(median(pooled), 2)}")
     action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)} / {round(df_nd.K.median())}")
-    action(f"Time spent comparing : {round(df_nd.compar_time.sum(), 1)} / \
-{round(df_nd.compar_time.std(), 2)}")
+    action(f"Time spent reviewing : {round(df_nd.review_time.sum(), 1)} / \
+{round(df_nd.review_time.std(), 2)}")
 
 
 def rlinput(prompt, prefill=''):
@@ -527,14 +525,14 @@ Quitting.", False)
         return found
 
     def star(entry_id):
-        "stars an entry_id during comparison"
+        "stars an entry_id during review"
         df = litoy.df.copy()
         df.loc[entry_id, "starred"] = 1
         litoy.save_to_file(df)
         log_(f"Starred entry_id {entry}", False)
 
     def disable(entry_id):
-        "disables an entry during comparison"
+        "disables an entry during review"
         df = litoy.df.copy()
         assert df.loc[entry_id, "disabled"] == 0
         df.loc[entry_id, "disabled"] = 1
@@ -542,7 +540,7 @@ Quitting.", False)
         log_(f"Disabled entry {entry_id}", False)
 
     def edit(entry_id):
-        "edit an entry during comparison"
+        "edit an entry during review"
         log_(f"Editing entry {entry_id}")
         while True:
             df = litoy.df.copy()
@@ -585,7 +583,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
             action = str(fetch_action(keypress))
             log_(f"Shortcut found : Action={action}")
 
-        if action == "answer_level":  # where the actual comparison takes place
+        if action == "answer_level":  # where the actual review takes place
             if keypress == "a":
                 keypress = 1
             if keypress == "z":
@@ -627,18 +625,18 @@ field '" + chosenfield + "'\n", prefill=old_value))
             eR_new[Delo_fld] = abs(eR_new[elo_fld] - eR_old[elo_fld])
             eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO)
             eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO)
-            eL_new["compar_time"] = round(eL_new["compar_time"] + date
+            eL_new["review_time"] = round(eL_new["review_time"] + date
                                           - start_time, 3)
-            eR_new["compar_time"] = round(eR_new["compar_time"] + date
+            eR_new["review_time"] = round(eR_new["review_time"] + date
                                           - start_time, 3)
-            eL_new["n_comparison"] += 1
-            eR_new["n_comparison"] += 1
+            eL_new["n_review"] += 1
+            eR_new["n_review"] += 1
 
             df = litoy.df.copy()
             df.loc[id_left, :] = eL_new
             df.loc[id_right, :] = eR_new
             litoy.save_to_file(df)
-            log_(f"Done comparing {id_left} and {id_right}")
+            log_(f"Done reviewing {id_left} and {id_right}")
             break
 
         if action == "skip_review":
@@ -982,7 +980,7 @@ def update_elo(elo, exp_score, real_score, K):
 
 def adjust_K(K0):
     """
-    lowers the K factor of the card after at each comparison
+    lowers the K factor of the card after at each review
     until lowest value is reached
     """
     K0 = int(K0)
