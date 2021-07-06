@@ -8,7 +8,7 @@ Table of contents
 * [How can I use LiTOY?](#How_can_I_use_LiTOY?)
     * [Syntax and usage example](#Syntax_and_usage_example)
 * [TODO](#TODO)
-* [Acknowledgement](#Acknowledgement)
+* [Acknowledgement](#Acknowledgement_(not_ordered))
 
 Current state
 ===============
