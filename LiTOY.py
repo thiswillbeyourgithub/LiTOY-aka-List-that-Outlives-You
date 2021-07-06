@@ -746,7 +746,7 @@ def get_meta_from_content(string):
         since = time.time() - last
         last = time.time()
         if since < 2:
-            log_(f"Sleeping for {2-since} seconds", false)
+            log_(f"Sleeping for {2-since} seconds", False)
             time.sleep(2-since)
 
     splitted = string.split(" ")
