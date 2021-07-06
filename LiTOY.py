@@ -198,7 +198,7 @@ cols = ["ID", "date", "content", "metacontent", "tags",
 
 def debug_signal_handler(signal, frame):
     """
-    used to make the whole script interruptible using ctrl+c
+    Make the whole script interruptible using ctrl+c,
     you can then resume using 'c'
     """
     pdb.set_trace()
@@ -207,7 +207,7 @@ def debug_signal_handler(signal, frame):
 # misc functions
 def log_(string, onlyLogging=True):
     """
-    appends string to the logging file, if onlyLogging=False then
+    Append string to the logging file, if onlyLogging=False then
     will also print to user using tqdm.write
     """
     caller_name = str(sys._getframe().f_back.f_code.co_name)
@@ -221,7 +221,7 @@ def log_(string, onlyLogging=True):
 
 
 def checkIfFileAndDB(path):
-    "checks if the file and database already exists, if not create the file"
+    "Check if the file and database already exists, if not create the file"
     db_location = Path(path)
     if db_location.exists():
         log_(f"Database file found at {path}")
@@ -243,7 +243,7 @@ create it?\ny/n?")
 
 
 def importFromFile(path):
-    "checks if text file exists then import it into LiTOY"
+    "Check if text file exists then import it into LiTOY"
     import_file = Path(path)
     if not import_file.exists():
         log_(f"ERROR: Import file not found at {path}, exiting", False)
@@ -257,19 +257,19 @@ def importFromFile(path):
                      ascii=False, dynamic_ncols=True, mininterval=0):
         line.strip()
         line = line.replace("\n", "")
-        if not litoy.checksIfEntryExists(litoy.df, line):
+        if not litoy.entry_duplicate_check(litoy.df, line):
             add_new_entry(litoy.df, line)
 
 
 def wrong_arguments_(args):
-    "used to exit while printing arguments"
+    "Print user arguments then exit"
     print("Exiting because called with wrong arguments \nYour arguments:")
     pprint(args)
     raise SystemExit()
 
 
 def add_new_entry(df, content):
-    "add a new entry to the pandas dataframe"
+    "Add a new entry to the pandas dataframe"
     tags = get_tags_from_content(content)
     metacontent = get_meta_from_content(content)
 
@@ -337,14 +337,14 @@ def pick_entries(df):
     picked_ids.extend(choiceR.index)
 
     while picked_ids[0] in list(picked_ids[1:]):
-        log_("Picking entries one more time to avoid comparing to self")
+        log_("Picking entries one more time to avoid reviewing to itself")
         picked_ids = pick_entries(df)
     return picked_ids
 
 
 def print_memento_mori():
     """
-    print a reminder to the user that life is short and times
+    Print a reminder to the user that life is short and times
     is always passing by faster as time goes on
     """
     if disable_lifebar == "no":
@@ -440,9 +440,7 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
 
 
 def show_podium(df):
-    """
-    shows the highest ranked things to do in LiTOY
-    """
+    "Show the highest ranked things to do in LiTOY "
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', sizex)
