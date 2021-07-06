@@ -484,7 +484,7 @@ average : {round(df_nd['n_comparison'].mean(), 2)}")
     pooled = list(df_nd.DiELO + df_nd.DtELO)
     action(f"Delta scores : {round(mean(pooled),1)} / {round(stdev(pooled),2)}\
 / {round(median(pooled), 2)}")
-    action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)}")
+    action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)} / {round(df_nd.K.median())}")
     action(f"Time spent comparing : {round(df_nd.compar_time.sum(), 1)} / \
 {round(df_nd.compar_time.std(), 2)}")
 
