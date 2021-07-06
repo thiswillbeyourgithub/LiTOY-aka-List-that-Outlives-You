@@ -123,6 +123,7 @@ TODO
     * use type hints from the beginning and mypy
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
     * when stable: talk about it on psionica, then lesswrong
+    * try to install it on PyPI to make it easy to install with pip
 
 
 Acknowledgement
