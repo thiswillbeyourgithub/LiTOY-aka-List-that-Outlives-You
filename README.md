@@ -10,7 +10,7 @@ Table of contents
 * [TODO](#TODO)
 * [Acknowledgement](#Acknowledgement)
 
-Current state :
+Current state
 ===============
 * personal project
 * beta stage
@@ -110,7 +110,7 @@ Syntax and usage example:
     * To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 
-TODO :
+TODO
 ======
     * implement a two letter shortcut code to answer importance and time at the same time?
     * use type hints from the beginning and mypy
