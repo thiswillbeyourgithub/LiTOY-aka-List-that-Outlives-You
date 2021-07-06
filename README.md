@@ -3,10 +3,10 @@
 Table of contents
 =================
 * [Current state](#Current-state)
-* [What is LiTOY?](#What_is_LiTOY?)
+* [What is LiTOY?](#What-is-LiTOY?)
 * [FAQ](#FAQ)
-* [How can I use LiTOY?](#How_can_I_use_LiTOY?)
-    * [Syntax and usage example](#Syntax_and_usage_example)
+* [How can I use LiTOY?](#How-can-I-use-LiTOY?)
+    * [Syntax and usage example](#Syntax-and-usage-example)
 * [TODO](#TODO)
 * [Acknowledgement](#Acknowledgement)
 
