@@ -567,20 +567,19 @@ def shortcut_and_action(id_left, id_right, mode, progress):
             eL_old = entry_left ; eR_old = entry_right
             eL_new =  eL_old.copy() ; eR_new = eR_old.copy()
 
-            if mode=="importance" : elo_fld = "iELO" ; Delo_fld = "DiELO"
+            if mode == "importance" : elo_fld = "iELO" ; Delo_fld = "DiELO"
             else : elo_fld = "tELO" ; Delo_fld = "DtELO"
             eloL = int(eL_old[elo_fld])
             eloR = int(eR_old[elo_fld])
 
             eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR), 5-keypress, eL_old.K)
             eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR), keypress, eR_old.K)
-            log_(f"Elo : left : {eloL} => {eL_new[elo_fld]} ;\n\
-                    right : {eloR} => {eR_new[elo_fld]}", False)
+            log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R: {eloR}=>{eR_new[elo_fld]}", False)
 
             eL_new["K"] = adjust_K(eL_old.K)
             eR_new["K"] = adjust_K(eR_old.K)
-            eL_new[Delo_fld] = eL_new[elo_fld] - eL_old[elo_fld]
-            eR_new[Delo_fld] = eR_new[elo_fld] - eR_old[elo_fld]
+            eL_new[Delo_fld] = abs(eL_new[elo_fld] - eL_old[elo_fld])
+            eR_new[Delo_fld] = abs(eR_new[elo_fld] - eR_old[elo_fld])
             eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO)
             eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO)
             eL_new["compar_time"] = round(eL_new["compar_time"] + date - start_time, 3)
