@@ -1089,14 +1089,14 @@ parser.add_argument("--show-stats", "-s",
 
 
 if __name__ == "__main__":
-    (sizex, sizey) = get_terminal_size()
+    # init logging :
+    # https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
     Path("./logs").mkdir(parents=True, exist_ok=True)
     logging.basicConfig(level=logging.INFO,
                    filename='logs/rotating_log',
                    filemode='a',
                    format='')
                    #format='%(asctime)s: %(message)s')
-    # https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
     handler = RotatingFileHandler("logs/rotating_log",
                                   maxBytes=20*1024*1024,
                                   backupCount=20)
