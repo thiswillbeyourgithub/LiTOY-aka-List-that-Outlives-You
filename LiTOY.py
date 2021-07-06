@@ -679,6 +679,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
             print_2_entries(int(id_left),
                             int(id_right),
                             mode=mode)
+            print("\n"*10)
             continue
 
         if action == "edit_left":
