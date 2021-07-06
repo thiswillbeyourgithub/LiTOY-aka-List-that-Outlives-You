@@ -200,7 +200,6 @@ def debug_signal_handler(signal, frame):
     you can then resume using 'c'
     """
     pdb.set_trace()
-signal.signal(signal.SIGINT, debug_signal_handler)
 
 
 # misc functions
@@ -1156,6 +1155,7 @@ if __name__ == "__main__":
     # init misc :
     (sizex, sizey) = get_terminal_size()
     args = parser.parse_args().__dict__
+    signal.signal(signal.SIGINT, debug_signal_handler)
     log_("\n"*10 + "##################### STARTUP")
 
     # checks if the arguments are sane
