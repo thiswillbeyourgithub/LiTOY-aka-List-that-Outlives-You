@@ -375,7 +375,7 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
         """
         from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
         """
-        rowname = rowname.ljust(30)
+        rowname = rowname.ljust(15)
         a = str(a)
         b = str(b)
         col_width = int((int(sizex)-len(rowname))/2-int(space)*2)
@@ -397,24 +397,24 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
     entry_right = litoy.df.loc[id_right, :].copy()
 
     if all_fields != "all":
-        side_by_side("IDs :", id_left, id_right)
+        side_by_side("ID", id_left, id_right)
         print("."*sizex)
 
         if "".join(entry_left.tags + entry_right.tags) != "":
-            side_by_side("Tags :", entry_left.tags, entry_right.tags)
+            side_by_side("Tags", entry_left.tags, entry_right.tags)
             print("."*sizex)
         if int(entry_left.starred) + int(entry_right.starred) != 0:
-            side_by_side("Starred:", entry_left.starred, entry_right.starred,
+            side_by_side("Starred", entry_left.starred, entry_right.starred,
                          col=col_yel)
             print("."*sizex)
 
-        side_by_side("Entry :", entry_left.content, entry_right.content)
+        side_by_side("Entry", entry_left.content, entry_right.content)
         print("."*sizex)
         if mode == "importance":
-            side_by_side("iELO :", entry_left.iELO, entry_right.iELO)
+            side_by_side("iELO", entry_left.iELO, entry_right.iELO)
             print("."*sizex)
         else:
-            side_by_side("tELO (high is quick) :",
+            side_by_side("tELO (high = short task) :",
                          entry_left.tELO, entry_right.tELO)
             print("."*sizex)
 
@@ -431,10 +431,11 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
         for y in ["type", "title", "length", "url"]:
             if y not in js[x].keys():
                 js[x][y] = ""
-    side_by_side("Title :", js[0]["title"], js[1]["title"])
-    side_by_side("Length :", js[0]["length"], js[1]["length"])
-    side_by_side("Path :", js[0]["url"], js[1]["url"])
-    side_by_side("Media type :", js[0]["type"], js[1]["type"])
+    side_by_side("Length", js[0]["length"], js[1]["length"])
+    side_by_side("Title", js[0]["title"], js[1]["title"])
+    print("."*sizex)
+    side_by_side("Path", js[0]["url"], js[1]["url"])
+    side_by_side("Media type", js[0]["type"], js[1]["type"])
 
     print(col_blu + "#"*sizex + col_rst)
 
