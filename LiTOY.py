@@ -38,8 +38,8 @@ from youtube_dl.utils import ExtractorError, DownloadError
 # 2. Fonctions, Classes, etc :
 #          def debug_signal_handler(signal, frame):
 #          def log_(string, onlyLogging=True):
-#          def checkIfFileAndDB(path):
-#          def importFromFile(path):
+#          def DB_file_check(path):
+#          def importation(path):
 #          def wrong_arguments_(args):
 #          def add_new_entry(df, content):
 #          def pick_entries(df):
@@ -220,7 +220,7 @@ def log_(string, onlyLogging=True):
         tqdm.write(string)
 
 
-def checkIfFileAndDB(path):
+def DB_file_check(path):
     "Check if the file and database already exists, if not create the file"
     db_location = Path(path)
     if db_location.exists():
@@ -242,7 +242,7 @@ create it?\ny/n?")
             raise SystemExit()
 
 
-def importFromFile(path):
+def importation(path):
     "Check if text file exists then import it into LiTOY"
     import_file = Path(path)
     if not import_file.exists():
@@ -1181,14 +1181,14 @@ if __name__ == "__main__":
         wrong_arguments_(args)
 
     # initialize litoy class:
-    if checkIfFileAndDB(args['litoy_db']) is None:
+    if DB_file_check(args['litoy_db']) is None:
         litoy = LiTOYClass(None)
     else:
         litoy = LiTOYClass(args['litoy_db'])
 
     # finally the actual code:
     if args['import_ff_arg'] is not None:
-        importFromFile(args['import_ff_arg'])
+        importation(args['import_ff_arg'])
         log_("Done importing from file, exiting", False)
         json_periodic_save()
         raise SystemExit()
