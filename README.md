@@ -120,12 +120,8 @@ TODO
 ======
     * implement a two letter shortcut code to answer importance and time at the same time?
     * use type hints from the beginning and mypy
-    * use side by side function to display the podium
-    * open libreoffice with an argument
-    * add gif to show demo
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
     * when stable: talk about it on psionica, then lesswrong
-
 
 
 Acknowledgement
