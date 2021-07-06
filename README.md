@@ -100,7 +100,7 @@ How can I use LiTOY?
 * manually edit the settings at the top of `LiTOY.py`
 * run `pip3.9 install -r requirements.txt`
 * `python3.9 ./LiTOY.py --help`
-* to add your first 10 entries, either use `--import-from-file` or `--add`
+* before entering `review mode`, your database will need to contain at least 10 entries. To add them, either use `--import-from-file` or `--add`
 *I recommend setting an alias in your shell, mine is `alias litoy = 'cd /litoy/folder && python3.9 ./LiTOY.py -l personnal_database.xlsx'` then I just have to type `litoy -r`
 
 Syntax and usage example:
