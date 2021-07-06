@@ -88,6 +88,8 @@ FAQ
 
 **Can I open the database using libreoffice?** Yes, it's why I chose this format. But close LiTOY first and don't forget to save your changes. Note that you can automatically save the whole database as a json file too.
 
+**What do you call a review?** It's just a pairwise comparison between two entries. I chose this name because I use [Anki](https://apps.ankiweb.net/) **a lot**.
+
 How can I use LiTOY?
 ====================
 * Read this page thoroughly. Don't be afraid to ask questions.
