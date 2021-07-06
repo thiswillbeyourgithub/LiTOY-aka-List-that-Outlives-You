@@ -1,5 +1,15 @@
 # LiTOY : the List That Outlives You.
 
+Current state
+-------------
+* I use it so it works
+* personal project
+* beta stage
+* PRs and issues are extremely appreciated.
+* **PEP8 compliant**
+* All functions include docstrings
+* Type hinting the code is planned but not yet done
+
 Table of contents
 =================
 * [Current state](#Current-state)
@@ -10,14 +20,6 @@ Table of contents
 * [TODO](#TODO)
 * [Acknowledgement](#Acknowledgement)
 
-Current state
-===============
-* personal project
-* beta stage
-* PRs and issues are extremely appreciated.
-* **PEP8 compliant**
-* All functions include docstrings
-* Type hinting the code is planned but not yet done
 
 What is LiTOY?
 ==============
