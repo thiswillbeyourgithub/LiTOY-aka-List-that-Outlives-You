@@ -318,7 +318,7 @@ def pick_entries(df):
     picks entries before a comparison : the left one is chosen randomly
     among those with the highest pick factor, then n_to_review other entries
     are selected at random among the half with the highest pick factor.
-    Note that the pick factor goes down fast.
+    Note that the pick_score goes down fast.
     """
     picked_ids = []
     df = litoy.df.loc[df.disabled == 0].copy()
