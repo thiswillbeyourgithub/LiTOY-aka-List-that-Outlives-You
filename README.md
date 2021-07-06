@@ -3,9 +3,9 @@
 Table of contents
 =================
 * [Current state](#Current-state)
-* [What is LiTOY?](#What-is-LiTOY?)
+* [What is LiTOY?](#What-is-LiTOY)
 * [FAQ](#FAQ)
-* [How can I use LiTOY?](#How-can-I-use-LiTOY?)
+* [How can I use LiTOY?](#How-can-I-use-LiTOY)
     * [Syntax and usage example](#Syntax-and-usage-example)
 * [TODO](#TODO)
 * [Acknowledgement](#Acknowledgement)
