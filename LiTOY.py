@@ -1,6 +1,5 @@
 #!/usr/bin/env python3.9
 
-
 import argparse
 import time
 import random
@@ -152,17 +151,17 @@ which would bring you more in your life?",
 shortcuts = { "skip_review"      : ["s", "-"],
               "answer_level"     : ["1", "2", "3", "4", "5",
                                     "a", "z", "e", "r", "t"],
-              "edit_left"        : ["e"],
-              "edit_right"       : ["E"],
-              "reload_media"     : ["R"],
+              "edit_left"        : ["el"],
+              "edit_right"       : ["er"],
+              "reload_media"     : ["re"],
               "undo"             : ["u"],
-              "show_all_fields"  : ["M"],
-              "star_left"        : ["x"],
-              "star_right"       : ["X"],
-              "disable_left"     : ["d"],
-              "disable_right"    : ["D"],
+              "show_all_fields"  : ["m"],
+              "star_left"        : ["xl"],
+              "star_right"       : ["xr"],
+              "disable_left"     : ["dl"],
+              "disable_right"    : ["dr"],
               "open_media"       : ["o"],
-              "show_help"        : ["h", "?"],
+              "show_help"        : ["h", "H", "?"],
               "quit"             : ["q"] }
 
 # ELO :
