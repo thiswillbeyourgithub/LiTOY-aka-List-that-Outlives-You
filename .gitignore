@@ -1,4 +1,5 @@
 personnal_database.xlsx
+default_import
 __pycache__/
 obsolete_from_v1/
 logs/*
