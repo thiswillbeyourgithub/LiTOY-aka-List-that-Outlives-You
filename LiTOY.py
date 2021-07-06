@@ -322,7 +322,7 @@ def pick_entries(df):
     """
     picked_ids = []
     df = litoy.df.loc[df.disabled == 0].copy()
-    df["pick_score"] = df.K + df.DiELO*0.01 + df.DtELO*0.01
+    df["pick_score"] = df.K + df.DiELO*0.1 + df.DtELO*0.1
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
     choiceL = df.iloc[0]
     choiceR = df.iloc[1:int(len(df.index)-1/2)].sample(n_to_review)
