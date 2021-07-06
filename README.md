@@ -2,7 +2,7 @@
 
 Table of contents
 =================
-* [Current state](#'Current state')
+* [Current state](#Current-state)
 * [What is LiTOY?](#What_is_LiTOY?)
 * [FAQ](#FAQ)
 * [How can I use LiTOY?](#How_can_I_use_LiTOY?)
