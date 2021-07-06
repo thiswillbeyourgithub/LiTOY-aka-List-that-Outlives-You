@@ -324,18 +324,12 @@ def pick_entries(df):
     df = litoy.df.loc[df.disabled == 0].copy()
     df["pick_score"] = df.K + df.DiELO*0.1 + df.DtELO*0.1
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
-    choiceL = df.iloc[0]
-    choiceR = df.iloc[1:int(len(df.index)-1/2)].sample(n_to_review)
-    picked_ids.append(int(choiceL.name))
-    picked_ids.extend(choiceR.sample(min(n_to_review, len(df.index)-1)).index)
+    choiceL = df.index[0]
+    choiceR = df.loc[1:int((len(df.index)-1)/2), :].sample(
+            min(n_to_review, len(df.index)-1))
+    picked_ids.append(int(choiceL))
+    picked_ids.extend(choiceR.index)
 
-#    legacy code:
-#    highest_K = max(df['K'])
-#    choiceL = df.loc[(df.K == highest_K) & (df.disabled == 0)]
-#    picked_ids.append(int(choiceL.sample(1).index[0]))
-#    choiceR = df.loc[(df['disabled'] == 0) ]
-#    picked_ids.extend(choiceR.sample(min(n_to_review, len(df.index)-1)).index)
-#
     while picked_ids[0] in list(picked_ids[1:]):
         log_("Picking entries one more time to avoid comparing to self")
         picked_ids = pick_entries(df)
@@ -398,7 +392,7 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
     entry_right = litoy.df.loc[id_right, :].copy()
 
     if all_fields != "all":
-        side_by_side("IDs :", entry_left.name, entry_right.name)
+        side_by_side("IDs :", id_left, id_right)
         print("."*sizex)
 
         if "".join(entry_left.tags + entry_right.tags) != "":
@@ -490,7 +484,7 @@ def shortcut_and_action(id_left, id_right, mode, progress):
     """
     entry_left =  litoy.df.loc[id_left, :].copy()
     entry_right = litoy.df.loc[id_right, :].copy()
-    log_(f"Waiting for shortcut for {entry_left.name} vs {entry_right.name} for {mode}")
+    log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
 
     def fetch_action(input):
         "deduce action from user keypress"
@@ -506,24 +500,24 @@ def shortcut_and_action(id_left, id_right, mode, progress):
             action = "show_help"
         return found
 
-    def star(entry):
-        "stars an entry during comparison"
+    def star(entry_id):
+        "stars an entry_id during comparison"
         df = litoy.df.copy()
-        df.loc[entry.name, "starred"] = 1
+        df.loc[entry_id, "starred"] = 1
         litoy.save_to_file(df)
-        log_(f"Starred entry {entry.name}", False)
+        log_(f"Starred entry_id {entry}", False)
 
-    def disable(entry):
+    def disable(entry_id):
         "disables an entry during comparison"
-        assert entry["disabled"] == 0
+        assert entry_id["disabled"] == 0
         df = litoy.df.copy()
-        df.loc[entry.name, "disabled"] = 1
+        df.loc[entry_id, "disabled"] = 1
         litoy.save_to_file(df)
-        log_(f"Disabled entry {entry.name}", False)
+        log_(f"Disabled entry {entry_id}", False)
 
-    def edit(entry):
+    def edit(entry_id):
         "edit an entry during comparison"
-        log_(f"Editing entry {entry.name}")
+        log_(f"Editing entry {entry_id}")
         while True:
             chosenfield = str(input("What field do you want to edit?\n>"))
             try :
@@ -591,10 +585,10 @@ def shortcut_and_action(id_left, id_right, mode, progress):
             eR_new["n_comparison"]+=1
 
             df = litoy.df.copy()
-            df.iloc[eL_new.name] = eL_new
-            df.iloc[eR_new.name] = eR_new
+            df.loc[id_left, :] = eL_new
+            df.loc[id_right, :] = eR_new
             litoy.save_to_file(df)
-            log_(f"Done comparing {entry_left.name} and {entry_right.name}", False)
+            log_(f"Done comparing {id_left} and {id_right}", False)
             break
 
 
@@ -606,12 +600,13 @@ def shortcut_and_action(id_left, id_right, mode, progress):
         if action == "show_all_fields":
             log_("Displaying the entries in full")
             print("\n"*10)
-            print_2_entries(int(entry_left.name), int(entry_right.name), mode, "all") 
+            print_2_entries(int(id_left), int(id_right), mode, "all") 
             continue
 
         if action == "open_media":
             log_("Openning media")            
-            for ent in [entry_left, entry_right]:
+            for ent_id in [id_left, id_right]:
+                ent = litoy.df.loc[ent_id, :]
                 js = json.loads(ent.metacontent)
                 try:
                     path = str(js["url"])
@@ -620,17 +615,19 @@ def shortcut_and_action(id_left, id_right, mode, progress):
                         elif platform.system() == "Darwin": subprocess.Popen(["open", path])
                         else: subprocess.Popen(["xdg-open", path], stdout=open(os.devnull, 'wb'))
                 except KeyError as e:
-                    log_(f"url not found in entry {ent.name} : {e}")
+                    log_(f"url not found in entry {ent_id} : {e}")
             time.sleep(1.5)  # better display
             print("\n"*10)
-            print_2_entries(int(entry_left.name),
-                            int(entry_right.name),
+            print_2_entries(int(id_left),
+                            int(id_right),
                             mode=mode)
             continue
 
         if action == "reload_media":
             log_("Reloading media")
-            for ent in [entry_left, entry_right]:
+            for ent_id in [entry_left, entry_right]:
+                df = litoy.df.copy()
+                ent = df.loc[ent_id, :]
                 content = ent["content"]
 
                 old = args["verbose"]
@@ -639,22 +636,21 @@ def shortcut_and_action(id_left, id_right, mode, progress):
                 args["verbose"] = old
 
                 entry_left["metacontent"] = json.dumps(metacontent)
-                df = litoy.df.copy()
-                df.loc[ent.name, "metacontent"] = json.dumps(metacontent)
+                df.loc[ent_id, "metacontent"] = json.dumps(metacontent)
                 litoy.save_to_file(df)
-                log_(f"New metacontent value for {ent.name} : {metacontent}")
-            print_2_entries(int(entry_left.name),
-                            int(entry_right.name),
+                log_(f"New metacontent value for {ent_id} : {metacontent}")
+            print_2_entries(int(id_left),
+                            int(id_right),
                             mode=mode)
             continue
 
 
         if action == "edit_left": edit(entry_left) ; continue
         if action == "edit_right": edit(entry_right) ; continue
-        if action == "star_left": star(entry_left) ; continue
-        if action == "star_right": star(entry_right) ; continue
-        if action == "disable_left": disable(entry_left) ; return(action)
-        if action == "disable_right": disable(entry_right) ; return(action)
+        if action == "star_left": star(id_left) ; continue
+        if action == "star_right": star(id_right) ; continue
+        if action == "disable_left": disable(id_left) ; return(action)
+        if action == "disable_right": disable(id_right) ; return(action)
 
         if action == "undo":
             print("Undo function is not yet implemented,\
@@ -1104,8 +1100,12 @@ if __name__ == "__main__":
     log.handlers.pop()  # otherwise all lines are duplicated
     log.addHandler(handler)
 
-    # checks if the arguments are sane
+    # init misc :
+    (sizex, sizey) = get_terminal_size()
     args = parser.parse_args().__dict__
+    log_("\n"*10 + "##################### STARTUP")
+
+    # checks if the arguments are sane
     if args['litoy_db'] is None:
         wrong_arguments_(args)
     if not args['litoy_db'].endswith(".xlsx"):
@@ -1123,8 +1123,6 @@ if __name__ == "__main__":
         litoy = LiTOYClass(args['litoy_db'])
 
     # finally the actual code:
-    log_("\n"*10 + "##################### STARTUP")
-
     if args['import_ff_arg'] is not None:
         importFromFile(args['import_ff_arg'])
         log_("Done importing from file, exiting", False)
