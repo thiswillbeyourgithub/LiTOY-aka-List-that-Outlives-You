@@ -534,8 +534,7 @@ def shortcut_and_action(id_left, id_right, mode, progress):
                 new_value = str(input("Enter the desired new value for field '" + chosenfield +"'\n"))
             else :
                 new_value = str(rlinput("Enter the desired new value for field '" + chosenfield +"'\n", prefill=old_value))
-            df = litoy.df.copy()
-            df.loc[entry.name, chosenfield] = new_value
+            df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
             log_(f'Edited field "{chosenfield}", {old_value} => {new_value}', False)
             break
