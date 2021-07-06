@@ -1022,18 +1022,11 @@ class LiTOYClass:
             self.create_database()
         else:
             self.path = db_path
-            # just in case:
-            try:
-                self.df = pd.read_excel(db_path).set_index("ID")
-            except KeyError:
-                self.df = pd.read_excel(db_path)
+            self.df = pd.read_excel(db_path).set_index("ID").sort_index()
 
     def reload_df(self):
         "used to reload the df from the file"
-        try:
-            self.df = pd.read_excel(self.path).set_index("ID")
-        except KeyError:
-            self.df = pd.read_excel(self.path)
+        self.df = pd.read_excel(self.path).set_index("ID").sort_index()
 
     def save_to_file(self, df):
         "used to save the dataframe to an excel file"
