@@ -71,7 +71,7 @@ from youtube_dl.utils import ExtractorError, DownloadError
 #              def reload_df(self):
 #              def save_to_file(self, df):
 #              def create_database(self):
-#              def checksIfEntryExists(self, df, new):
+#              def entry_duplicate_check(self, df, new):
 #              def get_tags(self, df):
 # 3. Main routine
 
@@ -1063,7 +1063,7 @@ class LiTOYClass:
         self.save_to_file(df)
         self.reload_df()
 
-    def checksIfEntryExists(self, df, new):
+    def entry_duplicate_check(self, df, new):
         "checks if an entry already exists before adding it"
         # strangely, this was faster than using lapply
         for current in list(df['content']):
@@ -1205,7 +1205,7 @@ Text content of the entry?\n>")
         if len(entry_to_add.split(sep=" ")) == 1:  # avoids bugs
             print("There is no point in adding single word entries. Quitting")
             raise SystemExit()
-        if not litoy.checksIfEntryExists(litoy.df, entry_to_add):
+        if not litoy.entry_duplicate_check(litoy.df, entry_to_add):
             add_new_entry(litoy.df, entry_to_add)
         else:
             raise SystemExit()
