@@ -466,19 +466,19 @@ def show_stats(df, printing=True):
         action = print
     else:
         action = log_
-    action(f"Number of entries in LiTOY : {len(df)}, non disabled entries\
+    action(f"Number of entries in LiTOY : {len(df)}, non disabled entries \
 only : {len(df_nd)}")
     action("Average / standard deviation :")
-    action(f"Importance score : {round(df_nd.iELO.mean(),1)}\
+    action(f"Importance score : {round(df_nd.iELO.mean(),1)} / \
 {round(df_nd.iELO.std(), 2)}")
-    action(f"Time score : {round(df_nd.tELO.mean(), 1)}\
+    action(f"Time score : {round(df_nd.tELO.mean(), 1)} / \
 {round(df_nd.tELO.std() , 2)}")
-    action(f"Global score : {round(df_nd.gELO.mean(), 1)}\
+    action(f"Global score : {round(df_nd.gELO.mean(), 1)} / \
 {round(df_nd.gELO.std(), 2)}")
-    action(f"K value : {round(df_nd.K.mean(), 1)} {round(df_nd.K.std(), 2)}")
-    action(f"Time spent comparing : {round(df_nd.compar_time.sum(), 1)},\
+    action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)}")
+    action(f"Time spent comparing : {round(df_nd.compar_time.sum(), 1)} / \
 {round(df_nd.compar_time.std(), 2)}")
-    action(f"Number of comparison : {round(df_nd.n_comparison.sum(), 1)}\
+    action(f"Number of comparison : {round(df_nd.n_comparison.sum(), 1)} / \
 {round(df_nd['n_comparison'].mean(), 2)}")
 
 
