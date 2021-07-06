@@ -10,7 +10,7 @@ Current state
 * All functions include docstrings
 * Type hinting the code is planned but not yet done
 
-[!./screenshot.png]
+[!screenshot.png](./screenshot.png)
 
 Table of contents
 =================
