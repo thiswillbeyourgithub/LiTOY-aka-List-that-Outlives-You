@@ -703,9 +703,9 @@ field '" + chosenfield + "'\n", prefill=old_value))
 
         if action == "undo":
             print("Undo function is not yet implemented,\
-                  manually correct the database using libreoffice calc after looking at\
-                  the logs. Or take a look at the saved json files")
-            input("<press enter to continue>")
+  manually correct the database using libreoffice calc after looking at\
+  the logs. Or take a look at the saved json files")
+            input("(press enter to resume reviewing session)")
             continue
 
         if action == "show_help":
