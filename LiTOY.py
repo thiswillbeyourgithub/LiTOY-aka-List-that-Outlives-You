@@ -464,7 +464,7 @@ only : {len(df_nd)}")
     action(f"Importance score : {round(df_nd.iELO.mean(),1)}\
 {round(df_nd.iELO.std(), 2)}")
     action(f"Time score : {round(df_nd.tELO.mean(), 1)}\
-{round(df_nd.tELO.std( , 2))}")
+{round(df_nd.tELO.std() , 2)}")
     action(f"Global score : {round(df_nd.gELO.mean(), 1)}\
 {round(df_nd.gELO.std(), 2)}")
     action(f"K value : {round(df_nd.K.mean(), 1)} {round(df_nd.K.std(), 2)}")
