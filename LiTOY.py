@@ -444,11 +444,15 @@ def show_podium(df):
     """
     shows the highest ranked things to do in LiTOY
     """
-    if args["debug"] is True:  # print all fields
-        pprint(df.sort_values(by="gELO")[0:5])
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', sizex)
+    pd.set_option('display.max_colwidth', int(3*sizex/4))
+    if args["verbose"] is True:  # print all fields
+        pprint(df.sort_values(by="gELO", ascending=False)[0:10])
     else:
-        df2 = df[["ID", "content", "gELO", "iELO", "tELO", "tags"]]
-        pprint(df2.sort_values(by="gELO")[0:5])
+        df2 = df.loc[:, ["content", "gELO", "iELO", "tELO", "tags"]]
+        pprint(df2.sort_values(by="gELO", ascending=False)[0:10])
 
 
 def show_stats(df, printing=True):
