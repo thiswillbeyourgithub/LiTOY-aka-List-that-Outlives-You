@@ -1,4 +1,4 @@
-# LiTOY : the List That Outlives You.
+# LiTOY - the List That Outlives You.
 
 Current state
 -------------
@@ -23,17 +23,17 @@ Table of contents
 
 What is LiTOY?
 ==============
-There are several ways to look at it :
+There are several ways to look at it:
 * LiTOY is a python script using pandas to create and manage a list of your goals. Those goals or objectives can be short, medium or long term. The idea is to rank them in a smart way using pairwise comparisons and several [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
-* A way to always follow the gradient of optimally-spent time : using LiTOY you always do what's most important and quick to do.
+* A way to always follow the gradient of optimally-spent time: using LiTOY you always do what's most important and quick to do.
 * An organizer aiming at centralizing all your goals in a single place while quickly ranking them in an order reflecting user preferences.
 * A way for me to increase my Python skills.
 * A way to get better at creating [Eisenhower Matrices](https://productiveclub.com/eisenhower-matrix/).
 
 
-The idea behind LiTOY is simple : 
+The idea behind LiTOY is simple: 
 1. note all your goals in a text file (one task by line)
-2. have LiTOY import this file into a DataFrame and fetch all relevant metadata (example : length of time to watch a youtube video you linked)
+2. have LiTOY import this file into a DataFrame and fetch all relevant metadata (example: length of time to watch a youtube video you linked)
 3. let LiTOY pick items and prompt the user for which is better (according to a user-specified question)
 4. answer the question to adjust the ELO score of each item accordingly
 5. When enough pairwise comparisons are done, the items will be ranked. You can then know at a glance what's important to do but at the same time quick to finish.
