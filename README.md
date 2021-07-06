@@ -102,6 +102,7 @@ The idea behind LiTOY is simple :
     * open libreoffice with an argument
     * add gif to show demo
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
+    * when stable: talk about it on psionica, then lesswrong
 
 
 
