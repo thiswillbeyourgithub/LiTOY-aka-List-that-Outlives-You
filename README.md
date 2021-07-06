@@ -8,7 +8,7 @@ Table of contents
 * [How can I use LiTOY?](#How_can_I_use_LiTOY?)
     * [Syntax and usage example](#Syntax_and_usage_example)
 * [TODO](#TODO)
-* [Acknowledgement](#Acknowledgement_(not_ordered))
+* [Acknowledgement](#Acknowledgement)
 
 Current state
 ===============
@@ -122,7 +122,8 @@ TODO
 
 
 
-Acknowledgement (not ordered)
-=============================
-* Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
-* Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI.
+Acknowledgement
+===============
+In no particular order:
+    * Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
+    * Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI.
