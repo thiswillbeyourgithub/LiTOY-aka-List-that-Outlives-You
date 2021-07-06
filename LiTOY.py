@@ -744,9 +744,8 @@ def get_meta_from_content(string):
             if ".md" in part or ".txt" in part:
                 log_(f"Extracting text data from {part}")
                 return extract_txt(part)
-        else:
-            log_(f"No metadata were extracted for {string}")
-            return {}
+    log_(f"No metadata were extracted for {string}")
+    return {}
 
 
 def extract_youtube(url):
@@ -1122,7 +1121,6 @@ if __name__ == "__main__":
         litoy = LiTOYClass(args['litoy_db'])
 
     # finally the actual code:
-    json_periodic_save()  # periodic save
     log_("\n"*10 + "##################### STARTUP")
 
     if args['import_ff_arg'] is not None:
@@ -1176,6 +1174,7 @@ Text content of the entry?\n>")
                             if you want to keep doing reviews, relaunch LiTOY.", False)
                     raise SystemExit()
         log_("Finished reviewing session.\nQuitting.", False)
+        json_periodic_save()  # periodic save
         raise SystemExit()
 
     if args['id_to_disable'] is not None:
