@@ -325,14 +325,14 @@ def pick_entries(df):
     """
     picked_ids = []
     df = litoy.df.loc[df.disabled == 0].copy()
-    valid_id = df.index
+    valid_id = df.index  # to be sure not to pick disabled cards
     df["pick_score"] = df.K + df.DiELO*0.1 + df.DtELO*0.1
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
     choiceL = df.index[0]
     id_pick_list = [x for x in list(range(1, int((len(df.index)-1)/2)))
                     if x in valid_id]
     choiceR = df.loc[id_pick_list, :].sample(
-            min(n_to_review, len(id_pick_list)))
+            min(n_to_review, len(id_pick_list)-1))
     picked_ids.append(int(choiceL))
     picked_ids.extend(choiceR.index)
 
@@ -1212,8 +1212,8 @@ Text content of the entry?\n>")
         show_stats(litoy.df, printing=False)
         n = len(litoy.df.index)
         if n < 10:
-            log_(f"ERROR: you only have {n} item in your database, add more to start \
-                    using LiTOY!", False)
+            log_(f"ERROR: you only have {n} entries in your database, add 10 \
+to start using LiTOY!", False)
             raise SystemExit()
         picked_ids = pick_entries(litoy.df)
         log_(f"Picked the following entries : {picked_ids}")
