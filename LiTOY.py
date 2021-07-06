@@ -326,8 +326,9 @@ def pick_entries(df):
     df["pick_score"] = df.K + df.DiELO*0.1 + df.DtELO*0.1
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
     choiceL = df.index[0]
-    choiceR = df.loc[1:int((len(df.index)-1)/2), :].sample(
-            min(n_to_review, len(df.index)-1))
+    id_pick_list = list(range(1, int((len(df.index)-1)/2)))
+    choiceR = df.loc[id_pick_list, :].sample(
+            min(n_to_review, len(id_pick_list)))
     picked_ids.append(int(choiceL))
     picked_ids.extend(choiceR.index)
 
@@ -661,7 +662,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
 
         if action == "reload_media":
             log_("Reloading media")
-            for ent_id in [entry_left, entry_right]:
+            for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
                 ent = df.loc[ent_id, :]
                 content = ent["content"]
