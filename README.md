@@ -1,6 +1,17 @@
 # LiTOY : the List That Outlives You.
 
-### Current state :
+Table of contents
+=================
+* [Current state](#Current_state)
+* [What is LiTOY?](#What_is_LiTOY?)
+* [FAQ](#FAQ)
+* [How can I use LiTOY?](#How_can_I_use_LiTOY?)
+    * [Syntax and usage example](#Syntax_and_usage_example)
+* [TODO](#TODO)
+* [Acknowledgement](#Acknowledgement)
+
+Current state :
+===============
 * personal project
 * beta stage
 * PRs and issues are extremely appreciated.
@@ -8,7 +19,8 @@
 * All functions include docstrings
 * Type hinting the code is planned but not yet done
 
-## What is LiTOY?
+What is LiTOY?
+==============
 There are several ways to look at it :
 * LiTOY is a python script using pandas to create and manage a list of your goals. Those goals or objectives can be short, medium or long term. The idea is to rank them in a smart way using pairwise comparisons and several [ELO scores](https://en.wikipedia.org/wiki/Elo_rating_system).
 * A way to always follow the gradient of optimally-spent time : using LiTOY you always do what's most important and quick to do.
@@ -25,7 +37,8 @@ The idea behind LiTOY is simple :
 5. When enough pairwise comparisons are done, the items will be ranked. You can then know at a glance what's important to do but at the same time quick to finish.
 
 
-## FAQ
+FAQ
+===
 **Where does the idea come from?** From Gwern's [media resorted](https://www.gwern.net/Resorter).
 
 **Do you have any idea it will work or at least converge towards something useful without doing thousands of comparisons a day?** Not really, but quick back-of-the-envelope calculation made it look doable.
@@ -73,7 +86,8 @@ The idea behind LiTOY is simple :
 
 **Can I open the database using libreoffice?** Yes, it's why I chose this format. But close LiTOY first and don't forget to save your changes. Note that you can automatically save the whole database as a json file too.
 
-## How can I use LiTOY?
+How can I use LiTOY?
+====================
 * Read this page thoroughly. Don't be afraid to ask questions.
 * make sure you have python 3.9 installed
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY/ && cd LiTOY`
@@ -82,7 +96,8 @@ The idea behind LiTOY is simple :
 * `python3.9 ./LiTOY.py --help`
 *I recommend setting an alias in your shell, mine is `alias litoy = 'cd /litoy/folder && python3.9 ./LiTOY.py -l personnal_database.xlsx'` then I just have to type `litoy -r`
 
-### Syntax and usage example:
+Syntax and usage example:
+-------------------------
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --add 'repair the tires tags:diy'
    * adds a new entry to deck todo with the tag diy 
@@ -95,7 +110,8 @@ The idea behind LiTOY is simple :
     * To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 
-## TODO :
+TODO :
+======
     * implement a two letter shortcut code to answer importance and time at the same time?
     * use type hints from the beginning and mypy
     * use side by side function to display the podium
@@ -106,6 +122,7 @@ The idea behind LiTOY is simple :
 
 
 
-## Acknowledgement (not ordered)
+Acknowledgement (not ordered)
+=============================
 * Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
 * Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI.
