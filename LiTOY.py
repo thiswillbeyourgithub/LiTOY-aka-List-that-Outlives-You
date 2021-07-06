@@ -142,9 +142,10 @@ average_word_length = 6
 
 # used when comparing
 questions = {
-        "importance": "What steps will make you likely to achieve your goals?\
-\n* Which is more important?\n* If you had one hour to spend,\
-which would bring you more in your life?",
+        "importance": "What steps will make you likely to achieve your goals?",
+#        "importance": "What steps will make you likely to achieve your goals?\
+#\n* Which is more important?\n* If you had one hour to spend,\
+#which would bring you more in your life?",
         "time": "Which task takes the less time to complete?",
         }
 
