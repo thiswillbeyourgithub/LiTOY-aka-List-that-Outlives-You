@@ -1,9 +1,12 @@
 # LiTOY : the List That Outlives You.
 
 ### Current state :
-* hobby in progress
+* personal project
 * beta stage
 * PRs and issues are extremely appreciated.
+* **PEP8 compliant**
+* All functions include docstrings
+* Type hinting the code is planned but not yet done
 
 ## What is LiTOY?
 There are several ways to look at it :
