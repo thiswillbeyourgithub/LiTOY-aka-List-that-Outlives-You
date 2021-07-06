@@ -3,6 +3,7 @@
 import argparse
 import time
 import random
+from statistics import mean, stdev, median
 import readline
 import platform
 import subprocess
@@ -462,24 +463,30 @@ def show_stats(df, printing=True):
     """
     df = litoy.df.copy()
     df_nd = df[df['disabled'] == 0]
+    df_virg = df[df['n_comparison'] == 0]
     if printing is True:
         action = print
     else:
         action = log_
-    action(f"Number of entries in LiTOY : {len(df)}, non disabled entries \
+    action(f"Number of entries in LiTOY : {len(df)}, and of non disabled entries \
 only : {len(df_nd)}")
-    action("Average / standard deviation :")
+    action(f"Number of entries that have never been compared : {len(df_virg)}")
+    action(f"Total number of comparison : {round(df_nd.n_comparison.sum(), 1)} \
+average : {round(df_nd['n_comparison'].mean(), 2)}")
+    action("")
+    action("Average / standard deviation / median :")
     action(f"Importance score : {round(df_nd.iELO.mean(),1)} / \
 {round(df_nd.iELO.std(), 2)}")
     action(f"Time score : {round(df_nd.tELO.mean(), 1)} / \
 {round(df_nd.tELO.std() , 2)}")
     action(f"Global score : {round(df_nd.gELO.mean(), 1)} / \
 {round(df_nd.gELO.std(), 2)}")
+    pooled = list(df_nd.DiELO + df_nd.DtELO)
+    action(f"Delta scores : {round(mean(pooled),1)} / {round(stdev(pooled),2)}\
+/ {round(median(pooled), 2)}")
     action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)}")
     action(f"Time spent comparing : {round(df_nd.compar_time.sum(), 1)} / \
 {round(df_nd.compar_time.std(), 2)}")
-    action(f"Number of comparison : {round(df_nd.n_comparison.sum(), 1)} / \
-{round(df_nd['n_comparison'].mean(), 2)}")
 
 
 def rlinput(prompt, prefill=''):
