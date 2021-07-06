@@ -337,7 +337,6 @@ def pick_entries(df):
     while picked_ids[0] in list(picked_ids[1:]):
         log_("Picking entries one more time to avoid comparing to self")
         picked_ids = pick_entries(df)
-    print(picked_ids)
     return picked_ids
 
 
