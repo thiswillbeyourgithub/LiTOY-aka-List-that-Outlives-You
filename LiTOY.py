@@ -519,7 +519,12 @@ def shortcut_and_action(id_left, id_right, mode, progress):
         "edit an entry during comparison"
         log_(f"Editing entry {entry_id}")
         while True:
-            chosenfield = str(input("What field do you want to edit?\n>"))
+            df = litoy.df.copy()
+            entry = df.loc[entry_id, :]
+            print(f"Current fields available for edition : {list(df.columns)}")
+            chosenfield = str(input("What field do you want to edit? (q to exit)\n>"))
+            if chosenfield == "q" or chosenfield == "quit":
+                break
             try :
                 old_value = str(entry[chosenfield])
             except KeyError:
