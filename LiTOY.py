@@ -413,7 +413,7 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
             side_by_side("iELO", entry_left.iELO, entry_right.iELO)
             print("."*sizex)
         else:
-            side_by_side("tELO (high = short task) :",
+            side_by_side("tELO",
                          entry_left.tELO, entry_right.tELO)
             print("."*sizex)
 
