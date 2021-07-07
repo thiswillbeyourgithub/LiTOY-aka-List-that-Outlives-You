@@ -167,9 +167,9 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "quit"             : ["q"] }
 
 # ELO :
-K_values           =  [100, 100, 50, 50, 25, 25, 15, 15, 10] 
-# default K values :  [100, 100, 50, 50, 25, 25, 15, 15, 10]
-# I doubled every row because you compare importance then time score
+K_values           =  [100, 80, 60, 40, 25, 17, 15, 12, 10]
+# if you decide to change the setting, be careful : each new term has to be
+# different and lower than the last one
 default_score      =  1000  # default 1000
 global_weights     =  (2, 1)  # gELO = 1st number*iELO + 2nd*tELO
 
