@@ -163,6 +163,7 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "disable_left"     : ["dl"],
              "disable_right"    : ["dr"],
              "open_media"       : ["o"],
+             "repick"           : ["repick"],
              "show_help"        : ["h", "H", "?"],
              "quit"             : ["q"] }
 
@@ -319,25 +320,28 @@ def add_new_entry(df, content):
 def pick_entries(df):
     """
     Pick entries for the reviews : the left one is chosen randomly
-    among those with the highest pick_factor, then n_to_review other entries
+    among the 5 with the highest pick_factor, then n_to_review other entries
     are selected at random among the half with the highest pick factor.
     Note: the pick_score goes down fast.
     """
     picked_ids = []
-    df = litoy.df.loc[df.disabled == 0].copy()
+    df = df.loc[df.disabled == 0].copy()
     valid_id = df.index  # to be sure not to pick disabled cards
     df["pick_score"] = df.K + df.DiELO*0.1 + df.DtELO*0.1
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
-    choiceL = df.index[0]
+    choiceL = int(df.iloc[0:5].sample(1).index[0])
     id_pick_list = [x for x in list(range(1, int((len(df.index)-1)/2)))
-                    if x in valid_id]
+                    if x in valid_id and x != choiceL]
     choiceR = df.loc[id_pick_list, :].sample(
             min(n_to_review, len(id_pick_list)-1))
-    picked_ids.append(int(choiceL))
+    picked_ids.append(choiceL)
     picked_ids.extend(choiceR.index)
 
-    while picked_ids[0] in list(picked_ids[1:]):
-        log_("Picking entries one more time to avoid reviewing to itself")
+    while picked_ids[0] in picked_ids[1:]:
+        # this was a former test that should not be necessary  anymore
+        # but I chose to keep it as failsafe
+        log_("Picking entries one more time to avoid reviewing to itself",
+                False)
         picked_ids = pick_entries(df)
     return picked_ids
 
@@ -723,6 +727,10 @@ field '" + chosenfield + "'\n", prefill=old_value))
             log_("Printing help :", False)
             pprint(shortcuts)
             continue
+
+        if action == "repick":
+            log_("Repicking entries", False)
+            return "repick"
 
         if action == "quit":
             log_("Shortcut : quitting")
@@ -1214,29 +1222,42 @@ Text content of the entry?\n>")
             log_(f"ERROR: you only have {n} entries in your database, add 10 \
 to start using LiTOY!", False)
             raise SystemExit()
-        picked_ids = pick_entries(litoy.df)
-        log_(f"Picked the following entries : {picked_ids}")
-        if args["verbose"] is True:
-            disp_flds = "all"
-        else:
-            disp_flds = "no"
-        for (progress, i) in enumerate(picked_ids[1:]):
-            for m in ["importance", "time"]:
-                (sizex, sizey) = get_terminal_size()  # dynamic sizing
-                print("\n"*10)
-                print_2_entries(int(picked_ids[0]),
-                                int(i),
-                                mode=m,
-                                all_fields=disp_flds)
-                state = ""
-                state = shortcut_and_action(picked_ids[0], i, mode=m,
-                                            progress=progress)
-                if state == "disable_right":
+        state = "repick"  # this while loop is used to repick if the user wants
+        # to use another "left entry" when reviewing
+        while state == "repick":
+            state = "don't repick"
+            picked_ids = pick_entries(litoy.df.copy())
+            log_(f"Picked the following entries : {picked_ids}")
+            if args["verbose"] is True:
+                disp_flds = "all"
+            else:
+                disp_flds = "no"
+            for (progress, i) in enumerate(picked_ids[1:]):
+                if state == "repick":
                     break
-                if state == "disable_left":
-                    log_("Stopping because you suspended left entry\n\
-if you want to keep doing reviews, relaunch LiTOY.", False)
-                    raise SystemExit()
+                for m in ["importance", "time"]:
+                    if state == "repick":
+                        break
+                    (sizex, sizey) = get_terminal_size()  # dynamic sizing
+                    print("\n"*10)
+                    print_2_entries(int(picked_ids[0]),
+                                    int(i),
+                                    mode=m,
+                                    all_fields=disp_flds)
+                    state = ""
+                    state = shortcut_and_action(picked_ids[0], i, mode=m,
+                                                progress=progress)
+                    if state == "repick":
+                        break
+                    if state == "disable_right":
+                        pass
+                    if state == "disable_left":
+                        log_("Repicking because you suspended left entry.",
+                             False)
+                        state = "repick"
+                        break
+            if state == "repick":
+                continue  # is finally telling the loop to repick
         log_("Finished reviewing session.\nQuitting.", False)
         json_periodic_save()  # periodic save
         raise SystemExit()
