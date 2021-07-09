@@ -420,6 +420,7 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
             side_by_side("tELO",
                          entry_left.tELO, entry_right.tELO)
             print("."*sizex)
+        side_by_side("K factor", entry_left.K, entry_right.K)
 
     # print all fields, used more for debugging
     if all_fields == "all":
