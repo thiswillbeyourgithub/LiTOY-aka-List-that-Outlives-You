@@ -120,6 +120,8 @@ Syntax and usage example:
 TODO
 ======
     * add an argument to display 5 random items to the user
+    * add an argument to launch pdb after loading the dataframe and printing a few instructions on how to use it
+    * better display of the stats using rljust etc
     * implement a two letter shortcut code to answer importance and time at the same time?
     * implement an undo function : simple : just save the dictionnary of each pair during the 10 reviews and roll them back one by one
     * use type hints from the beginning and mypy
