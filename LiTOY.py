@@ -1277,20 +1277,18 @@ accomplished"
         raise SystemExit()
 
     if args["external_open"] is True:
-            log_("Openning libreoffice", False)
-            path = args['litoy_db']
-            if platform.system() == "Linux":
-                if platform.system() == "Windows":
-                    print("Not implemented on windows, contributions are \
+        log_("Openning libreoffice", False)
+        path = args['litoy_db']
+        if platform.system() == "Linux":
+            if platform.system() == "Windows":
+                print("Not implemented on windows, contributions are \
 welcome!")
-                elif platform.system() == "Darwin":
-                    subprocess.Popen(["open", path])
-                else:
-                    subprocess.Popen(["xdg-open", path],
-                                     stdout=open(os.devnull, 'wb'))
-            raise SystemExit()
-
-
+            elif platform.system() == "Darwin":
+                subprocess.Popen(["open", path])
+            else:
+                subprocess.Popen(["xdg-open", path],
+                                 stdout=open(os.devnull, 'wb'))
+        raise SystemExit()
 
     if args["podium"] is True:
         log_("Showing podium")
