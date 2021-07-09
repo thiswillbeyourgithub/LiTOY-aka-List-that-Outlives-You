@@ -68,7 +68,7 @@ from youtube_dl.utils import ExtractorError, DownloadError
 #          def compute_global_score(iELO, tELO):
 #          def json_periodic_save():
 #              def __init__(self, db_path):
-#              def reload_df(self):
+#              def _reload_df(self):
 #              def save_to_file(self, df):
 #              def create_database(self):
 #              def entry_duplicate_check(self, df, new):
@@ -1035,7 +1035,7 @@ class LiTOYClass:
             self.path = db_path
             self.df = pd.read_excel(db_path).set_index("ID").sort_index()
 
-    def reload_df(self):
+    def _reload_df(self):
         "used to reload the df from the file"
         self.df = pd.read_excel(self.path).set_index("ID").sort_index()
 
@@ -1051,13 +1051,12 @@ class LiTOYClass:
         to_remove = Path(args['litoy_db'])
         to_remove.unlink()
         to_rename.rename(args['litoy_db'])
-        self.reload_df()
+        self._reload_df()
 
     def create_database(self):
         "used to create the excel database"
         df = pd.DataFrame(columns=cols).set_index("ID")
         self.save_to_file(df)
-        self.reload_df()
 
     def entry_duplicate_check(self, df, new):
         "checks if an entry already exists before adding it"
