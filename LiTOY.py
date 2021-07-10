@@ -579,7 +579,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
     while True:
         action = ""
         log_(f"Asking question, mode : {mode}")
-        print(f"{col_gre}{progress}/{n_to_review} {questions[mode]} \
+        print(f"{col_gre}{int(progress)+1}/{n_to_review} {questions[mode]} \
 (h or ? for help){col_rst}")
         keypress = input(">")
 
