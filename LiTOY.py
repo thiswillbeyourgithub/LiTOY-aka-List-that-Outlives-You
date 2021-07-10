@@ -231,13 +231,13 @@ def DB_file_check(path):
         except ValueError as e:
             log_(f"ERROR: Litoy database not found in file at {path} :\
 {e}", False)
-            return None
+            return False
     else:
         answer = input(f"No database file found at {path}, do you want me to\
 create it?\ny/n?")
         if answer in "yes":
             db_location.touch()
-            return None
+            return False
         else:
             print("Exiting")
             raise SystemExit()
@@ -1189,7 +1189,7 @@ if __name__ == "__main__":
         wrong_arguments_(args)
 
     # initialize litoy class:
-    if DB_file_check(args['litoy_db']) is None:
+    if DB_file_check(args['litoy_db']) is False:
         litoy = LiTOYClass(None)
     else:
         litoy = LiTOYClass(args['litoy_db'])
