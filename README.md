@@ -105,6 +105,7 @@ How can I use LiTOY?
 
 Syntax and usage example:
 -------------------------
+*Note: also tested on python3.8*
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --add 'repair the tires tags:diy'
    * adds a new entry to deck todo with the tag diy 
