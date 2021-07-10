@@ -120,6 +120,8 @@ Syntax and usage example:
 
 TODO
 ======
+    * implement hour and second in show stats + check why it's so high
+    * add --show-starred 
     * add an argument to display 5 random items to the user
     * add an argument to launch pdb after loading the dataframe and printing a few instructions on how to use it
     * better display of the stats using rljust etc
