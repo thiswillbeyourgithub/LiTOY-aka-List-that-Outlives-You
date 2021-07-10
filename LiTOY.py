@@ -1255,7 +1255,7 @@ to start using LiTOY!", False)
                     if state == "repick":
                         break
                     if state == "disable_right":
-                        pass
+                        break
                     if state == "disable_left":
                         log_("Repicking because you suspended left entry.",
                              False)
