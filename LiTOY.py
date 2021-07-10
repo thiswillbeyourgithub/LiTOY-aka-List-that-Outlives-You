@@ -234,7 +234,7 @@ def DB_file_check(path):
             return False
     else:
         answer = input(f"No database file found at {path}, do you want me to\
-create it?\ny/n?")
+ create it?\ny/n?")
         if answer in "yes":
             db_location.touch()
             return False
@@ -280,8 +280,8 @@ def add_new_entry(df, content):
         if "forbidden" in str(metacontent['title']).lower() or \
                 "404" in str(metacontent['title']).lower() or\
                 "403" in str(metacontent['title']).lower():
-            log_(f"Waiting 5 seconds because apparent webpage loading limit\
-                was reached while inspecting line : {content}", False)
+            log_(f"Waiting 5 seconds because apparent webpage loading limit \
+ was reached while inspecting line : {content}", False)
             time.sleep(5)
             metacontent = get_meta_from_content(content)
         # if wayback machine was used : mention it in the tags
@@ -341,7 +341,7 @@ def pick_entries(df):
         # this was a former test that should not be necessary  anymore
         # but I chose to keep it as failsafe
         log_("Picking entries one more time to avoid reviewing to itself",
-                False)
+             False)
         picked_ids = pick_entries(df)
     return picked_ids
 
@@ -522,7 +522,7 @@ def shortcut_and_action(id_left, id_right, mode, progress):
         for action, keypress in shortcuts.items():
             if str(input) in keypress:
                 if found != "":
-                    log_("ERROR: Several corresponding shortcuts found!\
+                    log_("ERROR: Several corresponding shortcuts found! \
 Quitting.", False)
                     raise SystemExit()
                 found = action
@@ -553,7 +553,7 @@ Quitting.", False)
             df = litoy.df.copy()
             entry = df.loc[entry_id, :]
             print(f"Current fields available for edition : {list(df.columns)}")
-            chosenfield = str(input("What field do you want to edit?\
+            chosenfield = str(input("What field do you want to edit? \
 (q to exit)\n>"))
             if chosenfield == "q" or chosenfield == "quit":
                 break
@@ -563,10 +563,10 @@ Quitting.", False)
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
             if platform.system() == "Windows":
-                new_value = str(input("Enter the desired new value for field\
+                new_value = str(input("Enter the desired new value for field \
 '" + chosenfield + "'\n"))
             else:
-                new_value = str(rlinput("Enter the desired new value for\
+                new_value = str(rlinput("Enter the desired new value for \
 field '" + chosenfield + "'\n", prefill=old_value))
             df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
@@ -579,7 +579,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
     while True:
         action = ""
         log_(f"Asking question, mode : {mode}")
-        print(f"{col_gre}{progress}/{n_to_review} {questions[mode]}\
+        print(f"{col_gre}{progress}/{n_to_review} {questions[mode]} \
 (h or ? for help){col_rst}")
         keypress = input(">")
 
@@ -623,7 +623,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
                                          5-keypress, eL_old.K)
             eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR),
                                          keypress, eR_old.K)
-            log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R:\
+            log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R: \
 {eloR}=>{eR_new[elo_fld]}")
 
             eL_new["K"] = adjust_K(eL_old.K)
@@ -722,8 +722,8 @@ field '" + chosenfield + "'\n", prefill=old_value))
             return(action)
 
         if action == "undo":
-            print("Undo function is not yet implemented,\
-  manually correct the database using libreoffice calc after looking at\
+            print("Undo function is not yet implemented, \
+  manually correct the database using libreoffice calc after looking at \
   the logs. Or take a look at the saved json files")
             input("(press enter to resume reviewing session)")
             continue
@@ -830,8 +830,8 @@ def extract_youtube(url):
                    "title": video['title'],
                    "url": url}
         except (KeyError, DownloadError, ExtractorError) as e:
-            log_(f"ERROR: Video link skipped because : error during information\
-                    extraction from {url} : {e}", False)
+            log_(f"ERROR: Video link skipped because : error during information \
+extraction from {url} : {e}", False)
             res.update({"type": "video not found", "url": url})
     return res
 
@@ -846,8 +846,8 @@ def extract_local_video(link):
         link = link.replace("\\", "")
         vid = Path(link)
     if not vid.exists():
-        log_(f"ERROR : Thought this was a local video but file was not found!\
-                : {link}", False)
+        log_(f"ERROR : Thought this was a local video but file was not found! \
+: {link}", False)
         return {"type": "local video not found",
                 "url": link}
     clip = VideoFileClip(link)
@@ -936,7 +936,7 @@ def extract_webpage(url):
         try:  # if url was never saved
             url = wb.links['last memento']['url']
         except (requests.exceptions.ConnectionError, AttributeError) as e:
-            log_(f"ERROR: url could not be found even using wayback machine :\
+            log_(f"ERROR: url could not be found even using wayback machine : \
 {url} : {e}", False)
             res = {"title": "web page not found",
                    "url": url,
@@ -976,7 +976,7 @@ def expected_elo(elo_A, elo_B, Rp=100):
     the opponent's expected score
     '''
     result = 5 / (1 + 10 ** ((elo_B - elo_A) / Rp))
-    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}, expected\
+    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}, expected \
 score : {str(result)}")
     return int(result)
 
@@ -984,8 +984,8 @@ score : {str(result)}")
 def update_elo(elo, exp_score, real_score, K):
     "computes the ELO score"
     result = elo + K*(real_score - exp_score)
-    log_(f"Update_elo : elo={str(elo)} expected={str(exp_score)}\
-            real_score={str(real_score)} K={str(K)} ; result={str(result)}")
+    log_(f"Update_elo : elo={str(elo)} expected={str(exp_score)} \
+real_score={str(real_score)} K={str(K)} ; result={str(result)}")
     return int(result)
 
 
@@ -997,16 +997,16 @@ def adjust_K(K0):
     K0 = int(K0)
     log_(f"Adjust_K : K0={str(K0)}")
     if K0 == K_values[-1]:
-        log_(f"Adjust_K : K already at last specified value :\
-                {str(K0)}={str(K_values[-1])}")
+        log_(f"Adjust_K : K already at last specified value : \
+{str(K0)}={str(K_values[-1])}")
         return str(K0)
     for i in range(len(K_values)-1):
         if int(K_values[i]) == int(K0):
             log_(f"New K_value : {str(K_values[i+1])}")
             return K_values[i+1]
     if K0 not in K_values:
-        log_(f"ERROR: K not part of K_values : {str(K0)}, reset to\
-                {str(K_values[-1])}")
+        log_(f"ERROR: K not part of K_values : {str(K0)}, reset to \
+{str(K_values[-1])}")
         return str(K_values[-1])
     log_("ERROR: This should never print", False)
     raise SystemExit()
@@ -1268,7 +1268,7 @@ to start using LiTOY!", False)
         raise SystemExit()
 
     if args['id_to_disable'] is not None:
-        "disables an entry at launch, use this when the task has been\
+        "disables an entry at launch, use this when the task has been \
 accomplished"
         idtd = int(args['id_to_disable'][0])
         df = litoy.df.copy()
