@@ -3,7 +3,7 @@
 import argparse
 import time
 import random
-from statistics import mean, stdev, median
+from statistics import mean, stdev, median, StatisticsError
 import readline
 import platform
 import subprocess
@@ -469,25 +469,29 @@ def show_stats(df, printing=True):
         action = print
     else:
         action = log_
-    action(f"Number of entries in LiTOY : {len(df)}, and of non disabled entries \
+    try:
+        action(f"Number of entries in LiTOY : {len(df)}, and of non disabled entries \
 only : {len(df_nd)}")
-    action(f"Number of entries that have never been reviewed : {len(df_virg)}")
-    action(f"Total number of review : {round(df_nd.n_review.sum(), 1)} \
+        action(f"Number of entries that have never been reviewed : {len(df_virg)}")
+        action(f"Total number of review : {round(df_nd.n_review.sum(), 1)} \
 average : {round(df_nd['n_review'].mean(), 2)}")
-    action("")
-    action("Average / standard deviation / median :")
-    action(f"Importance score : {round(df_nd.iELO.mean(),1)} / \
+        action("")
+        action("Average / standard deviation / median :")
+        action(f"Importance score : {round(df_nd.iELO.mean(),1)} / \
 {round(df_nd.iELO.std(), 2)}")
-    action(f"Time score : {round(df_nd.tELO.mean(), 1)} / \
+        action(f"Time score : {round(df_nd.tELO.mean(), 1)} / \
 {round(df_nd.tELO.std() , 2)}")
-    action(f"Global score : {round(df_nd.gELO.mean(), 1)} / \
+        action(f"Global score : {round(df_nd.gELO.mean(), 1)} / \
 {round(df_nd.gELO.std(), 2)}")
-    pooled = list(df_nd.DiELO + df_nd.DtELO)
-    action(f"Delta scores : {round(mean(pooled),1)} / {round(stdev(pooled),2)}\
+        pooled = list(df_nd.DiELO + df_nd.DtELO)
+        action(f"Delta scores : {round(mean(pooled),1)} / {round(stdev(pooled),2)} \
 / {round(median(pooled), 2)}")
-    action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)} / {round(df_nd.K.median())}")
-    action(f"Time spent reviewing : {round(df_nd.review_time.sum(), 1)} / \
+        action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)} / {round(df_nd.K.median())}")
+        action(f"Time spent reviewing : {round(df_nd.review_time.sum(), 1)} / \
 {round(df_nd.review_time.std(), 2)}")
+    except StatisticsError as e:
+        log_(f"Not enough data points! {e}", False)
+        raise SystemExit()
 
 
 def rlinput(prompt, prefill=''):
