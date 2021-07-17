@@ -536,7 +536,7 @@ Quitting.", False)
         df = litoy.df.copy()
         df.loc[entry_id, "starred"] = 1
         litoy.save_to_file(df)
-        log_(f"Starred entry_id {entry}", False)
+        log_(f"Starred entry_id {entry_id}", False)
 
     def disable(entry_id):
         "disables an entry during review"
