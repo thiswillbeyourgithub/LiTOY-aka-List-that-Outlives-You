@@ -59,7 +59,7 @@ FAQ
 
 **Why store the file as an excel file?** Because if you run libreoffice you can quickly have a gui to edit the database, whereas handling sqlite or other formats is not as user friendly. There is an option to save the database in json regularly to avoid data loss though.
 
-**How can I undo X?** It is not really possible for now. But you can access the logs and see what you did wrong. Hopefully this can help you repair damage. Rollback features might be added sometime in the future. If you have any issue feel free to open one, especially if you think your action was not recorded in the log.
+**How can I undo a review or edit?** It is not really possible for now. But you can access the logs and see what you did wrong. Hopefully this can help you repair damage. Rollback features might be added sometime in the future. If you have any issue feel free to open one, especially if you think your action was not recorded in the log.
 
 **What are answer level number ?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 4 means you favor the right one. 3 is obviously the middle ground but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
 
@@ -128,7 +128,7 @@ TODO
     * add an argument to launch pdb after loading the dataframe and printing a few instructions on how to use it
     * better display of the stats using rljust etc
     * implement a two letter shortcut code to answer importance and time at the same time?
-    * implement an undo function : simple : just save the dictionnary of each pair during the 10 reviews and roll them back one by one
+    * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one
     * use type hints from the beginning and mypy
     * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
     * when stable: talk about it on psionica, then lesswrong
