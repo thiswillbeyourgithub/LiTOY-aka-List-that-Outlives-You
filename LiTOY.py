@@ -617,7 +617,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
                 keypress = 4
             if keypress == "t":
                 keypress = 5
-            keypress = int(keypress)-0.5
+            keypress = round(keypress/6*5, 2)  # resize value from 1-5 to 0-5
             date = time.time()
             assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
 
@@ -636,7 +636,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
             eloR = int(eR_old[elo_fld])
 
             eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR),
-                                         5-keypress, eL_old.K)
+                                         round(5-keypress, 2), eL_old.K)
             eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR),
                                          keypress, eR_old.K)
             log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R: \
@@ -985,23 +985,23 @@ def extract_webpage(url):
 # functions related to elo scores:
 def expected_elo(elo_A, elo_B, Rp=100):
     '''
-    Calculate expected score of A in a best of 3 match against B
+    Calculate expected score of A in a best of 5 match against B
     Expected score of B in a best of 5 match against A is given by
     1-expected(A,B,Rp). For each Rp rating points of advantage over the
     opponent, the expected score is magnified ten times in comparison to
     the opponent's expected score
     '''
     result = 5 / (1 + 10 ** ((elo_B - elo_A) / Rp))
-    log_(f"Expected : A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}, expected \
+    log_(f"Expected_elo: A={str(elo_A)} B={str(elo_B)} Rp={str(Rp)}, expected \
 score : {str(result)}")
-    return int(result)
+    return round(result, 2)
 
 
 def update_elo(elo, exp_score, real_score, K):
     "computes the ELO score"
-    result = elo + K*(real_score - exp_score)
-    log_(f"Update_elo : elo={str(elo)} expected={str(exp_score)} \
-real_score={str(real_score)} K={str(K)} ; result={str(result)}")
+    result = round(elo + K*(real_score - exp_score), 2)
+    log_(f"Update_elo: current elo={str(elo)} ; expected score={str(exp_score)} \
+; real score={str(real_score)} ; K={str(K)} ; resulting score={str(result)}")
     return int(result)
 
 
@@ -1011,14 +1011,13 @@ def adjust_K(K0):
     until lowest value is reached
     """
     K0 = int(K0)
-    log_(f"Adjust_K : K0={str(K0)}")
     if K0 == K_values[-1]:
         log_(f"Adjust_K : K already at last specified value : \
 {str(K0)}={str(K_values[-1])}")
         return str(K0)
     for i in range(len(K_values)-1):
         if int(K_values[i]) == int(K0):
-            log_(f"New K_value : {str(K_values[i+1])}")
+            log_(f"Adjust K: {K0} => {K_values[i+1]}")
             return K_values[i+1]
     if K0 not in K_values:
         log_(f"ERROR: K not part of K_values : {str(K0)}, reset to \
