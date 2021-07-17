@@ -181,12 +181,17 @@ global_weights     =  (2, 1)  # gELO = 1st number*iELO + 2nd*tELO
 # to avoid getting flagged for abusive web scraping
 headers = {"User-Agent": "Mozilla/5.0"}
 
-# color codes :
+# VT100 color code: from https://wiki.bash-hackers.org/scripting/terminalcodes
 col_red = "\033[91m"
 col_blu = "\033[94m"
 col_yel = "\033[93m"
-col_rst = "\033[0m"
 col_gre = "\033[92m"
+col_cya = "\033[36m"
+col_mgt_fg = "\033[45m"
+col_blink = "\033[5m"
+col_bold = "\033[1m"
+col_uline = "\033[4m"
+col_rst = "\033[0m"
 spacer = "    "  # nicer print message
 
 ###############################################################################
@@ -364,7 +369,14 @@ def print_memento_mori():
         if random.random() > 0.99:
             string = "REMEMBER THAT TIME IS RUNNING OUT"
             for i in range(5):
-                print(f"{col_red}{string}     {string}{col_rst}")
+                color_set = [col_red, col_yel]*3
+                random.shuffle(color_set)
+                col_rdm = (col for col in color_set)
+                print(f"{col_mgt_fg}{col_blink}{col_bold}{col_uline}", end="")
+                print(f"{next(col_rdm)}{string}", end=spacer*2)
+                print(f"{next(col_rdm)}{string}", end=spacer*2)
+                print(f"{next(col_rdm)}{string}", end="")
+                print(col_rst, end="\n")
         print("Your life (" + col_red + str(int((seg2)/(seg2 + seg3)*100)) +
               "%" + col_rst + ") : " + col_red + "x"*int(seg1*resize) +
               col_red + "X"*(int(seg2*resize)) + col_gre +
