@@ -122,6 +122,7 @@ Syntax and usage example:
 
 TODO
 ======
+    * split the settings into another file
     * implement hour and second in show stats + check why it's so high
     * add --show-starred 
     * add an argument to display 5 random items to the user
