@@ -134,8 +134,12 @@ useless_last_years  = 20
 # save very often a copy of the whole database as a json file
 json_auto_save = True
 
-# number of entries to pick for review at each launch (default=10)
-n_to_review = 10
+# number of session of review, each session is composed of n_to_review reviews
+# so total number of reviews is n_session*n_to_review
+n_session = 3
+
+# number of entries to pick for review at each launch (default=5)
+n_to_review = 5
 
 # for reading time estimation :
 wpm = 200
@@ -579,7 +583,7 @@ field '" + chosenfield + "'\n", prefill=old_value))
     while True:
         action = ""
         log_(f"Asking question, mode : {mode}")
-        print(f"{col_gre}{int(progress)+1}/{n_to_review} {questions[mode]} \
+        print(f"{col_gre}{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help){col_rst}")
         keypress = input(">")
 
@@ -1227,43 +1231,46 @@ Text content of the entry?\n>")
             log_(f"ERROR: you only have {n} entries in your database, add 10 \
 to start using LiTOY!", False)
             raise SystemExit()
-        state = "repick"  # this while loop is used to repick if the user wants
-        # to use another "left entry" when reviewing
-        while state == "repick":
-            state = "don't repick"
-            picked_ids = pick_entries(litoy.df.copy())
-            log_(f"Picked the following entries : {picked_ids}")
-            if args["verbose"] is True:
-                disp_flds = "all"
-            else:
-                disp_flds = "no"
-            for (progress, i) in enumerate(picked_ids[1:]):
+        for session_nb in range(n_session):
+            state = "repick"  # this while loop is used to repick if the
+            # user wants to use another "left entry" when reviewing
+            while state == "repick":
+                state = "don't repick"
+                picked_ids = pick_entries(litoy.df.copy())
+                log_(f"Picked the following entries : {picked_ids}")
+                if args["verbose"] is True:
+                    disp_flds = "all"
+                else:
+                    disp_flds = "no"
+                for (progress, i) in enumerate(picked_ids[1:]):
+                    progress += 1
+                    if state == "repick":
+                        break
+                    for m in ["importance", "time"]:
+                        if state == "repick":
+                            break
+                        (sizex, sizey) = get_terminal_size()  # dynamic sizing
+                        print("\n"*10)
+                        print_2_entries(int(picked_ids[0]),
+                                        int(i),
+                                        mode=m,
+                                        all_fields=disp_flds)
+                        state = ""
+                        state = shortcut_and_action(picked_ids[0], i, mode=m,
+                                                    progress=progress +
+                                                    session_nb*n_to_review)
+                        if state == "repick":
+                            break
+                        if state == "disable_right":
+                            break
+                        if state == "disable_left":
+                            log_("Repicking because you suspended left entry.",
+                                 False)
+                            state = "repick"
+                            break
                 if state == "repick":
-                    break
-                for m in ["importance", "time"]:
-                    if state == "repick":
-                        break
-                    (sizex, sizey) = get_terminal_size()  # dynamic sizing
-                    print("\n"*10)
-                    print_2_entries(int(picked_ids[0]),
-                                    int(i),
-                                    mode=m,
-                                    all_fields=disp_flds)
-                    state = ""
-                    state = shortcut_and_action(picked_ids[0], i, mode=m,
-                                                progress=progress)
-                    if state == "repick":
-                        break
-                    if state == "disable_right":
-                        break
-                    if state == "disable_left":
-                        log_("Repicking because you suspended left entry.",
-                             False)
-                        state = "repick"
-                        break
-            if state == "repick":
-                continue  # is finally telling the loop to repick
-        log_("Finished reviewing session.\nQuitting.", False)
+                    continue  # is finally telling the loop to repick
+        log_("Finished all reviewing session.\nQuitting.", False)
         json_periodic_save()  # periodic save
         raise SystemExit()
 
