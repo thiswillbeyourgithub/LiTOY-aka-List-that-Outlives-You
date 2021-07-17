@@ -55,6 +55,8 @@ FAQ
 
 **What platform does it run on?** I tried to make it as agnostic as possible but I'm on Linux and hate other systems. Normally the code should run fine on other systems but please do tell me if you run into an issue.
 
+**What do you call a review and a session?** A review is one single pairwise comparison. Several reviews in a row without changing the reference entry (i.e. the left one) is called a session.
+
 **Why store the file as an excel file?** Because if you run libreoffice you can quickly have a gui to edit the database, whereas handling sqlite or other formats is not as user friendly. There is an option to save the database in json regularly to avoid data loss though.
 
 **How can I undo X?** It is not really possible for now. But you can access the logs and see what you did wrong. Hopefully this can help you repair damage. Rollback features might be added sometime in the future. If you have any issue feel free to open one, especially if you think your action was not recorded in the log.
@@ -111,7 +113,7 @@ Syntax and usage example:
    * adds a new entry to deck todo with the tag diy 
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --review
-   * automatically pick 10 cards and review them (it's actually 20 reviews that you have to do because you have 2 questions each time, this can be changed in the settings)
+   * begin 3 sessons where LiTOY automatically picks 5 cards and review them (it's actually twice the maount of reviews that you have to do because you have 2 questions each time).
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --import-from-file file.txt`
     * Automatically imports from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
