@@ -42,7 +42,7 @@ from youtube_dl.utils import ExtractorError, DownloadError
 #          def importation(path):
 #          def wrong_arguments_(args):
 #          def add_new_entry(df, content):
-#          def pick_entries(df):
+#          def pick_entries():
 #          def print_memento_mori(): # remember you will die
 #          def print_2_entries(id_left, id_right, mode, all_fields="no"):
 #              def side_by_side(rowname, a, b, space=2, col=""):
@@ -326,32 +326,35 @@ def add_new_entry(df, content):
     litoy.save_to_file(df)
 
 
-def pick_entries(df):
+def pick_entries():
     """
     Pick entries for the reviews : the left one is chosen randomly
     among the 5 with the highest pick_factor, then n_to_review other entries
     are selected at random among the half with the highest pick factor.
     Note: the pick_score goes down fast.
     """
-    picked_ids = []
-    df = df.loc[df.disabled == 0].copy()
-    valid_id = df.index  # to be sure not to pick disabled cards
-    df["pick_score"] = df.K + df.DiELO*0.1 + df.DtELO*0.1
-    df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
-    choiceL = int(df.iloc[0:5].sample(1).index[0])
-    id_pick_list = [x for x in list(range(1, int((len(df.index)-1)/2)))
-                    if x in valid_id and x != choiceL]
-    choiceR = df.loc[id_pick_list, :].sample(
-            min(n_to_review, len(id_pick_list)-1))
-    picked_ids.append(choiceL)
-    picked_ids.extend(choiceR.index)
+    df = litoy.df.copy()
+    df = df.loc[df.disabled == 0]
 
+    df["pick_score"] = df.DiELO + df.DtELO
+    df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
+    left_choice_id = df.iloc[0:10].sample(1).index[0]
+
+    df_h = df.iloc[0: int(len(df.index)/2), :]
+    right_choice_id = df_h.sample(min(n_to_review, len(df_h.index))).index
+
+    picked_ids = [int(left_choice_id)]
+    picked_ids.extend(right_choice_id)
+
+    cnt=0
     while picked_ids[0] in picked_ids[1:]:
-        # this was a former test that should not be necessary  anymore
-        # but I chose to keep it as failsafe
+        cnt+=1
+        if cnt > 50:
+            log_("Seem to be stuck in an endless loop. Openning debugger", False)
+            breakpoint()
         log_("Picking entries one more time to avoid reviewing to itself",
              False)
-        picked_ids = pick_entries(df)
+        picked_ids = pick_entries()
     return picked_ids
 
 
@@ -1247,7 +1250,7 @@ to start using LiTOY!", False)
             # user wants to use another "left entry" when reviewing
             while state == "repick":
                 state = "don't repick"
-                picked_ids = pick_entries(litoy.df.copy())
+                picked_ids = pick_entries()
                 log_(f"Picked the following entries : {picked_ids}")
                 if args["verbose"] is True:
                     disp_flds = "all"
