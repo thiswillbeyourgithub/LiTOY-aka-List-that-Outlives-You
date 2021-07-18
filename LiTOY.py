@@ -845,9 +845,11 @@ def extract_youtube(url):
     with youtube_dl.YoutubeDL({"quiet": True}) as ydl:
         try:
             video = ydl.extract_info(url, download=False)
+            title = video['title']
+            title.strip()
             res = {"type": "video",
                    "length": str(round(video['duration']/60, 1)),
-                   "title": video['title'],
+                   "title": title,
                    "url": url}
         except (KeyError, DownloadError, ExtractorError) as e:
             log_(f"ERROR: Video link skipped because : error during information \
@@ -872,8 +874,10 @@ def extract_local_video(link):
                 "url": link}
     clip = VideoFileClip(link)
     duration = round(clip.duration/60, 1)
+    title = clip.filename
+    title.strip()
     dic = {"type": "local video",
-           "title": clip.filename,
+           "title": title,
            "length": duration,
            "url": link}
     return dic
@@ -907,6 +911,7 @@ def extract_pdf_local(path):
     estimatedReadingTime = str(round(total_words/wpm, 1))
 
     title = path.split(sep="/")[-1]
+    title.strip()
     res = {"type": "local pdf",
            "length": estimatedReadingTime,
            "title": title,
@@ -926,6 +931,7 @@ def extract_txt(path):
         estimatedReadingTime = str(round(total_words/wpm, 1))
 
         title = path.split(sep="/")[-1]
+        title.strip()
         res = {"type": "text",
                "length": estimatedReadingTime,
                "url": path,
@@ -974,6 +980,7 @@ def extract_webpage(url):
 
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = str(round(total_words/wpm, 1))
+    title.strip()
     res = {"title": title,
            "type": "webpage",
            "length": estimatedReadingTime,
