@@ -9,7 +9,7 @@ Table of contents
 * [Getting started](#Getting-started)
 * [Syntax and usage example](#Syntax-and-usage-example)
 * [TODO and planned features](#TODO-and-planned-features)
-* [Acknowledgement](#Acknowledgement)
+* [Acknowledgements](#Acknowledgements)
 
 
 What is LiTOY?
@@ -136,7 +136,7 @@ TODO and planned features:
     * try to install it on PyPI to make it easy to install with pip
 
 
-Acknowledgement
+Acknowledgements
 ===============
 In no particular order:
     * Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
