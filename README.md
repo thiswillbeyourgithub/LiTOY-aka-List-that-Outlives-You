@@ -1,25 +1,14 @@
 # LiTOY - a List That Outlives You.
 
-Current state
--------------
-* I use it so it works
-* personal project
-* beta stage
-* PRs and issues are extremely appreciated.
-* **PEP8 compliant**
-* All functions include docstrings
-* Type hinting the code is planned but not yet done
-
-![screenshot.png](./screenshot.png)
 
 Table of contents
-=================
-* [Current state](#Current-state)
+-----------------
 * [What is LiTOY?](#What-is-LiTOY)
+* [Current state](#Current-state)
 * [FAQ](#FAQ)
-* [How can I use LiTOY?](#How-can-I-use-LiTOY)
-    * [Syntax and usage example](#Syntax-and-usage-example)
-* [TODO](#TODO)
+* [Getting started](#Getting-started)
+* [Syntax and usage example](#Syntax-and-usage-example)
+* [TODO and planned features](#TODO-and-planned-features)
 * [Acknowledgement](#Acknowledgement)
 
 
@@ -41,8 +30,19 @@ The idea behind LiTOY is simple:
 5. When enough pairwise reviews are done, the items will be ranked. You can then know at a glance what's important to do but at the same time quick to finish.
 
 
+Current state
+=============
+* This is a personal project but I use it daily so it seems very functional.
+* Will remain in beta stage as long as I'm the only one doing the testing.
+* PRs and issues are extremely appreciated.
+* Here's a screenshot:
+    ![screenshot.png](./screenshot.png)
+
+
 FAQ
 ===
+**What should I know if I want to contribute?** The code is as PEP8 compliant as possible, no docstrings are missing. Type hinting is planned but not done. PRs and issues are extremely welcome, I can be very reactive so don't hesitate to suggest features etc.
+
 **Where does the idea come from?** From Gwern's [media resorted](https://www.gwern.net/Resorter).
 
 **Do you have any idea it will work or at least converge towards something useful without doing thousands of reviews a day?** Not really, but quick back-of-the-envelope calculation made it look doable. I just do a few tens of reviews almost every day. Making it a habit help not loosing focus on important goals IMO.
@@ -94,7 +94,7 @@ FAQ
 
 **What do you call a review?** It's just a pairwise comparison between two entries. I chose this name because I use [Anki](https://apps.ankiweb.net/) **a lot**.
 
-How can I use LiTOY?
+Getting started:
 ====================
 * Read this page thoroughly. Don't be afraid to ask questions.
 * make sure you have python 3.9 installed
@@ -120,7 +120,7 @@ Syntax and usage example:
     * To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 
-TODO
+TODO and planned features:
 ======
     * split the settings into another file
     * implement hour and second in show stats + check why it's so high
@@ -140,4 +140,4 @@ Acknowledgement
 ===============
 In no particular order:
     * Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
-    * Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI as well as evaluating the quality of the code.
+    * Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI as well as evaluating the quality of the code and more.
