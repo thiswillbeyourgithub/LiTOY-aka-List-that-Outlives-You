@@ -1,4 +1,4 @@
-# LiTOY - the List That Outlives You.
+# LiTOY - a List That Outlives You.
 
 Current state
 -------------
