@@ -98,7 +98,7 @@ Getting started:
 ====================
 * Read this page thoroughly. Don't be afraid to ask questions.
 * make sure you have python 3.9 installed
-* `git clone https://github.com/thiswillbeyourgithub/LiTOY/ && cd LiTOY`
+* `git clone https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You && cd LiTOY`
 * manually edit the settings at the top of `LiTOY.py`
 * run `pip3.9 install -r requirements.txt`
 * `python3.9 ./LiTOY.py --help`
