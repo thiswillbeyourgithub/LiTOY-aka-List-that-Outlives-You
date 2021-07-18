@@ -139,5 +139,5 @@ TODO and planned features:
 Acknowledgements
 ===============
 In no particular order:
-    * Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
-    * Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI as well as evaluating the quality of the code and more.
+* Thanks to Emile Emery for his help in determining the best sorting algorithm to use and implementing it.
+* Thanks to [Kryzar (Antoine Leudière)](https://github.com/kryzar) for his insight on UI as well as evaluating the quality of the code and more.
