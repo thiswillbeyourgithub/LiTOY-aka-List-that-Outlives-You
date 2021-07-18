@@ -227,7 +227,8 @@ def log_(string, onlyLogging=True):
         prefix = ""
     log.info(f"{time.asctime()}: {prefix}{string}")
     if onlyLogging is False or args["verbose"] is not False:
-        tqdm.write(string)
+        #tqdm.write(string)
+        pprint(string)
 
 
 def DB_file_check(path):
