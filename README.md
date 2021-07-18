@@ -122,18 +122,18 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-    * split the settings into another file
-    * implement hour and second in show stats + check why it's so high
-    * add --show-starred 
-    * add an argument to display 5 random items to the user
-    * add an argument to launch pdb after loading the dataframe and printing a few instructions on how to use it
-    * better display of the stats using rljust etc
-    * implement a two letter shortcut code to answer importance and time at the same time?
-    * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one
-    * use type hints from the beginning and mypy
-    * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
-    * when stable: talk about it on psionica, then lesswrong
-    * try to install it on PyPI to make it easy to install with pip
+* split the settings into another file
+* implement hour and second in show stats + check why it's so high
+* add --show-starred
+* add an argument to display 5 random items to the user
+* add an argument to launch pdb after loading the dataframe and printing a few instructions on how to use it
+* better display of the stats using rljust etc
+* implement a two letter shortcut code to answer importance and time at the same time?
+* implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one
+* use type hints from the beginning and mypy
+* answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
+* when stable: talk about it on psionica, then lesswrong
+* try to install it on PyPI to make it easy to install with pip
 
 
 Acknowledgements
