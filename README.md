@@ -41,7 +41,7 @@ Current state
 
 FAQ
 ===
-**What should I know if I want to contribute?** The code is as PEP8 compliant as possible, no docstrings are missing. Type hinting is planned but not done. PRs and issues are extremely welcome, I can be very reactive so don't hesitate to suggest features etc.
+**What should I know if I want to contribute?** The code is as PEP compliant as possible, no docstrings are missing. Type hinting is planned but not done. PRs and issues are extremely welcome, I can be very reactive so don't hesitate to suggest features etc.
 
 **Where does the idea come from?** From Gwern's [media resorted](https://www.gwern.net/Resorter).
 
