@@ -348,12 +348,12 @@ def pick_entries():
     picked_ids = [int(left_choice_id)]
     picked_ids.extend(right_choice_id)
 
-    cnt=0
+    cnt = 0
     while picked_ids[0] in picked_ids[1:]:
-        cnt+=1
+        cnt += 1
         if cnt > 50:
             log_("Seem to be stuck in an endless loop. Openning debugger", False)
-            breakpoint()
+            pdb.set_trace()
         log_("Picking entries one more time to avoid reviewing to itself",
              False)
         picked_ids = pick_entries()
