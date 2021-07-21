@@ -159,17 +159,17 @@ shortcuts = {"skip_review"      : ["s", "-"],
                                    "a", "z", "e", "r", "t"],
              "edit_left"        : ["el"],
              "edit_right"       : ["er"],
-             "reload_media"     : ["re"],
-             "undo"             : ["u"],
-             "show_all_fields"  : ["m"],
+             "reload_media"     : ["reload"],
+             "undo"             : ["undo"],
+             "show_all_fields"  : ["more"],
              "star_left"        : ["xl"],
              "star_right"       : ["xr"],
              "disable_left"     : ["dl"],
              "disable_right"    : ["dr"],
              "open_media"       : ["o"],
              "repick"           : ["repick"],
-             "show_help"        : ["h", "H", "?"],
-             "quit"             : ["q"] }
+             "show_help"        : ["h", "H", "?", "help"],
+             "quit"             : ["quit"] }
 
 # ELO :
 K_values           =  [100, 80, 60, 40, 25, 17, 15, 12, 10]
