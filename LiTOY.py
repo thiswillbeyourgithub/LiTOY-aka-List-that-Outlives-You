@@ -855,7 +855,7 @@ def extract_youtube(url):
             title.strip()
             res = {"type": "video",
                    "length": str(round(video['duration']/60, 1)),
-                   "title": title,
+                   "title": title.replace("\n", ""),
                    "url": url}
         except (KeyError, DownloadError, ExtractorError) as e:
             log_(f"ERROR: Video link skipped because : error during information \
@@ -883,7 +883,7 @@ def extract_local_video(link):
     title = clip.filename
     title.strip()
     dic = {"type": "local video",
-           "title": title,
+           "title": title.replace("\n", ""),
            "length": duration,
            "url": link}
     return dic
@@ -920,7 +920,7 @@ def extract_pdf_local(path):
     title.strip()
     res = {"type": "local pdf",
            "length": estimatedReadingTime,
-           "title": title,
+           "title": title.replace("\n", ""),
            "url": path}
     return res
 
@@ -941,7 +941,7 @@ def extract_txt(path):
         res = {"type": "text",
                "length": estimatedReadingTime,
                "url": path,
-               "title": title}
+               "title": title.replace("\n", "")}
         return res
 
     except ValueError as e:
@@ -987,7 +987,7 @@ def extract_webpage(url):
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = str(round(total_words/wpm, 1))
     title.strip()
-    res = {"title": title,
+    res = {"title": title.replace("\n", ""),
            "type": "webpage",
            "length": estimatedReadingTime,
            "used_wayback_machine": wayback_used,
