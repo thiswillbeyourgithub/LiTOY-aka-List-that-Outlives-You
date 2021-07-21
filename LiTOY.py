@@ -169,6 +169,7 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "open_media"       : ["o"],
              "repick"           : ["repick"],
              "show_help"        : ["h", "H", "?", "help"],
+             "open debugger"    : ["debug"],
              "quit"             : ["quit"] }
 
 # ELO :
@@ -720,6 +721,11 @@ field '" + chosenfield + "'\n", prefill=old_value))
                             int(id_right),
                             mode=mode)
             print("\n"*10)
+            continue
+
+        if action == "open debugger":
+            log_("Openning debugger", False)
+            pdb.set_trace()
             continue
 
         if action == "edit_left":
