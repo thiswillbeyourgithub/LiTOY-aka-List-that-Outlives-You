@@ -838,7 +838,10 @@ def get_meta_from_content(string):
 
     if "/" in string:  # might be a link to a file
         for part in string.split("\""):
-            if ".mp4" in part or ".mov" in part or ".avi" in part:
+            if ".mp4" in part or\
+                    ".mov" in part or\
+                    ".avi" in part or\
+                    ".webm" in part:
                 if "/" in part:
                     log_(f"Extracting info from local video {part}")
                     return extract_local_video(part)
