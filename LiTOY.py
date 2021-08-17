@@ -161,6 +161,7 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "edit_right"       : ["er"],
              "reload_media"     : ["reload"],
              "undo"             : ["undo"],
+             "show_few_fields"  : ["less"],
              "show_all_fields"  : ["more"],
              "star_left"        : ["xl"],
              "star_right"       : ["xr"],
@@ -675,6 +676,12 @@ field '" + chosenfield + "'\n", prefill=old_value))
             log_("Displaying the entries in full")
             print("\n"*10)
             print_2_entries(int(id_left), int(id_right), mode, "all")
+            continue
+
+        if action == "show_few_fields":
+            log_("Displaying only most important fields of entries")
+            print("\n"*10)
+            print_2_entries(int(id_left), int(id_right), mode)
             continue
 
         if action == "open_media":
