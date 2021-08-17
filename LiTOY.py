@@ -737,9 +737,11 @@ field '" + chosenfield + "'\n", prefill=old_value))
 
         if action == "edit_left":
             edit(id_left)
+            print_2_entries(id_left, id_right, mode)
             continue
         if action == "edit_right":
             edit(id_right)
+            print_2_entries(id_left, id_right, mode)
             continue
         if action == "star_left":
             star(id_left)
