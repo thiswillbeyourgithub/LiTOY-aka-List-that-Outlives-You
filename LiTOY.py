@@ -1252,6 +1252,7 @@ if __name__ == "__main__":
     if args["entry_to_add"] is True:
         cur_tags = litoy.get_tags(litoy.df)
         entry_to_add = input(f"Current tags: {cur_tags}\n\
+Dont forget to put local links between \"\" quotation signs!\n\
 Text content of the entry?\n>")
         log_(f'Adding entry {entry_to_add}')
         if len(entry_to_add.split(sep=" ")) == 1:  # avoids bugs
