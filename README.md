@@ -84,7 +84,7 @@ FAQ
 
 **What is the podium?** just a way to show the entries with the highest global scores
 
-**What does it mean to answer 1 vs 2345 ?** 1 means you favor the one on the left, strongly. 5 means you favor the one on the right strongly. 3 means they are equal, 2 and 4 are intermediate score ("I prefer left over right, but not that strongly"). Remember that this will change ELOs for *both* cards at every fight.
+**What does it mean to answer 1 vs 2345 ?** 1 means you favor the one on the left, strongly. 5 means you favor the one on the right strongly. 3 means they are equal, 2 and 4 are intermediate score ("I prefer left over right, but not that strongly"). Remember that this will change ELOs for *both* entries at every fight.
 
 **Where can I see the correct syntax to use when writing a file destined for importation?** See [this file](./example_new_entry.txt)
 
@@ -113,7 +113,7 @@ Syntax and usage example:
    * adds a new entry to deck todo with the tag diy 
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --review
-   * begin 3 sessons where LiTOY automatically picks 5 cards and review them (it's actually twice the maount of reviews that you have to do because you have 2 questions each time).
+   * begin 3 sessons where LiTOY automatically picks 5 entries and review them (it's actually twice the maount of reviews that you have to do because you have 2 questions each time).
 
 `python3.9 LiTOY.py --litoy-db database.xlsx --import-from-file file.txt`
     * Automatically imports from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
