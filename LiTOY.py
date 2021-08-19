@@ -1254,7 +1254,7 @@ if __name__ == "__main__":
     (sizex, sizey) = get_terminal_size()
     args = parser.parse_args().__dict__
     signal.signal(signal.SIGINT, debug_signal_handler)
-    log_("\n"*10 + "##################### STARTUP")
+    log_("STARTUP")
 
     # checks if the arguments are sane
     if args['litoy_db'] is None:
@@ -1380,7 +1380,7 @@ welcome!")
         raise SystemExit()
 
     if args["show_stats"] is True:
-        log_("Showing statistics :")
+        log_("Showing statistics")
         show_stats(litoy.df)
         raise SystemExit()
 
