@@ -1216,7 +1216,7 @@ parser.add_argument("--verbose", "-v",
                     dest='verbose',
                     required=False,
                     action="store_true",
-                    help="debug flag : prints more information during runtime")
+                    help="debug flag: prints more information during runtime")
 parser.add_argument("--external", "-x",
                     dest='external_open',
                     required=False,
