@@ -122,7 +122,6 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* add a stat : completion status : a ratio of sum of median scores over number of entry
 * implement ability to add only a link as content
 * add a check when importing : does the entry has the same metadata as any existing entry? If yes, notify the user
 * create a new release

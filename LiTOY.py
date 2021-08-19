@@ -459,15 +459,23 @@ def show_stats(df, printing=True):
         table2.add_row(["Time spent reviewing:",
                         round(df_nd.review_time.sum(), 1),
                         round(df_nd.review_time.std(), 2), ""])
+
+        completion_score = round(mean([
+                                       mean(pooled),
+                                       median(pooled)
+                                      ]
+                                      ) / len(df_nd.index), 4)
         if printing is True:
             print(table)
             print("")
             print(table2)
+            print(f"Completion (lower is better):{round(completion_score, 3):>20}")
         else:
             table.border = False
             table2.border = False
             log_(table)
             log_(table2)
+            log_(f"Completion (lower is better):{round(completion_score, 3):>20}")
     except StatisticsError as e:
         log_(f"Not enough data points! {e}", False)
         raise SystemExit()
