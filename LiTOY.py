@@ -7,6 +7,7 @@ import time
 import random
 from statistics import mean, stdev, median, StatisticsError
 from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
 import platform
 import subprocess
 import sys
@@ -1225,9 +1226,13 @@ if __name__ == "__main__":
 
     if args["entry_to_add"] is True:
         cur_tags = litoy.get_tags(litoy.df)
-        entry_to_add = input(f"Current tags: {cur_tags}\n\
+        auto_tags_list = []
+        for i in cur_tags:
+            auto_tags_list.append("tags:"+i)
+        auto_tags = WordCompleter(auto_tags_list, match_middle=True)
+        entry_to_add = prompt(f"Current tags: {cur_tags}\n\
 Dont forget to put local links between \"\" quotation signs!\n\
-Text content of the entry?\n>")
+Text content of the entry?\n>", completer=auto_tags)
         entry_to_add.strip()
         log_(f'Adding entry {entry_to_add}')
         if entry_to_add == "":
