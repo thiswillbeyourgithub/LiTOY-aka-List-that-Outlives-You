@@ -99,7 +99,7 @@ Getting started:
 * Read this page thoroughly. Don't be afraid to ask questions.
 * make sure you have python 3.9 installed
 * `git clone https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You && cd LiTOY`
-* manually edit the settings at the top of `LiTOY.py`
+* manually edit the settings in the file `user_settings.py`
 * run `pip3.9 install -r requirements.txt`
 * `python3.9 ./LiTOY.py --help`
 * before entering `review mode`, your database will need to contain at least 10 entries. To add them, either use `--import-from-file` or `--add`
