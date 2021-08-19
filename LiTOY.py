@@ -126,7 +126,7 @@ from youtube_dl.utils import ExtractorError, DownloadError
 
 # lifebar arguments :
 disable_lifebar     = "no"
-useless_first_years = 13
+useless_first_years = 15
 user_age            = 24
 user_life_expected  = 90
 useless_last_years  = 20
