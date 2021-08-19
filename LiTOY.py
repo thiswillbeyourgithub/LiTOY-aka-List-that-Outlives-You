@@ -1272,10 +1272,6 @@ to start using LiTOY!", False)
                 state = "don't repick"
                 picked_ids = pick_entries()
                 log_(f"Picked the following entries : {picked_ids}")
-#                if args["verbose"] is True:
-#                    disp_flds = "all"
-#                else:
-#                    disp_flds = "no"
                 disp_flds = "no"
                 for (progress, i) in enumerate(picked_ids[1:]):
                     progress += 1
