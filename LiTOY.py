@@ -763,6 +763,8 @@ field '" + chosenfield + "'\n", prefill=old_value))
 
         if action == "open debugger":
             log_("Openning debugger", False)
+            print("To open a python console within the debugger, type in \
+'interact'")
             pdb.set_trace()
             continue
 
