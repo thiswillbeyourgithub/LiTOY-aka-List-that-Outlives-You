@@ -496,18 +496,18 @@ def shortcut_and_action(id_left, id_right, mode, progress):
     entry_right = litoy.df.loc[id_right, :].copy()
     log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
 
-    def fetch_action(input):
+    def fetch_action(user_input):
         "deduce action from user keypress"
         found = ""
         for action, keypress in shortcuts.items():
-            if str(input) in keypress:
+            if str(user_input) in keypress:
                 if found != "":
                     log_("ERROR: Several corresponding shortcuts found! \
 Quitting.", False)
                     raise SystemExit()
                 found = action
         if action == "":
-            log_(f"ERROR: No {str(input)} shortcut found")
+            log_(f"ERROR: No {str(user_input)} shortcut found")
             action = "show_help"
         return found
 
