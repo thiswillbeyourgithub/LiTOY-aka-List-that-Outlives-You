@@ -8,3 +8,4 @@ tqdm == 4.55.1
 youtube_dl == 2021.6.6
 readline == 6.2.4.1
 XlsxWriter == 1.4.3
+prettytable==2.1.0

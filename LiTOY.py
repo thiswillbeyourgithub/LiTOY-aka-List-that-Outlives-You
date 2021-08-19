@@ -14,6 +14,7 @@ from pathlib import Path
 from other_functions import get_terminal_size
 from pprint import pprint
 from tqdm import tqdm
+from prettytable import PrettyTable
 
 import get_wayback_machine
 import json
@@ -496,30 +497,51 @@ def show_stats(df, printing=True):
     df = litoy.df.copy()
     df_nd = df[df['disabled'] == 0]
     df_virg = df[df['n_review'] == 0]
-    if printing is True:
-        action = print
-    else:
-        action = log_
     try:
-        action(f"Number of entries in LiTOY : {len(df)}, and of non disabled entries \
-only : {len(df_nd)}")
-        action(f"Number of entries that have never been reviewed : {len(df_virg)}")
-        action(f"Total number of review : {round(df_nd.n_review.sum(), 1)} \
-average : {round(df_nd['n_review'].mean(), 2)}")
-        action("")
-        action("Average / standard deviation / median :")
-        action(f"Importance score : {round(df_nd.iELO.mean(),1)} / \
-{round(df_nd.iELO.std(), 2)}")
-        action(f"Time score : {round(df_nd.tELO.mean(), 1)} / \
-{round(df_nd.tELO.std() , 2)}")
-        action(f"Global score : {round(df_nd.gELO.mean(), 1)} / \
-{round(df_nd.gELO.std(), 2)}")
+        table = PrettyTable()
+        table.field_names = ["", "value"]
+        table.align[""] = "l"
+        table.align["value"] = "r"
+        table.add_row(["Number of entries in LiTOY:", len(df)])
+        table.add_row(["Number of non disabled entries in LiTOY:", len(df_nd)])
+        table.add_row(["Number of entries that have never been reviewed:",
+                       len(df_virg)])
+        table.add_row(["Total number of review:",
+                       round(df_nd.n_review.sum(), 1)])
+        table.add_row(["Average number of review:",
+                       round(df_nd['n_review'].mean(), 2)])
+
+        table2 = PrettyTable()
+        table2.field_names = ["", "average", "sd", "median"]
+        table2.align[""] = "l"
+        table2.align["average"] = "r"
+        table2.align["sd"] = "r"
+        table2.align["median"] = "r"
+        table2.add_row(["Importance score:",
+                       round(df_nd.iELO.mean(), 1),
+                       round(df_nd.iELO.std(), 2), ""])
+        table2.add_row(["Time score:", round(df_nd.tELO.mean(), 1),
+                       round(df_nd.tELO.std(), 2), ""])
+        table2.add_row(["Global score:", round(df_nd.gELO.mean(), 1),
+                       round(df_nd.gELO.std(), 2), ""])
+
         pooled = list(df_nd.DiELO + df_nd.DtELO)
-        action(f"Delta scores : {round(mean(pooled),1)} / {round(stdev(pooled),2)} \
-/ {round(median(pooled), 2)}")
-        action(f"K value : {round(df_nd.K.mean(), 1)} / {round(df_nd.K.std(), 2)} / {round(df_nd.K.median())}")
-        action(f"Time spent reviewing : {round(df_nd.review_time.sum(), 1)} / \
-{round(df_nd.review_time.std(), 2)}")
+        table2.add_row(["Delta scores:", round(mean(pooled), 1),
+                       round(stdev(pooled), 2), round(median(pooled), 2)])
+        table2.add_row(["K value:", round(df_nd.K.mean(), 1),
+                       round(df_nd.K.std(), 2), round(df_nd.K.median())])
+        table2.add_row(["Time spent reviewing:",
+                        round(df_nd.review_time.sum(), 1),
+                        round(df_nd.review_time.std(), 2), ""])
+        if printing is True:
+            print(table)
+            print("")
+            print(table2)
+        else:
+            table.border = False
+            table2.border = False
+            log_(table)
+            log_(table2)
     except StatisticsError as e:
         log_(f"Not enough data points! {e}", False)
         raise SystemExit()
