@@ -126,14 +126,13 @@ TODO and planned features:
 * implement ability to add only a link as content
 * add a check when importing : does the entry has the same metadata as any existing entry? If yes, notify the user
 * create a new release
-* implement hour and second in show stats + check why it's so high
 * add --show-starred ; show-random-5 ; show-disabled
 * implement a two letter shortcut code to answer importance and time at the same time?
 * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
-* use type hints from the beginning and mypy
+* use strong type hints
+* make it into a pip package on PyPI
 * answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
 * when stable: talk about it on psionica, then lesswrong
-* make it into a pip package on PyPI
 
 
 Acknowledgements
