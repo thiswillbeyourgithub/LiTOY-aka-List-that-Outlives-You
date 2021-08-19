@@ -445,11 +445,14 @@ def show_stats(df, printing=True):
         table2.align["median"] = "r"
         table2.add_row(["Importance score:",
                        round(df_nd.iELO.mean(), 1),
-                       round(df_nd.iELO.std(), 2), ""])
+                       round(df_nd.iELO.std(), 2),
+                       round(median(df_nd.iELO), 2)])
         table2.add_row(["Time score:", round(df_nd.tELO.mean(), 1),
-                       round(df_nd.tELO.std(), 2), ""])
+                       round(df_nd.tELO.std(), 2),
+                       round(median(df_nd.tELO), 2)])
         table2.add_row(["Global score:", round(df_nd.gELO.mean(), 1),
-                       round(df_nd.gELO.std(), 2), ""])
+                       round(df_nd.gELO.std(), 2),
+                       round(median(df_nd.gELO), 2)])
 
         pooled = list(df_nd.DiELO + df_nd.DtELO)
         table2.add_row(["Delta scores:", round(mean(pooled), 1),
@@ -458,7 +461,8 @@ def show_stats(df, printing=True):
                        round(df_nd.K.std(), 2), round(df_nd.K.median())])
         table2.add_row(["Time spent reviewing:",
                         round(df_nd.review_time.sum(), 1),
-                        round(df_nd.review_time.std(), 2), ""])
+                        round(df_nd.review_time.std(), 2),
+                        round(median(df_nd.review_time), 2)])
 
         completion_score = round(mean([
                                        mean(pooled),
