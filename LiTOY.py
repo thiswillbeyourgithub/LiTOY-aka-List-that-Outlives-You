@@ -1245,9 +1245,11 @@ if __name__ == "__main__":
         entry_to_add = input(f"Current tags: {cur_tags}\n\
 Dont forget to put local links between \"\" quotation signs!\n\
 Text content of the entry?\n>")
+        entry_to_add.strip()
         log_(f'Adding entry {entry_to_add}')
-        if len(entry_to_add.split(sep=" ")) == 1:
-            entry_to_add = entry_to_add + " ."
+        if entry_to_add == "":
+            log_("Cannot add empty entry. Exiting.", False)
+            raise SystemExit()
         metacontent = get_meta_from_content(entry_to_add)
         if not litoy.entry_duplicate_check(litoy.df,
                                            entry_to_add,
