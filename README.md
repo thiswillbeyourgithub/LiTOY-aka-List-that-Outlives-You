@@ -94,6 +94,8 @@ FAQ
 
 **What do you call a review?** It's just a pairwise comparison between two entries. I chose this name because I use [Anki](https://apps.ankiweb.net/) **a lot**.
 
+**What is the progress score?** It's the mean of `the mean and the median` of all the Delta scores, divided by the total number of non disabled entries. The idea is that the mean is too sensitive to extreme values and the median is not enough (it stays at the same value until you did 50% of the reviews). This value is at its lowest when all the reviews have been done and the entries are not moving anymore (i.e. the Delta scores stay low).
+
 Getting started:
 ====================
 * Read this page thoroughly. Don't be afraid to ask questions.
