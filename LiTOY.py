@@ -1235,12 +1235,14 @@ if __name__ == "__main__":
         autocomplete_list = []
         for i in cur_tags:
             autocomplete_list.append("tags:"+i)
-        file_list = glob(f"/{default_dir}/**/*.pdf", recursive=True)
+        file_list = glob(f"{default_dir}/**/*.pdf", recursive=True)
         file_list.extend(glob(f"/{default_dir}/**/*.md", recursive=True))
         file_list.extend(glob(f"/{default_dir}/**/*.mp4", recursive=True))
         file_list.extend(glob(f"/{default_dir}/**/*.mov", recursive=True))
         file_list.extend(glob(f"/{default_dir}/**/*.avi", recursive=True))
         file_list.extend(glob(f"/{default_dir}/**/*.webm", recursive=True))
+        for i in range(len(file_list)):  # local paths have to be between "
+            file_list[i] = "\"" + file_list[i] + "\""
         autocomplete_list.extend(file_list)
         auto_complete = WordCompleter(autocomplete_list,
                                       match_middle=True,
