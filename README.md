@@ -124,14 +124,12 @@ TODO and planned features:
 ======
 * add a stat : completion status : a ratio of sum of median scores over number of entry
 * implement ability to add only a link as content
-* per suggestion : show the title of the metadata in the podium
 * add a check when importing : does the entry has the same metadata as any existing entry? If yes, notify the user
 * split the settings into another file
 * create a new release
 * implement hour and second in show stats + check why it's so high
 * add --show-starred ; show-random-5 ; show-disabled
 * add an argument to launch pdb after loading the dataframe and printing a few instructions on how to use it
-* better display of the stats using rljust etc
 * implement a two letter shortcut code to answer importance and time at the same time?
 * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
 * use type hints from the beginning and mypy
