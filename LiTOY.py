@@ -1246,6 +1246,7 @@ if __name__ == "__main__":
         autocomplete_list.extend(file_list)
         auto_complete = WordCompleter(autocomplete_list,
                                       match_middle=True,
+                                      ignore_case=True,
                                       sentence=False)
 
         entry_to_add = prompt( f"Current tags: {cur_tags}\n\
