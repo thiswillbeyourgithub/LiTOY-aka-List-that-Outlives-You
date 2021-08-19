@@ -97,32 +97,32 @@ FAQ
 Getting started:
 ====================
 * Read this page thoroughly. Don't be afraid to ask questions.
-* make sure you have python 3.9 installed
-* `git clone https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You && cd LiTOY`
+* make sure you have python 3.8 installed (3.9 with pyenv seems to have issues with importing pandas)
+* run the following command into a terminal to install dependencies required by `pdftotext`: "sudo apt-get install build-essential libpoppler-cpp-dev pkg-config python-dev"
+* `git clone https://github.com/thiswillbeyourgithub/LiTOY-aka-List-that-Outlives-You && cd LiTOY-aka-List-that-Outlives-You`
 * manually edit the settings in the file `user_settings.py`
-* run `pip3.9 install -r requirements.txt`
-* `python3.9 ./LiTOY.py --help`
-* before entering `review mode`, your database will need to contain at least 10 entries. To add them, either use `--import-from-file` or `--add`
-*I recommend setting an alias in your shell, mine is `alias litoy = 'cd /litoy/folder && python3.9 ./LiTOY.py -l personnal_database.xlsx'` then I just have to type `litoy -r`
+* install the dependencies using `pip3.8 install -r requirements.txt`
+* show the help `python3.8 ./LiTOY.py --help`
+* before entering `review mode`, your database will need to contain at least 10 entries. To add them, either use `--import-from-file FILE` or `--add`
+*I recommend setting an alias in your shell, mine is `alias litoy = 'cd /litoy/folder && python3.8 ./LiTOY.py -l personnal_database.xlsx'` hence, I just have to type `litoy -r`
 
 Syntax and usage example:
 -------------------------
-*Note: also tested on python3.8*
+*I recommend python 3.8 instead of 3.9 because some users using pyenv can run into weird issues with pandas.*
 
-`python3.9 LiTOY.py --litoy-db database.xlsx --add 'repair the tires tags:diy'
+`python3.8 LiTOY.py --litoy-db database.xlsx --add 'repair the tires tags:diy'
    * adds a new entry to deck todo with the tag diy 
 
-`python3.9 LiTOY.py --litoy-db database.xlsx --review
+`python3.8 LiTOY.py --litoy-db database.xlsx --review
    * begin 3 sessons where LiTOY automatically picks 5 entries and review them (it's actually twice the maount of reviews that you have to do because you have 2 questions each time).
 
-`python3.9 LiTOY.py --litoy-db database.xlsx --import-from-file file.txt`
+`python3.8 LiTOY.py --litoy-db database.xlsx --import-from-file file.txt`
     * Automatically imports from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
     * To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 
 TODO and planned features:
 ======
-* create a new release 2.0
 * add --show-starred ; show-random-5 ; show-disabled
 * implement a two letter shortcut code to answer importance and time at the same time
 * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
