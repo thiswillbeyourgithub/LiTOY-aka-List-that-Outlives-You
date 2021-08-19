@@ -473,13 +473,13 @@ def show_stats(df, printing=True):
             print(table)
             print("")
             print(table2)
-            print(f"Completion (lower is better):{round(completion_score, 3):>20}")
+            print(f"Progress (lower is better):{round(completion_score, 3):>20}")
         else:
             table.border = False
             table2.border = False
             log_(table)
             log_(table2)
-            log_(f"Completion (lower is better):{round(completion_score, 3):>20}")
+            log_(f"Progress (lower is better):{round(completion_score, 3):>20}")
     except StatisticsError as e:
         log_(f"Not enough data points! {e}", False)
         raise SystemExit()
