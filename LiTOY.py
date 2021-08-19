@@ -532,9 +532,11 @@ Quitting.", False)
         while True:
             df = litoy.df.copy()
             entry = df.loc[entry_id, :]
-            print(f"Current fields available for edition : {list(df.columns)}")
-            chosenfield = str(input("What field do you want to edit? \
-(q to exit)\n>"))
+            field_list = list(df.columns)
+            print(f"Current fields available for edition : {field_list}")
+            auto_completer = WordCompleter(field_list, sentence=True)
+            chosenfield = prompt("What field do you want to edit? \
+(q to exit)\n>", completer = auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
                 break
             try:
@@ -557,9 +559,12 @@ Quitting.", False)
         log_(f"Asking question, mode : {mode}")
         print(f"{col_gre}{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help){col_rst}")
-        keypress = input(">")
 
-        if keypress not in list(chain.from_iterable(shortcuts.values())):
+        available_shortcut = list(chain.from_iterable(shortcuts.values()))
+        auto_completer = WordCompleter(available_shortcut, sentence=True)
+        keypress = prompt(">", completer = auto_completer)
+
+        if keypress not in available_shortcut:
             log_(f"ERROR: keypress not found : {keypress}")
             action = "show_help"
         else:
