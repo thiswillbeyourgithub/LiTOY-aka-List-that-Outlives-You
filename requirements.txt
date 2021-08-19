@@ -1,11 +1,11 @@
-beautifulsoup4 == 4.9.3
-get_wayback_machine == 0.1.2
-moviepy == 1.0.3
-pandas == 1.2.3
-pdftotext == 2.1.5
-requests == 2.24.0
-tqdm == 4.55.1
-youtube_dl == 2021.6.6
-readline == 6.2.4.1
-XlsxWriter == 1.4.3
-prettytable==2.1.0
+beautifulsoup4
+get_wayback_machine
+moviepy
+pandas
+pdftotext
+requests
+tqdm
+youtube_dl
+XlsxWriter
+prettytable
+prompt_toolkit
