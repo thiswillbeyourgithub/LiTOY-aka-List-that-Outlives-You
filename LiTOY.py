@@ -471,12 +471,20 @@ def show_podium(df):
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', sizex)
-    pd.set_option('display.max_colwidth', int(3*sizex/4))
+    pd.set_option('display.max_colwidth', int(sizex/2.6))
     if args["verbose"] is True:  # print all fields
         pprint(df.sort_values(by="gELO", ascending=False)[0:10])
     else:
-        df2 = df.loc[:, ["content", "gELO", "iELO", "tELO", "tags"]]
-        pprint(df2.sort_values(by="gELO", ascending=False)[0:10])
+        df2 = df.loc[:, ["content", "gELO", "iELO", "tELO",
+                         "tags"]]
+        df2["media_title"] = [(lambda x: json.loads(x)["title"]
+                               if "title" in json.loads(x).keys()
+                               else "")(x)
+                              for x in df.loc[:, "metacontent"]]
+        pprint(df2.loc[:,
+                       ["media_title", "content",
+                        "gELO", "iELO", "tELO", "tags"]
+                       ].sort_values(by="gELO", ascending=False)[0:10])
 
 
 def show_stats(df, printing=True):
