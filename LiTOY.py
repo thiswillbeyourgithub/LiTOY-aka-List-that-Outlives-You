@@ -475,13 +475,14 @@ def show_podium(df):
     if args["verbose"] is True:  # print all fields
         pprint(df.sort_values(by="gELO", ascending=False)[0:10])
     else:
-        df2 = df.loc[:, ["content", "gELO", "iELO", "tELO",
-                         "tags"]]
-        df2["media_title"] = [(lambda x: json.loads(x)["title"]
+        dfp = df.loc[:, ["content", "gELO", "iELO", "tELO",
+                         "tags", "disabled", "metacontent"]
+                     ][df["disabled"] == 0]
+        dfp["media_title"] = [(lambda x: json.loads(x)["title"]
                                if "title" in json.loads(x).keys()
                                else "")(x)
-                              for x in df.loc[:, "metacontent"]]
-        pprint(df2.loc[:,
+                              for x in dfp.loc[:, "metacontent"]]
+        pprint(dfp.loc[:,
                        ["media_title", "content",
                         "gELO", "iELO", "tELO", "tags"]
                        ].sort_values(by="gELO", ascending=False)[0:10])
