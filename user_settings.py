@@ -19,7 +19,7 @@ n_to_review = 3
 wpm = 200
 average_word_length = 6
 
-# for path autocompletion:
+# absolute path for autocompletion of local files:
 default_dir = "/home/"
 
 # used when reviewing:
