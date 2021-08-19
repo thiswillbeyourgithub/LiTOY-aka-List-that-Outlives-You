@@ -122,8 +122,6 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* implement ability to add only a link as content
-* add a check when importing : does the entry has the same metadata as any existing entry? If yes, notify the user
 * create a new release
 * add --show-starred ; show-random-5 ; show-disabled
 * implement a two letter shortcut code to answer importance and time at the same time?

@@ -197,8 +197,9 @@ def importation(path):
                      ascii=False, dynamic_ncols=True, mininterval=0):
         line.strip()
         line = line.replace("\n", "")
-        if not litoy.entry_duplicate_check(litoy.df, line):
-            add_new_entry(litoy.df, line)
+        metacontent = get_meta_from_content(line)
+        if not litoy.entry_duplicate_check(litoy.df, line, metacontent):
+            add_new_entry(litoy.df, line, metacontent)
 
 
 def wrong_arguments_(args):
@@ -208,10 +209,9 @@ def wrong_arguments_(args):
     raise SystemExit()
 
 
-def add_new_entry(df, content):
+def add_new_entry(df, content, metacontent):
     "Add a new entry to the pandas dataframe"
     tags = get_tags_from_content(content)
-    metacontent = get_meta_from_content(content)
 
     # in case metacontent doesn't contain those keys, ignore exceptions:
     with suppress(KeyError, TypeError):
@@ -1086,14 +1086,21 @@ class LiTOYClass:
         df = pd.DataFrame(columns=cols).set_index("ID")
         self.save_to_file(df)
 
-    def entry_duplicate_check(self, df, new):
+    def entry_duplicate_check(self, df, newc, newm):
         "checks if an entry already exists before adding it"
         # strangely, this was faster than using lapply
-        for current in list(df['content']):
-            current.strip()
-            current = current.replace("\n", "")
-            if current == new:
-                log_(f"Entry already in database : {current}", False)
+        for i in list(df.index):
+            content = df.loc[i, "content"]
+            content.strip()
+            content = content.replace("\n", "")
+            metacontent = json.loads(df.loc[i, "metacontent"])
+            if newc == content:
+                log_(f"Content is the same as entry with ID {i}: new content =\
+{newc}", False)
+                return True
+            if newm == metacontent:
+                log_(f"Metacontent is the same as entry with ID {i}: new content =\
+{newc}", False)
                 return True
         return False
 
@@ -1239,11 +1246,13 @@ if __name__ == "__main__":
 Dont forget to put local links between \"\" quotation signs!\n\
 Text content of the entry?\n>")
         log_(f'Adding entry {entry_to_add}')
-        if len(entry_to_add.split(sep=" ")) == 1:  # avoids bugs
-            print("There is no point in adding single word entries. Quitting")
-            raise SystemExit()
-        if not litoy.entry_duplicate_check(litoy.df, entry_to_add):
-            add_new_entry(litoy.df, entry_to_add)
+        if len(entry_to_add.split(sep=" ")) == 1:
+            entry_to_add = entry_to_add + " ."
+        metacontent = get_meta_from_content(entry_to_add)
+        if not litoy.entry_duplicate_check(litoy.df,
+                                           entry_to_add,
+                                           metacontent):
+            add_new_entry(litoy.df, entry_to_add, metacontent)
         else:
             raise SystemExit()
         log_("Done adding entry.", False)
