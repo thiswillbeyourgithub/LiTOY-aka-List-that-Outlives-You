@@ -19,6 +19,9 @@ n_to_review = 3
 wpm = 200
 average_word_length = 6
 
+# for path autocompletion:
+default_dir = "/home/"
+
 # used when reviewing:
 questions = {
         "importance": "What steps will make you likely to achieve your goals?",

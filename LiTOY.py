@@ -25,6 +25,7 @@ import pandas as pd
 import pdftotext
 import requests
 import youtube_dl
+from glob import glob
 from bs4 import BeautifulSoup
 from moviepy.editor import VideoFileClip
 
@@ -1227,13 +1228,25 @@ if __name__ == "__main__":
 
     if args["entry_to_add"] is True:
         cur_tags = litoy.get_tags(litoy.df)
-        auto_tags_list = []
+        autocomplete_list = []
         for i in cur_tags:
-            auto_tags_list.append("tags:"+i)
-        auto_tags = WordCompleter(auto_tags_list, match_middle=True)
-        entry_to_add = prompt(f"Current tags: {cur_tags}\n\
+            autocomplete_list.append("tags:"+i)
+        file_list = glob(f"/{default_dir}/**/*.pdf", recursive=True)
+        file_list.extend(glob(f"/{default_dir}/**/*.md", recursive=True))
+        file_list.extend(glob(f"/{default_dir}/**/*.mp4", recursive=True))
+        file_list.extend(glob(f"/{default_dir}/**/*.mov", recursive=True))
+        file_list.extend(glob(f"/{default_dir}/**/*.avi", recursive=True))
+        file_list.extend(glob(f"/{default_dir}/**/*.webm", recursive=True))
+        autocomplete_list.extend(file_list)
+        auto_complete = WordCompleter(autocomplete_list,
+                                      match_middle=True,
+                                      sentence=False)
+
+        entry_to_add = prompt( f"Current tags: {cur_tags}\n\
 Dont forget to put local links between \"\" quotation signs!\n\
-Text content of the entry?\n>", completer=auto_tags)
+Text content of the entry?\n>",
+                              completer=auto_complete,
+                              complete_in_thread=True)
         entry_to_add.strip()
         log_(f'Adding entry {entry_to_add}')
         if entry_to_add == "":
