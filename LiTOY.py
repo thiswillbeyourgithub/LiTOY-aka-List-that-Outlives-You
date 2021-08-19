@@ -52,7 +52,6 @@ from youtube_dl.utils import ExtractorError, DownloadError
 #              def side_by_side(rowname, a, b, space=2, col=""):
 #          def show_podium(df):
 #          def show_stats(df, printing=True):
-#          def rlinput(prompt, prefill=''):
 #          def shortcut_and_action(id_left, id_right, mode, progress):
 #              def fetch_action(input):
 #              def star(entry):
