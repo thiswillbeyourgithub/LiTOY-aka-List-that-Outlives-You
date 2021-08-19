@@ -6,7 +6,7 @@ import argparse
 import time
 import random
 from statistics import mean, stdev, median, StatisticsError
-import readline
+from prompt_toolkit import prompt
 import platform
 import subprocess
 import sys
@@ -485,19 +485,6 @@ def show_stats(df, printing=True):
         raise SystemExit()
 
 
-def rlinput(prompt, prefill=''):
-    """
-    prompt the user using prefilled text, but doesn't work on windows
-    """
-    # https://stackoverflow.com/questions/2533120/show-default-value-for-editing-on-python-input-possible
-    readline.set_startup_hook(lambda: readline.insert_text(prefill))
-    readline.parse_and_bind("tab: complete")
-    try:
-        return input(prompt)
-    finally:
-        readline.set_startup_hook()
-
-
 def shortcut_and_action(id_left, id_right, mode, progress):
     """
     makes the link between keypresses and actions
@@ -553,12 +540,8 @@ Quitting.", False)
             except KeyError:
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
-            if platform.system() == "Windows":
-                new_value = str(input("Enter the desired new value for field \
-'" + chosenfield + "'\n"))
-            else:
-                new_value = str(rlinput("Enter the desired new value for \
-field '" + chosenfield + "'\n", prefill=old_value))
+            print("Enter the desired new value for  field '" + chosenfield +"'")
+            new_value = str(prompt(default=old_value))
             df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
             log_(f'Edited field "{chosenfield}", {old_value} => {new_value}',
