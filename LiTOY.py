@@ -1204,6 +1204,12 @@ parser.add_argument("--add", "-a",
                     help="directly add an entry by putting it inside quotation\
                     mark like so : python3 ./__main__.py -a \"do this thing\
                     tags:DIY, I really need to do it that way\"")
+parser.add_argument("--pandas_debug",
+                    dest='pandas_debug',
+                    required=False,
+                    action="store_true",
+                    help="launches the python debugger, useful to access\
+the pandas dataframe")
 parser.add_argument("--verbose", "-v",
                     dest='verbose',
                     required=False,
@@ -1272,6 +1278,13 @@ if __name__ == "__main__":
         litoy = LiTOYClass(None)
     else:
         litoy = LiTOYClass(args['litoy_db'])
+
+    # launches pdb
+    if args["pandas_debug"] is not False:
+        log_("Openning pdb")
+        print("To open a python console within the debugger, type in \
+'interact' then press enter")
+        pdb.set_trace()
 
     # finally the actual code:
     if args['import_ff_arg'] is not None:
