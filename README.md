@@ -124,7 +124,7 @@ TODO and planned features:
 ======
 * create a new release
 * add --show-starred ; show-random-5 ; show-disabled
-* implement a two letter shortcut code to answer importance and time at the same time?
+* implement a two letter shortcut code to answer importance and time at the same time
 * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
 * use strong type hints
 * make it into a pip package on PyPI
