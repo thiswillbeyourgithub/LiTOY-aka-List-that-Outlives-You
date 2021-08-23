@@ -1310,7 +1310,7 @@ to start using LiTOY!", False)
                             break
                 if state == "repick":
                     continue  # is finally telling the loop to repick
-        log_("Finished all reviewing session.\nQuitting.", False)
+        log_("Finished all reviewing session. Quitting.", False)
         json_periodic_save()  # periodic save
         raise SystemExit()
 
