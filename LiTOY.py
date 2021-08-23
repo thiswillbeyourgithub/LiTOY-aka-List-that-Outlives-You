@@ -706,10 +706,14 @@ Quitting.", False)
             continue
         if action == "disable_left":
             disable(id_left)
-            return(action)
+            return action
+        if action == "disable_both":
+            disable(id_right)
+            disable(id_left)
+            return action
         if action == "disable_right":
             disable(id_right)
-            return(action)
+            return action
 
         if action == "undo":
             print("Undo function is not yet implemented, \
