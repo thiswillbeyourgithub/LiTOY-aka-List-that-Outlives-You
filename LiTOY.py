@@ -672,21 +672,15 @@ Quitting.", False)
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
                 ent = df.loc[ent_id, :]
-                content = ent["content"]
-
-                old = args["verbose"]
-                args["verbose"] = True
-                metacontent = get_meta_from_content(content)
-                args["verbose"] = old
-
-                entry_left["metacontent"] = json.dumps(metacontent)
-                df.loc[ent_id, "metacontent"] = json.dumps(metacontent)
+                old_cont = df.loc[ent_id, :]["content"]
+                new_meta = get_meta_from_content(old_cont)
+                df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
                 litoy.save_to_file(df)
-                log_(f"New metacontent value for {ent_id} : {metacontent}")
+                log_(f"New metacontent value for {ent_id} : {new_meta}")
+            print("\n"*10)
             print_2_entries(int(id_left),
                             int(id_right),
                             mode=mode)
-            print("\n"*10)
             continue
 
         if action == "open debugger":
