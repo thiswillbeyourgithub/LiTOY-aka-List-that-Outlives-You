@@ -582,7 +582,7 @@ Quitting.", False)
                 keypress = 4
             if keypress == "t":
                 keypress = 5
-            keypress = round(keypress/6*5, 2)  # resize value from 1-5 to 0-5
+            keypress = round(int(keypress)/6*5, 2)  # resize value from 1-5 to 0-5
             date = time.time()
             assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
 
