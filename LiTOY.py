@@ -657,7 +657,7 @@ Quitting.", False)
                         os.startfile(path)
                     else:
                         log_("Platform system not found.", False)
-                except KeyError as e:
+                except (KeyError, AttributeError) as e:
                     log_(f"url not found in entry {ent_id} : {e}")
             time.sleep(1.5)  # better display
             print("\n"*10)
