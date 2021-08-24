@@ -647,9 +647,8 @@ Quitting.", False)
             log_("Openning media")
             for ent_id in [id_left, id_right]:
                 ent = litoy.df.loc[ent_id, :]
-                js = json.loads(ent.metacontent)
                 try:
-                    path = str(js["url"])
+                    path = str(json.loads(ent.metacontent)["url"])
                     if platform.system() == "Linux":
                         if platform.system() == "Windows":
                             os.startfile(path)
