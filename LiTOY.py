@@ -650,13 +650,13 @@ Quitting.", False)
                 try:
                     path = str(json.loads(ent.metacontent)["url"])
                     if platform.system() == "Linux":
-                        if platform.system() == "Windows":
-                            os.startfile(path)
-                        elif platform.system() == "Darwin":
-                            subprocess.Popen(["open", path])
-                        else:
-                            subprocess.Popen(["xdg-open", path],
-                                             stdout=open(os.devnull, 'wb'))
+                        os.startfile(path)
+                    elif platform.system() == "Windows":
+                        os.startfile(path)
+                    elif platform.system() == "Darwin":
+                        os.startfile(path)
+                    else:
+                        log_("Platform system not found.", False)
                 except KeyError as e:
                     log_(f"url not found in entry {ent_id} : {e}")
             time.sleep(1.5)  # better display
