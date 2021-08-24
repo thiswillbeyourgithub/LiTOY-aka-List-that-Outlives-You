@@ -196,7 +196,7 @@ def importation(path):
              str(li) != "" and str(li) != "\n"]
     for line in tqdm(lines, desc="Processing line by line", unit="line",
                      ascii=False, dynamic_ncols=True, mininterval=0):
-        line.strip()
+        line = line.strip()
         line = line.replace("\n", "")
         metacontent = get_meta_from_content(line)
         if not litoy.entry_duplicate_check(litoy.df, line, metacontent):
@@ -822,8 +822,7 @@ def extract_youtube(url):
     with youtube_dl.YoutubeDL({"quiet": True}) as ydl:
         try:
             video = ydl.extract_info(url, download=False)
-            title = video['title']
-            title.strip()
+            title = video['title'].strip()
             res = {"type": "video",
                    "length": str(round(video['duration']/60, 1)),
                    "title": title.replace("\n", ""),
@@ -851,8 +850,7 @@ def extract_local_video(link):
                 "url": link}
     clip = VideoFileClip(link)
     duration = round(clip.duration/60, 1)
-    title = clip.filename
-    title.strip()
+    title = clip.filename.strip()
     dic = {"type": "local video",
            "title": title.replace("\n", ""),
            "length": duration,
@@ -887,8 +885,7 @@ def extract_pdf_local(path):
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = str(round(total_words/wpm, 1))
 
-    title = path.split(sep="/")[-1]
-    title.strip()
+    title = path.split(sep="/")[-1].strip()
     res = {"type": "local pdf",
            "length": estimatedReadingTime,
            "title": title.replace("\n", ""),
@@ -907,8 +904,7 @@ def extract_txt(path):
         total_words = len(text_content)/average_word_length
         estimatedReadingTime = str(round(total_words/wpm, 1))
 
-        title = path.split(sep="/")[-1]
-        title.strip()
+        title = path.split(sep="/")[-1].strip()
         res = {"type": "text",
                "length": estimatedReadingTime,
                "url": path,
@@ -1078,8 +1074,7 @@ class LiTOYClass:
         "checks if an entry already exists before adding it"
         # strangely, this was faster than using lapply
         for i in list(df.index):
-            content = df.loc[i, "content"]
-            content.strip()
+            content = df.loc[i, "content"].strip()
             content = content.replace("\n", "")
             metacontent = json.loads(df.loc[i, "metacontent"])
             if newc == content:
@@ -1252,7 +1247,7 @@ Dont forget to put local links between \"\" quotation signs!\n\
 Text content of the entry?\n>",
                               completer=auto_complete,
                               complete_in_thread=True)
-        entry_to_add.strip()
+        entry_to_add = entry_to_add.strip()
         log_(f'Adding entry {entry_to_add}')
         if entry_to_add == "":
             log_("Cannot add empty entry. Exiting.", False)
