@@ -952,8 +952,8 @@ def extract_webpage(url):
 
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = str(round(total_words/wpm, 1))
-    title.strip()
-    res = {"title": title.replace("\n", ""),
+    title = title.replace("\n", "").replace("\\n", "").strip()
+    res = {"title": title,
            "type": "webpage",
            "length": estimatedReadingTime,
            "used_wayback_machine": wayback_used,
