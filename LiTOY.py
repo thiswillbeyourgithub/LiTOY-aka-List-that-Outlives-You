@@ -251,7 +251,7 @@ def add_new_entry(df, content, metacontent):
                "starred": 0,
                "disabled": 0,
                }
-    log_(f"Adding new entry : {new_dic}")
+    log_(f"Adding new entry # {newID} : {new_dic}")
     for k, v in new_dic.items():
         df.loc[newID, k] = v
     litoy.save_to_file(df)
