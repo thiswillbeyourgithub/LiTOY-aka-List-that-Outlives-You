@@ -1253,27 +1253,37 @@ if __name__ == "__main__":
                                       ignore_case=True,
                                       sentence=False)
 
-        while True:
-            entry_to_add = prompt( f"Current tags: {cur_tags}\n\
+        input_prompt = f"Current tags: {cur_tags}\n\
 Dont forget to put local links between \"\" quotation signs!\n\
-Text content of the entry?\n>",
-                                  completer=auto_complete,
-                                  complete_in_thread=True)
-            entry_to_add = entry_to_add.strip()
-            log_(f'Adding entry {entry_to_add}')
-            if entry_to_add == "":
-                log_("Cannot add empty entry. Exiting.", False)
-                raise SystemExit()
-            metacontent = get_meta_from_content(entry_to_add)
-            if not litoy.entry_duplicate_check(litoy.df,
-                                               entry_to_add,
-                                               metacontent):
-                add_new_entry(litoy.df, entry_to_add, metacontent)
-            else:
-                print("Database already contains this entry, not added.")
-            keep_adding = prompt("Do you want to add more entries? (y/n)\n>")
-            if keep_adding != "y" or keep_adding != "yes":
-                log_("Done adding entry.", False)
+Text content of the entry?\n>"
+        second_prompt = "\nEnter content of the next entry or n/no to exit:\n>"
+        while True:
+            try:
+                entry_to_add = prompt(input_prompt,
+                                      completer=auto_complete,
+                                      complete_in_thread=True)
+                if entry_to_add == "n" or entry_to_add == "no":
+                    log_("Done adding entry.", False)
+                    raise SystemExit()
+                entry_to_add = entry_to_add.strip()
+                log_(f'Adding entry {entry_to_add}')
+                if entry_to_add == "":
+                    log_("Cannot add empty entry.", False)
+                    input_prompt = second_prompt
+                    continue
+                metacontent = get_meta_from_content(entry_to_add)
+                if not litoy.entry_duplicate_check(litoy.df,
+                                                   entry_to_add,
+                                                   metacontent):
+                    add_new_entry(litoy.df, entry_to_add, metacontent)
+                    input_prompt = second_prompt
+                    pass
+                else:
+                    print("Database already contains this entry, not added.")
+                    input_prompt = second_prompt
+                    continue
+            except (KeyboardInterrupt, EOFError) as e:
+                log_("Exiting.", False)
                 raise SystemExit()
 
     if args['search_query'] is not None:
