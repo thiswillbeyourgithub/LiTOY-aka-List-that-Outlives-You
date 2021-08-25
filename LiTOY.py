@@ -1133,6 +1133,11 @@ parser.add_argument("--add", "-a",
                     help="directly add an entry by putting it inside quotation\
                     mark like so : python3 ./__main__.py -a \"do this thing\
                     tags:DIY, I really need to do it that way\"")
+parser.add_argument("--remove_last_entry",
+                    action="store_true",
+                    dest='remove_last',
+                    required=False,
+                    help="removes the last entry")
 parser.add_argument("--pandas_debug",
                     dest='pandas_debug',
                     required=False,
@@ -1259,6 +1264,18 @@ Text content of the entry?\n>",
         else:
             raise SystemExit()
         log_("Done adding entry.", False)
+
+    if args['remove_last'] is True:
+        df = litoy.df.copy()
+        length = len(df.index)
+        entry_to_remove = df.loc[length+1, :]
+        log_("Entry to remove:", False)
+        log_(entry_to_remove, False)
+        ans = prompt("Do you confirm that you want to remove this entry? (y/n)\n>")
+        if ans == "y" or ans == "yes":
+            df = df.loc[df.index[0:-1],:]
+            litoy.save_to_file(df)
+            print("Done. Exiting.")
         raise SystemExit()
 
     if args['review_mode'] is True:
