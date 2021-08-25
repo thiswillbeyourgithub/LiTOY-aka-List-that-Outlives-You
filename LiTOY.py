@@ -1126,6 +1126,13 @@ parser.add_argument("--disable", "-d",
                     required=False,
                     help="supply an ID of an entry to disable it (useful \
                          when you have finished a task")
+parser.add_argument("--search_content", "-S",
+                    nargs=1,
+                    metavar="search_terms",
+                    dest='search_query',
+                    type=str,
+                    required=False,
+                    help="show entries that match the content")
 parser.add_argument("--add", "-a",
                     action="store_true",
                     dest='entry_to_add',
@@ -1268,6 +1275,17 @@ Text content of the entry?\n>",
             if keep_adding != "y" or keep_adding != "yes":
                 log_("Done adding entry.", False)
                 raise SystemExit()
+
+    if args['search_query'] is not None:
+        query = args['search_query'][0]
+        df = litoy.df
+        match = [x for x in df.index if query in str(df.loc[x, "content"])]
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', -1)
+        print(df.loc[match, "content"])
+        raise SystemExit()
 
     if args['remove_last'] is True:
         df = litoy.df.copy()
