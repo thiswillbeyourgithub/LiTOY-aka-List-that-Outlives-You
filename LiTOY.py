@@ -1126,13 +1126,6 @@ parser.add_argument("--disable", "-d",
                     required=False,
                     help="supply an ID of an entry to disable it (useful \
                          when you have finished a task")
-parser.add_argument("--search_content", "-S",
-                    nargs=1,
-                    metavar="search_terms",
-                    dest='search_query',
-                    type=str,
-                    required=False,
-                    help="show entries that match the content")
 parser.add_argument("--add", "-a",
                     action="store_true",
                     dest='entry_to_add',
@@ -1145,22 +1138,6 @@ parser.add_argument("--remove_last_entry",
                     dest='remove_last',
                     required=False,
                     help="removes the last entry")
-parser.add_argument("--pandas_debug",
-                    dest='pandas_debug',
-                    required=False,
-                    action="store_true",
-                    help="launches the python debugger, useful to access\
-the pandas dataframe")
-parser.add_argument("--verbose", "-v",
-                    dest='verbose',
-                    required=False,
-                    action="store_true",
-                    help="debug flag: prints more information during runtime")
-parser.add_argument("--external", "-x",
-                    dest='external_open',
-                    required=False,
-                    action="store_true",
-                    help="triggers openning of libreoffice on the database")
 parser.add_argument("--review", "-r",
                     dest='review_mode',
                     required=False,
@@ -1177,6 +1154,29 @@ parser.add_argument("--show-stats", "-s",
                     required=False,
                     action="store_true",
                     help="use this to show show current database statistics")
+parser.add_argument("--search_content", "-S",
+                    nargs=1,
+                    metavar="search_terms",
+                    dest='search_query',
+                    type=str,
+                    required=False,
+                    help="show entries that match the content")
+parser.add_argument("--external", "-x",
+                    dest='external_open',
+                    required=False,
+                    action="store_true",
+                    help="triggers openning of libreoffice on the database")
+parser.add_argument("--pandas_debug",
+                    dest='pandas_debug',
+                    required=False,
+                    action="store_true",
+                    help="launches the python debugger, useful to access\
+the pandas dataframe")
+parser.add_argument("--verbose", "-v",
+                    dest='verbose',
+                    required=False,
+                    action="store_true",
+                    help="debug flag: prints more information during runtime")
 
 ###############################################################################
 # 2. Main routine
