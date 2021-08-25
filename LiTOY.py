@@ -1133,11 +1133,11 @@ parser.add_argument("--add", "-a",
                     help="directly add an entry by putting it inside quotation\
                     mark like so : python3 ./__main__.py -a \"do this thing\
                     tags:DIY, I really need to do it that way\"")
-parser.add_argument("--remove_last_entry",
-                    action="store_true",
-                    dest='remove_last',
+parser.add_argument("--remove_entry",
+                    action="store",
+                    dest='remove_entry',
                     required=False,
-                    help="removes the last entry")
+                    help="removes one entry when entering its ID")
 parser.add_argument("--review", "-r",
                     dest='review_mode',
                     required=False,
@@ -1287,17 +1287,27 @@ Text content of the entry?\n>",
         print(df.loc[match, "content"])
         raise SystemExit()
 
-    if args['remove_last'] is True:
+    if args['remove_entry'] is not None:
+        try:
+            n = int(args['remove_entry'])
+        except Exception as e:
+            print(e)
+            wrong_arguments_(args)
         df = litoy.df.copy()
-        length = len(df.index)
-        entry_to_remove = df.loc[length+1, :]
+        try:
+            entry_to_remove = df.loc[n, :]
+        except KeyError as e:
+            print(f"Couldn't find entry with ID: {e}")
+            raise SystemExit()
         log_("Entry to remove:", False)
         log_(entry_to_remove, False)
         ans = prompt("Do you confirm that you want to remove this entry? (y/n)\n>")
         if ans == "y" or ans == "yes":
-            df = df.loc[df.index[0:-1],:]
+            df = df.drop(n)  # TODO
             litoy.save_to_file(df)
-            print("Done. Exiting.")
+            log_(f"Entry # {str(n)} was removed. Exiting.", False)
+        else:
+            log_("Entry removal aborted. Exiting.", False)
         raise SystemExit()
 
     if args['review_mode'] is True:
