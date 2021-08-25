@@ -685,7 +685,7 @@ Quitting.", False)
         if action == "open debugger":
             log_("Openning debugger", False)
             print("To open a python console within the debugger, type in \
-'interact'")
+'interact' then df=litoy.df")
             pdb.set_trace()
             continue
 
