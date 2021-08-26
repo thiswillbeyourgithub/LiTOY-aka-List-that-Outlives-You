@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.9
 
 from user_settings import *
+from other_functions import get_terminal_size
 
 import argparse
 import time
@@ -12,16 +13,15 @@ import platform
 import subprocess
 import sys
 import os
+import json
+import pandas as pd
 from itertools import chain
 from pathlib import Path
-from other_functions import get_terminal_size
 from pprint import pprint
 from tqdm import tqdm
 from prettytable import PrettyTable
 
 import get_wayback_machine
-import json
-import pandas as pd
 import pdftotext
 import requests
 import youtube_dl
@@ -29,10 +29,10 @@ from glob import glob
 from bs4 import BeautifulSoup
 from moviepy.editor import VideoFileClip
 
-import logging
-from logging.handlers import RotatingFileHandler
 import pdb
 import signal
+import logging
+from logging.handlers import RotatingFileHandler
 from contextlib import suppress
 from youtube_dl.utils import ExtractorError, DownloadError
 
