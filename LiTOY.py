@@ -1267,6 +1267,7 @@ Text content of the entry?\n>"
         while True:
             entry_to_add = prompt_we(input_prompt,
                                   completer=auto_complete,
+                                  complete_while_typing=False,
                                   complete_in_thread=True)
             if entry_to_add == "n" or entry_to_add == "no":
                 log_("Done adding entry.", False)
