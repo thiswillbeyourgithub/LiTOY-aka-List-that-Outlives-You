@@ -1282,7 +1282,7 @@ Text content of the entry?\n>"
             if not litoy.entry_duplicate_check(litoy.df,
                                                entry_to_add,
                                                metacontent):
-                #add_new_entry(litoy.df, entry_to_add, metacontent)
+                add_new_entry(litoy.df, entry_to_add, metacontent)
                 input_prompt = second_prompt
                 pass
             else:
