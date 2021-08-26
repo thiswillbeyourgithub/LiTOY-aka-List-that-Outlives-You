@@ -127,13 +127,10 @@ from youtube_dl.utils import ExtractorError, DownloadError
 ###############################################################################
 # 1. Functions, classes, etc
 
-global cols
+#global cols
 cols = ["ID", "date", "content", "metacontent", "tags",
         "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
         "review_time", "n_review", "K", "disabled"]
-# TODO : mention that in the README
-# iELO stands for "importance ELO", DiELO for "delta iELO",
-# gELO for "global ELO", etc
 available_shortcut = list(chain.from_iterable(shortcuts.values()))
 
 
