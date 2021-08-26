@@ -1245,9 +1245,7 @@ if __name__ == "__main__":
 
     if args["entry_to_add"] is True:
         cur_tags = litoy.get_tags(litoy.df)
-        autocomplete_list = []
-        for i in cur_tags:
-            autocomplete_list.append("tags:"+i)
+        autocomplete_list = ["tags:"+tags for tags in cur_tags]
         file_list = glob(f"{default_dir}/**/*.pdf", recursive=True)
         file_list.extend(glob(f"/{default_dir}/**/*.md", recursive=True))
         file_list.extend(glob(f"/{default_dir}/**/*.mp4", recursive=True))
