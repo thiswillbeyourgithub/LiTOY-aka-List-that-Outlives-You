@@ -134,6 +134,7 @@ cols = ["ID", "date", "content", "metacontent", "tags",
 # TODO : mention that in the README
 # iELO stands for "importance ELO", DiELO for "delta iELO",
 # gELO for "global ELO", etc
+available_shortcut = list(chain.from_iterable(shortcuts.values()))
 
 
 def debug_signal_handler(signal, frame):
@@ -570,7 +571,6 @@ Quitting.", False)
         print(f"{col_gre}{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help){col_rst}")
 
-        available_shortcut = list(chain.from_iterable(shortcuts.values()))
         auto_completer = WordCompleter(available_shortcut, sentence=True)
         keypress = prompt_we(">", completer = auto_completer)
 
