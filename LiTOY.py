@@ -6,7 +6,7 @@ import argparse
 import time
 import random
 from statistics import mean, stdev, median, StatisticsError
-from prompt_toolkit import prompt
+import prompt_toolkit
 from prompt_toolkit.completion import WordCompleter
 import platform
 import subprocess
@@ -142,6 +142,16 @@ def debug_signal_handler(signal, frame):
     you can then resume using 'c'
     """
     pdb.set_trace()
+
+def prompt_we(*args, **kargs):
+    """
+    wrapper for prompt_toolkit.prompt to catch Keyboard interruption cleanly
+    """
+    try:
+        return prompt_toolkit.prompt(*args, **kargs)
+    except (KeyboardInterrupt, EOFError) as e:
+        log_("Exiting.", False)
+        raise SystemExit()
 
 
 # misc functions
@@ -535,7 +545,7 @@ Quitting.", False)
             field_list = list(df.columns)
             print(f"Current fields available for edition : {field_list}")
             auto_completer = WordCompleter(field_list, sentence=True)
-            chosenfield = prompt("What field do you want to edit? \
+            chosenfield = prompt_we("What field do you want to edit? \
 (q to exit)\n>", completer = auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
                 break
@@ -545,7 +555,7 @@ Quitting.", False)
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
             print("Enter the desired new value for  field '" + chosenfield +"'")
-            new_value = str(prompt(default=old_value))
+            new_value = str(prompt_we(default=old_value))
             df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
             log_(f'Edited field "{chosenfield}", {old_value} => {new_value}',
@@ -562,7 +572,7 @@ Quitting.", False)
 
         available_shortcut = list(chain.from_iterable(shortcuts.values()))
         auto_completer = WordCompleter(available_shortcut, sentence=True)
-        keypress = prompt(">", completer = auto_completer)
+        keypress = prompt_we(">", completer = auto_completer)
 
         if keypress not in available_shortcut:
             log_(f"ERROR: keypress not found : {keypress}")
@@ -1258,33 +1268,29 @@ Dont forget to put local links between \"\" quotation signs!\n\
 Text content of the entry?\n>"
         second_prompt = "\nEnter content of the next entry or n/no to exit:\n>"
         while True:
-            try:
-                entry_to_add = prompt(input_prompt,
-                                      completer=auto_complete,
-                                      complete_in_thread=True)
-                if entry_to_add == "n" or entry_to_add == "no":
-                    log_("Done adding entry.", False)
-                    raise SystemExit()
-                entry_to_add = entry_to_add.strip()
-                log_(f'Adding entry {entry_to_add}')
-                if entry_to_add == "":
-                    log_("Cannot add empty entry.", False)
-                    input_prompt = second_prompt
-                    continue
-                metacontent = get_meta_from_content(entry_to_add)
-                if not litoy.entry_duplicate_check(litoy.df,
-                                                   entry_to_add,
-                                                   metacontent):
-                    add_new_entry(litoy.df, entry_to_add, metacontent)
-                    input_prompt = second_prompt
-                    pass
-                else:
-                    print("Database already contains this entry, not added.")
-                    input_prompt = second_prompt
-                    continue
-            except (KeyboardInterrupt, EOFError) as e:
-                log_("Exiting.", False)
+            entry_to_add = prompt_we(input_prompt,
+                                  completer=auto_complete,
+                                  complete_in_thread=True)
+            if entry_to_add == "n" or entry_to_add == "no":
+                log_("Done adding entry.", False)
                 raise SystemExit()
+            entry_to_add = entry_to_add.strip()
+            log_(f'Adding entry {entry_to_add}')
+            if entry_to_add == "":
+                log_("Cannot add empty entry.", False)
+                input_prompt = second_prompt
+                continue
+            metacontent = get_meta_from_content(entry_to_add)
+            if not litoy.entry_duplicate_check(litoy.df,
+                                               entry_to_add,
+                                               metacontent):
+                #add_new_entry(litoy.df, entry_to_add, metacontent)
+                input_prompt = second_prompt
+                pass
+            else:
+                print("Database already contains this entry, not added.")
+                input_prompt = second_prompt
+                continue
 
     if args['search_query'] is not None:
         query = args['search_query'][0]
@@ -1311,7 +1317,7 @@ Text content of the entry?\n>"
             raise SystemExit()
         log_("Entry to remove:", False)
         log_(entry_to_remove, False)
-        ans = prompt("Do you confirm that you want to remove this entry? (y/n)\n>")
+        ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
         if ans == "y" or ans == "yes":
             df = df.drop(n)  # TODO
             litoy.save_to_file(df)
