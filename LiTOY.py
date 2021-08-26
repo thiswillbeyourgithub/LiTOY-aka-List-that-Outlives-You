@@ -658,11 +658,12 @@ Quitting.", False)
                 try:
                     path = str(json.loads(ent.metacontent)["url"])
                     if platform.system() == "Linux":
-                        os.startfile(path)
+                        subprocess.Popen(["xdg-open", path],
+                                         stdout=open(os.devnull, 'wb'))
                     elif platform.system() == "Windows":
                         os.startfile(path)
                     elif platform.system() == "Darwin":
-                        os.startfile(path)
+                        subprocess.Popen(["open", path])
                     else:
                         log_("Platform system not found.", False)
                 except (KeyError, AttributeError) as e:
