@@ -328,6 +328,7 @@ def print_memento_mori():
 
 def print_2_entries(id_left, id_right, mode, all_fields="no"):
     "Show the two entries to review side by side"
+    (sizex, sizey) = get_terminal_size()  # dynamic sizing
     print(col_blu + "#"*sizex + col_rst)
     print_memento_mori()
     print(col_blu + "#"*sizex + col_rst)
@@ -1345,7 +1346,6 @@ to start using LiTOY!", False)
                     for m in ["importance", "time"]:
                         if state == "repick":
                             break
-                        (sizex, sizey) = get_terminal_size()  # dynamic sizing
                         print("\n"*10)
                         print_2_entries(int(picked_ids[0]),
                                         int(i),
