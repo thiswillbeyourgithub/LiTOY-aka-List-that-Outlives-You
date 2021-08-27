@@ -1173,14 +1173,6 @@ parser.add_argument("--import_from_file", "-i",
                     type=str,
                     required=False,
                     help="path of a text file containing entries to import")
-#parser.add_argument("--disable", "-d",
-#                    nargs=1,
-#                    metavar="id_to_disable",
-#                    dest='id_to_disable',
-#                    type=int,
-#                    required=False,
-#                    help="supply an ID of an entry to disable it (useful \
-#                         when you have finished a task")
 parser.add_argument("--add_entries", "-a",
                     action="store_true",
                     dest='add_entries',
@@ -1501,19 +1493,6 @@ to start using LiTOY!", False)
         log_("Finished all reviewing session. Quitting.", False)
         json_periodic_save()  # periodic save
         raise SystemExit()
-
-#    if args['id_to_disable'] is not None:
-#        "disables an entry at launch, use this when the task has been \
-#accomplished"
-#        idtd = int(args['id_to_disable'][0])
-#        df = litoy.df.copy()
-#        if int(df.loc[idtd, "disabled"]) != 0:
-#            log_(f"Entry with ID {idtd} is already disabled", False)
-#            raise SystemExit()
-#        df.loc[int(idtd), "disabled"] = 1
-#        litoy.save_to_file(df)
-#        log_(f'Disabled entry {idtd}: {df.loc[idtd, "content"]}', False)
-#        raise SystemExit()
 
     if args["external_open"] is True:
         log_("Openning libreoffice", False)
