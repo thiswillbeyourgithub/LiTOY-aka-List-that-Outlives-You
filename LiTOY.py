@@ -37,6 +37,8 @@ import random
 from statistics import mean, stdev, median, StatisticsError
 import prompt_toolkit
 from prompt_toolkit.completion import WordCompleter
+from pygments.lexers.javascript import JavascriptLexer
+from prompt_toolkit.lexers import PygmentsLexer
 import platform
 import subprocess
 import sys
@@ -581,13 +583,17 @@ Quitting.", False)
 (q to exit)\n>", completer = field_auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
                 break
+            if chosenfield == "metacontent":
+                additional_args = {"lexer": PygmentsLexer(JavascriptLexer)}
+            else:
+                additional_args = {}
             try:
                 old_value = str(entry[chosenfield])
             except KeyError:
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
-            print("Enter the desired new value for  field '" + chosenfield +"'")
-            new_value = str(prompt_we(default=old_value))
+            print("Enter the desired new value for  field '" + chosenfield +"':\n")
+            new_value = str(prompt_we(default=old_value, **additional_args))
             df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
             log_(f'Edited field "{chosenfield}", {old_value} => {new_value}',
@@ -1183,7 +1189,14 @@ parser.add_argument("--remove_entries",
                     nargs='+',
                     dest='remove_entries',
                     required=False,
-                    help="removes entries when entering their ID.\
+                    help="removes entries according to their ID.\
+'last' can be used as placeholder for the last added entry")
+parser.add_argument("--edit_entries",
+                    action="extend",
+                    nargs='+',
+                    dest='edit_entries',
+                    required=False,
+                    help="edit entries according to their ID.\
 'last' can be used as placeholder for the last added entry")
 parser.add_argument("--review", "-r",
                     dest='review_mode',
@@ -1374,6 +1387,58 @@ Text content of the entry?\n>"
                 log_(f"Entry with ID {str(n)} was removed. Exiting.", False)
             else:
                 log_(f"Entry with ID {str(n)} was NOT removed.", False)
+        raise SystemExit()
+
+    if args['edit_entries'] is not None:
+        df = litoy.df.copy()
+        field_list = list(df.columns)
+        field_auto_completer = WordCompleter(field_list, sentence=True)
+        id_list = args['edit_entries']
+        if "last" in id_list:
+            n_max = max(df.index)
+            id_list.edit("last")
+            id_list.append(n_max)
+        for entry_id in id_list:
+            try:
+                entry_id = int(entry_id)
+                entry = df.loc[entry_id, :]
+            except KeyError as e:
+                print(f"Couldn't find entry with ID: {e}")
+                continue
+            except ValueError as e:
+                print(f"ID {n}: {e}")
+                wrong_arguments_(args)
+
+            log_("Entry to edit:", False)
+            log_(str(entry), False)
+            ans = prompt_we("Do you confirm that you want to edit this entry? (y/n)\n>")
+            if ans in ["y", "yes"]:
+                log_(f"Editing entry {entry_id}")
+                while True:
+                    print(f"Fields available for edition : {field_list}")
+                    chosenfield = prompt_we("What field do you want to edit? \
+(q to exit)\n>", completer = field_auto_completer)
+                    if chosenfield == "q" or chosenfield == "quit":
+                        break
+                    if chosenfield == "metacontent":
+                        additional_args = {"lexer": PygmentsLexer(JavascriptLexer)}
+                    else:
+                        additional_args = {}
+                    try:
+                        old_value = str(entry[chosenfield])
+                    except KeyError:
+                        log_("ERROR: Shortcut : edit : wrong field name", False)
+                        continue
+                    print("Enter the desired new value for  field '" + chosenfield +"'")
+                    new_value = str(prompt_we(default=old_value, **additional_args))
+                    df.loc[entry_id, chosenfield] = new_value
+                    litoy.save_to_file(df)
+                    log_(f'Edited field "{chosenfield}", {old_value} => {new_value}',
+                         False)
+                    break
+                log_(f"Entry with ID {entry_id} was edited.", False)
+            else:
+                log_(f"Entry with ID {entry_id} was NOT edited.", False)
         raise SystemExit()
 
     if args['review_mode'] is True:
