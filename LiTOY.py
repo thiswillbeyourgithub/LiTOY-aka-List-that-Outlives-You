@@ -1177,11 +1177,13 @@ parser.add_argument("--add", "-a",
                     help="directly add an entry by putting it inside quotation\
                     mark like so : python3 ./__main__.py -a \"do this thing\
                     tags:DIY, I really need to do it that way\"")
-parser.add_argument("--remove_entry",
-                    action="store",
-                    dest='remove_entry',
+parser.add_argument("--remove_entries",
+                    action="extend",
+                    nargs='+',
+                    dest='remove_entries',
                     required=False,
-                    help="removes one entry when entering its ID")
+                    help="removes entries when entering their ID.\
+'last' can be used as placeholder for the last added entry")
 parser.add_argument("--review", "-r",
                     dest='review_mode',
                     required=False,
@@ -1339,27 +1341,34 @@ Text content of the entry?\n>"
         print(df.loc[match, "content"])
         raise SystemExit()
 
-    if args['remove_entry'] is not None:
-        try:
-            n = int(args['remove_entry'])
-        except Exception as e:
-            print(e)
-            wrong_arguments_(args)
+    if args['remove_entries'] is not None:
         df = litoy.df.copy()
-        try:
-            entry_to_remove = df.loc[n, :]
-        except KeyError as e:
-            print(f"Couldn't find entry with ID: {e}")
-            raise SystemExit()
-        log_("Entry to remove:", False)
-        log_(str(entry_to_remove), False)
-        ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
-        if ans in ["y", "yes"]:
-            df = df.drop(n)  # TODO
-            litoy.save_to_file(df)
-            log_(f"Entry with ID {str(n)} was removed. Exiting.", False)
-        else:
-            log_("Entry removal aborted. Exiting.", False)
+        to_remove_list = args['remove_entries']
+        if "last" in to_remove_list:
+            n_max = max(df.index)
+            to_remove_list.remove("last")
+            to_remove_list.append(n_max)
+        for id_to_remove in to_remove_list:
+            try:
+                n = int(id_to_remove)
+            except Exception as e:
+                print(e)
+                wrong_arguments_(args)
+
+            try:
+                entry_to_remove = df.loc[n, :]
+            except KeyError as e:
+                print(f"Couldn't find entry with ID: {e}")
+                continue
+            log_("Entry to remove:", False)
+            log_(str(entry_to_remove), False)
+            ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
+            if ans in ["y", "yes"]:
+                df = df.drop(n)
+                litoy.save_to_file(df)
+                log_(f"Entry with ID {str(n)} was removed. Exiting.", False)
+            else:
+                log_(f"Entry with ID {str(n)} was NOT removed.", False)
         raise SystemExit()
 
     if args['review_mode'] is True:
