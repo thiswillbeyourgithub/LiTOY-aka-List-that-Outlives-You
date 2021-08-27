@@ -1327,7 +1327,9 @@ Text content of the entry?\n>"
     if args['search_query'] is not None:
         query = args['search_query'][0]
         df = litoy.df
-        match = [x for x in df.index if query in str(df.loc[x, "content"])]
+        query = query.lower()
+        match = [x for x in df.index if query in str(df.loc[x, "content"]).lower()
+                or query in str(df.loc[x, "metacontent"]).lower()]
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
