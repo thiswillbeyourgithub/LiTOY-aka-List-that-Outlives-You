@@ -1091,7 +1091,7 @@ class LiTOYClass:
     "Class that interacts with the database using panda etc"
     def __init__(self, db_path):
         if db_path is None:
-            db_path = args['litoy_db']
+            db_path = args['db']
             self.path = db_path
             self.create_database()
         else:
@@ -1104,16 +1104,16 @@ class LiTOYClass:
 
     def save_to_file(self, df):
         "used to save the dataframe to an excel file"
-        Excelwriter = pd.ExcelWriter(f"{args['litoy_db']}.temp.xlsx",
+        Excelwriter = pd.ExcelWriter(f"{args['db']}.temp.xlsx",
                                      engine="xlsxwriter")
         df.to_excel(Excelwriter, sheet_name="LiTOY", index=True)
         Excelwriter.save()
 
         # this way, interruption of LiTOY are less likely to corrupt the db
-        to_rename = Path(f"{args['litoy_db']}.temp.xlsx")
-        to_remove = Path(args['litoy_db'])
+        to_rename = Path(f"{args['db']}.temp.xlsx")
+        to_remove = Path(args['db'])
         to_remove.unlink()
-        to_rename.rename(args['litoy_db'])
+        to_rename.rename(args['db'])
         self._reload_df()
 
     def create_database(self):
@@ -1159,68 +1159,69 @@ content was '{newc}'", False)
 
 # arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("--import-from-file", "-i",
-                    nargs="?",
-                    metavar="import_path",
-                    dest='import_ff_arg',
-                    type=str,
-                    required=False,
-                    help="path of the text file to import to litoy database")
-parser.add_argument("--litoy-db", "-l",
-                    nargs="?",
-                    metavar="litoy_db",
-                    dest='litoy_db',
+parser.add_argument("--db",
+                    nargs=1,
+                    metavar="PATH",
+                    dest='db',
                     type=str,
                     required=False,
                     help="path to the litoy database")
-parser.add_argument("--disable", "-d",
-                    nargs=1,
-                    metavar="id_to_disable",
-                    dest='id_to_disable',
-                    type=int,
+parser.add_argument("--import_from_file", "-i",
+                    nargs="?",
+                    metavar="PATH",
+                    dest='import_path',
+                    type=str,
                     required=False,
-                    help="supply an ID of an entry to disable it (useful \
-                         when you have finished a task")
-parser.add_argument("--add", "-a",
+                    help="path of a text file containing entries to import")
+#parser.add_argument("--disable", "-d",
+#                    nargs=1,
+#                    metavar="id_to_disable",
+#                    dest='id_to_disable',
+#                    type=int,
+#                    required=False,
+#                    help="supply an ID of an entry to disable it (useful \
+#                         when you have finished a task")
+parser.add_argument("--add_entries", "-a",
                     action="store_true",
-                    dest='entries_to_add',
+                    dest='add_entries',
                     required=False,
-                    help="directly add an entry by putting it inside quotation\
-                    mark like so : python3 ./__main__.py -a \"do this thing\
-                    tags:DIY, I really need to do it that way\"")
+                    help="open prompt to add entries to litoy. Local filepaths \
+have to be between quotation \" marks. Autocompletion for filepaths can \
+be configured in the settings.")
 parser.add_argument("--remove_entries",
                     action="extend",
                     nargs='+',
+                    metavar="ID",
                     dest='remove_entries',
                     required=False,
-                    help="removes entries according to their ID.\
+                    help="removes entries according to their ID. \
 'last' can be used as placeholder for the last added entry")
-parser.add_argument("--edit_entries",
+parser.add_argument("--edit_entries", "-e",
                     action="extend",
                     nargs='+',
                     dest='edit_entries',
+                    metavar="ID",
                     required=False,
-                    help="edit entries according to their ID.\
+                    help="edit entries according to their ID. \
 'last' can be used as placeholder for the last added entry")
 parser.add_argument("--review", "-r",
                     dest='review_mode',
                     required=False,
                     action="store_true",
-                    help="use this to enable review mode instead of\
-importation etc")
+                    help="began review session")
 parser.add_argument("--podium", "-p",
                     dest='podium',
                     required=False,
                     action="store_true",
-                    help="use this to show the current podium")
+                    help="show current podium")
 parser.add_argument("--show-stats", "-s",
                     dest='show_stats',
                     required=False,
                     action="store_true",
-                    help="use this to show show current database statistics")
+                    help="show current database statistics")
 parser.add_argument("--search_content", "-S",
                     nargs=1,
-                    metavar="search_terms",
+                    metavar="STRING",
                     dest='search_query',
                     type=str,
                     required=False,
@@ -1229,18 +1230,19 @@ parser.add_argument("--external", "-x",
                     dest='external_open',
                     required=False,
                     action="store_true",
-                    help="triggers openning of libreoffice on the database")
-parser.add_argument("--pandas_debug",
+                    help="ask default external app to open the database. As \
+the extension is .xlsx, libreoffice is usually preferred")
+parser.add_argument("--pandas_debug", "-P",
                     dest='pandas_debug',
                     required=False,
                     action="store_true",
-                    help="launches the python debugger, useful to access\
+                    help="launches pdb (python debugger), useful to access \
 the pandas dataframe")
 parser.add_argument("--verbose", "-v",
                     dest='verbose',
                     required=False,
                     action="store_true",
-                    help="debug flag: prints more information during runtime")
+                    help="prints debug logs during runtime")
 
 ###############################################################################
 # 2. Main routine
@@ -1268,27 +1270,28 @@ if __name__ == "__main__":
     log_("STARTUP")
 
     # checks if the arguments are sane
-    if args['litoy_db'] is None:
+    if args['db'] is None:
         wrong_arguments_(args)
-    if not args['litoy_db'].endswith(".xlsx"):
-        log_(f"ERROR: Not a valid xlsx filename : {args['litoy_db']}\n\
+    args['db'] = args['db'][0]
+    if not args['db'].endswith(".xlsx"):
+        log_(f"ERROR: Not a valid xlsx filename : {args['db']}\n\
                 Please add '.xlsx' at the end of the filename")
-    if args['import_ff_arg'] is None and args['litoy_db'] is None:
+    if args['import_path'] is None and args['db'] is None:
         wrong_arguments_(args)
-    if args['review_mode'] is True and args['import_ff_arg'] is not None:
+    if args['review_mode'] is True and args['import_path'] is not None:
         wrong_arguments_(args)
 
-    if args['import_ff_arg'] is not None or args["entries_to_add"] is not None:
+    if args['import_path'] is not None or args["add_entries"] is not None:
         import_media()
 
     if args['verbose'] is True:
         pprint(args)
 
     # initialize litoy class:
-    if DB_file_check(args['litoy_db']) is False:
+    if DB_file_check(args['db']) is False:
         litoy = LiTOYClass(None)
     else:
-        litoy = LiTOYClass(args['litoy_db'])
+        litoy = LiTOYClass(args['db'])
 
     # launches pdb
     if args["pandas_debug"] is not False:
@@ -1298,13 +1301,13 @@ if __name__ == "__main__":
         pdb.set_trace()
 
     # finally the actual code:
-    if args['import_ff_arg'] is not None:
-        importation(args['import_ff_arg'])
+    if args['import_path'] is not None:
+        importation(args['import_path'])
         log_("Done importing from file, exiting", False)
         json_periodic_save()
         raise SystemExit()
 
-    if args["entries_to_add"] is True:
+    if args["add_entries"] is True:
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
         if default_dir is not None:
@@ -1499,22 +1502,22 @@ to start using LiTOY!", False)
         json_periodic_save()  # periodic save
         raise SystemExit()
 
-    if args['id_to_disable'] is not None:
-        "disables an entry at launch, use this when the task has been \
-accomplished"
-        idtd = int(args['id_to_disable'][0])
-        df = litoy.df.copy()
-        if int(df.loc[idtd, "disabled"]) != 0:
-            log_(f"Entry with ID {idtd} is already disabled", False)
-            raise SystemExit()
-        df.loc[int(idtd), "disabled"] = 1
-        litoy.save_to_file(df)
-        log_(f'Disabled entry {idtd}: {df.loc[idtd, "content"]}', False)
-        raise SystemExit()
+#    if args['id_to_disable'] is not None:
+#        "disables an entry at launch, use this when the task has been \
+#accomplished"
+#        idtd = int(args['id_to_disable'][0])
+#        df = litoy.df.copy()
+#        if int(df.loc[idtd, "disabled"]) != 0:
+#            log_(f"Entry with ID {idtd} is already disabled", False)
+#            raise SystemExit()
+#        df.loc[int(idtd), "disabled"] = 1
+#        litoy.save_to_file(df)
+#        log_(f'Disabled entry {idtd}: {df.loc[idtd, "content"]}', False)
+#        raise SystemExit()
 
     if args["external_open"] is True:
         log_("Openning libreoffice", False)
-        path = args['litoy_db']
+        path = args['db']
         if platform.system() == "Linux":
             if platform.system() == "Windows":
                 print("Not implemented on windows, contributions are \

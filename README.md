@@ -112,14 +112,17 @@ Syntax and usage example:
 -------------------------
 *I recommend python 3.8 instead of 3.9 because some users using pyenv can run into weird issues with pandas.*
 
-`python3.8 LiTOY.py --litoy-db database.xlsx --add`
-    * Adds a new entry
+`python3.8 LiTOY.py --db database.xlsx --add`
+    * Add a new entry
 
-`python3.8 LiTOY.py --litoy-db database.xlsx --review
+`python3.8 LiTOY.py --db database.xlsx --edit_entries ID ID ID`
+    * Edit entries with corresponding IDs
+
+`python3.8 LiTOY.py --db database.xlsx --review
     * Begin `n_session` sessions where LiTOY automatically picks `n_to_review` entries and review them (it's actually twice the maount of reviews that you have to do because you have 2 questions each time).
 
-`python3.8 LiTOY.py --litoy-db database.xlsx --import-from-file file.txt`
-    * Automatically imports from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
+`python3.8 LiTOY.py --db database.xlsx --import-from-file file.txt`
+    * Automatically import from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
     * To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 `python3.8 LiTOY.py --help`
