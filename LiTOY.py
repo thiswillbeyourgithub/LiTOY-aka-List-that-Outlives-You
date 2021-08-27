@@ -39,6 +39,7 @@ import prompt_toolkit
 from prompt_toolkit.completion import WordCompleter
 from pygments.lexers.javascript import JavascriptLexer
 from prompt_toolkit.lexers import PygmentsLexer
+from prompt_toolkit.styles import Style
 import platform
 import subprocess
 import sys
@@ -177,8 +178,9 @@ def prompt_we(*args, **kargs):
     """
     wrapper for prompt_toolkit.prompt to catch Keyboard interruption cleanly
     """
+    style = Style.from_dict({"":"yellow"})
     try:
-        return prompt_toolkit.prompt(*args, **kargs)
+        return prompt_toolkit.prompt(*args, **kargs, style=style)
     except (KeyboardInterrupt, EOFError):
         log_("Exiting.", False)
         raise SystemExit()
@@ -605,10 +607,10 @@ Quitting.", False)
         start_time = time.time()
         action = ""
         log_(f"Asking question, mode : {mode}")
-        print(f"{col_gre}{progress}/{n_to_review*n_session} {questions[mode]} \
-(h or ? for help){col_rst}")
+        prompt_text = f"{progress}/{n_to_review*n_session} {questions[mode]} \
+(h or ? for help)\n>"
 
-        keypress = prompt_we(">", completer = shortcut_auto_completer)
+        keypress = prompt_we(prompt_text, completer = shortcut_auto_completer)
 
         if keypress not in available_shortcut:
             log_(f"ERROR: keypress not found : {keypress}")
@@ -1429,14 +1431,15 @@ Text content of the entry?\n>"
                     except KeyError:
                         log_("ERROR: Shortcut : edit : wrong field name", False)
                         continue
-                    print("Enter the desired new value for  field '" + chosenfield +"'")
-                    new_value = str(prompt_we(default=old_value, **additional_args))
+                    new_value = str(prompt_we("Enter the desired new value \
+for  field '" + chosenfield +"'\n>",
+                                               default=old_value,
+                                               **additional_args))
                     df.loc[entry_id, chosenfield] = new_value
                     litoy.save_to_file(df)
-                    log_(f'Edited field "{chosenfield}", {old_value} => {new_value}',
+                    log_(f'Edited entry with ID {entry_id}, field "{chosenfield}", {old_value} => {new_value}',
                          False)
                     break
-                log_(f"Entry with ID {entry_id} was edited.", False)
             else:
                 log_(f"Entry with ID {entry_id} was NOT edited.", False)
         raise SystemExit()
