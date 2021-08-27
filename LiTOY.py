@@ -1,6 +1,33 @@
 #!/usr/bin/env python3.9
 
-from user_settings import *
+from user_settings import (disable_lifebar,
+                           useless_first_years,
+                           useless_last_years,
+                           user_age,
+                           user_life_expected,
+                           json_auto_save,
+                           n_session,
+                           n_to_review,
+                           average_word_length,
+                           wpm,
+                           default_dir,
+                           questions,
+                           shortcuts,
+                           K_values,
+                           default_score,
+                           global_weights,
+                           headers,
+                           col_red,
+                           col_blu,
+                           col_yel,
+                           col_gre,
+                           #col_cya,
+                           col_mgt_fg,
+                           col_blink,
+                           col_bold,
+                           col_uline,
+                           col_rst,
+                           spacer)
 from other_functions import get_terminal_size
 
 import argparse
