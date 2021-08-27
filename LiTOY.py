@@ -1285,6 +1285,9 @@ if __name__ == "__main__":
     else:
         litoy = LiTOYClass(args['db'])
 
+    # automatic backup at startup
+    json_periodic_save()
+
     # launches pdb
     if args["pandas_debug"] is not False:
         log_("Openning pdb")
@@ -1296,7 +1299,6 @@ if __name__ == "__main__":
     if args['import_path'] is not None:
         importation(args['import_path'])
         log_("Done importing from file, exiting", False)
-        json_periodic_save()
         raise SystemExit()
 
     if args["add_entries"] is True:
@@ -1491,7 +1493,6 @@ to start using LiTOY!", False)
                 if state == "repick":
                     continue  # is finally telling the loop to repick
         log_("Finished all reviewing session. Quitting.", False)
-        json_periodic_save()  # periodic save
         raise SystemExit()
 
     if args["external_open"] is True:
