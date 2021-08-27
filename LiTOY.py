@@ -30,6 +30,7 @@ from user_settings import (disable_lifebar,
                            spacer)
 from other_functions import get_terminal_size
 
+from glob import glob
 import argparse
 import time
 import random
@@ -48,23 +49,29 @@ from pprint import pprint
 from tqdm import tqdm
 from prettytable import PrettyTable
 
-import get_wayback_machine
-import pdftotext
-import requests
-import youtube_dl
-from glob import glob
-from bs4 import BeautifulSoup
-from moviepy.editor import VideoFileClip
-
 import pdb
 import signal
 import logging
 from logging.handlers import RotatingFileHandler
 from contextlib import suppress
-from youtube_dl.utils import ExtractorError, DownloadError
+
+
+def import_media():
+    """
+    these import statements take a lot of startup time so I only import them if needed
+    """
+    global get_wayback_machine, pdftotext, requests, youtube_dl, ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
+    import get_wayback_machine
+    import pdftotext
+    import requests
+    import youtube_dl
+    from youtube_dl.utils import ExtractorError, DownloadError
+    from bs4 import BeautifulSoup
+    from moviepy.editor import VideoFileClip
 
 ###############################################################################
 # Summary of each section
+#-1. Import statements
 # 0. Banner and license
 # 1. Fonctions, Classes, etc :
 #          def debug_signal_handler(signal, frame):
@@ -174,6 +181,8 @@ def prompt_we(*args, **kargs):
 
 
 # misc functions
+
+
 def log_(string, onlyLogging=True):
     """
     Append string to the logging file, if onlyLogging=False then
@@ -697,6 +706,7 @@ Quitting.", False)
 
         if action == "reload_media":
             log_("Reloading media")
+            import_media()
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
                 ent = df.loc[ent_id, :]
@@ -1245,6 +1255,9 @@ if __name__ == "__main__":
         wrong_arguments_(args)
     if args['review_mode'] is True and args['import_ff_arg'] is not None:
         wrong_arguments_(args)
+
+    if args['import_ff_arg'] is not None or args["entry_to_add"] is not None:
+        import_media()
 
     # initialize litoy class:
     if DB_file_check(args['litoy_db']) is False:
