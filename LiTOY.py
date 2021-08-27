@@ -595,8 +595,10 @@ Quitting.", False)
             except KeyError:
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
-            print("Enter the desired new value for  field '" + chosenfield +"':\n")
-            new_value = str(prompt_we(default=old_value, **additional_args))
+            new_value = str(prompt_we("Enter the desired new value \
+for  field '" + chosenfield +"'\n>",
+                                       default=old_value,
+                                       **additional_args))
             df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
             log_(f'Edited field "{chosenfield}", {old_value} => {new_value}',
