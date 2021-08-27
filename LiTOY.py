@@ -75,7 +75,8 @@ def import_media():
             from moviepy.editor import VideoFileClip
             global get_wayback_machine, pdftotext, requests, youtube_dl, ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
         except Exception as e:
-            print(col_red + f"Import failed: {e}\nThis means litoy might crash when trying to load media." + col_rst)
+            print(col_red + f"Import failed: {e}\nThis means litoy might \
+crash when trying to load media. Use 'pip install -r requirements.txt' to fix this." + col_rst)
 
 ###############################################################################
 # Summary of each section
