@@ -1128,8 +1128,8 @@ class LiTOYClass:
             content = content.replace("\n", "")
             metacontent = json.loads(df.loc[i, "metacontent"])
             if newc == content:
-                log_(f"Content is the same as entry with ID {i}: new content =\
-{newc}", False)
+                log_(f"Content is the same as entry with ID {i}: '\
+{content}'", False)
                 return True
             if newm == metacontent and newm != {}:
                 log_(f"Metacontent is the same as entry with ID {i}: new\
@@ -1363,28 +1363,28 @@ Text content of the entry?\n>"
         df = litoy.df.copy()
         to_remove_list = args['remove_entries']
         if "last" in to_remove_list:
-            n_max = max(df.index)
+            n_max = max(litoy.df.index)
             to_remove_list.remove("last")
             to_remove_list.append(n_max)
         for id_to_remove in to_remove_list:
             try:
                 n = int(id_to_remove)
             except Exception as e:
-                print(e)
+                print(f"ID {n}: {e}")
                 wrong_arguments_(args)
 
             try:
-                entry_to_remove = df.loc[n, :]
+                entry_id = df.loc[n, :]
             except KeyError as e:
                 print(f"Couldn't find entry with ID: {e}")
                 continue
             log_("Entry to remove:", False)
-            log_(str(entry_to_remove), False)
+            log_(str(entry_id), False)
             ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
             if ans in ["y", "yes"]:
                 df = df.drop(n)
                 litoy.save_to_file(df)
-                log_(f"Entry with ID {str(n)} was removed. Exiting.", False)
+                log_(f"Entry with ID {str(n)} was removed.", False)
             else:
                 log_(f"Entry with ID {str(n)} was NOT removed.", False)
         raise SystemExit()
