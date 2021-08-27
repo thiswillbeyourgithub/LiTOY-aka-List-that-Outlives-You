@@ -1479,7 +1479,9 @@ to start using LiTOY!", False)
                                         mode=m,
                                         all_fields=disp_flds)
                         state = ""
-                        state = shortcut_and_action(picked_ids[0], i, mode=m,
+                        state = shortcut_and_action(picked_ids[0],
+                                                    i,
+                                                    mode=m,
                                                     progress=progress +
                                                     session_nb*n_to_review)
                         if state == "repick":
