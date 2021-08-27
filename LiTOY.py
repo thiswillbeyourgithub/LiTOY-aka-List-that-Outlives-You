@@ -587,8 +587,8 @@ Quitting.", False)
                                    match_middle=True,
                                    ignore_case=True)
     action = ""
-    start_time = time.time()
     while True:
+        start_time = time.time()
         action = ""
         log_(f"Asking question, mode : {mode}")
         print(f"{col_gre}{progress}/{n_to_review*n_session} {questions[mode]} \
