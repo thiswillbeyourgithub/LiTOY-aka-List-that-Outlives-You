@@ -576,7 +576,7 @@ Quitting.", False)
         field_auto_completer = WordCompleter(field_list, sentence=True)
         while True:
             entry = df.loc[entry_id, :]
-            print(f"Current fields available for edition : {field_list}")
+            print(f"Fields available for edition : {field_list}")
             chosenfield = prompt_we("What field do you want to edit? \
 (q to exit)\n>", completer = field_auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
