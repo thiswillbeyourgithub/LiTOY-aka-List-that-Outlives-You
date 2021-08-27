@@ -154,13 +154,6 @@ from youtube_dl.utils import ExtractorError, DownloadError
 ###############################################################################
 # 1. Functions, classes, etc
 
-#global cols
-cols = ["ID", "date", "content", "metacontent", "tags",
-        "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
-        "review_time", "n_review", "K", "disabled"]
-available_shortcut = list(chain.from_iterable(shortcuts.values()))
-
-
 def debug_signal_handler(signal, frame):
     """
     Make the whole script interruptible using ctrl+c,
@@ -1102,6 +1095,9 @@ class LiTOYClass:
 
     def create_database(self):
         "used to create the excel database"
+        cols = ["ID", "date", "content", "metacontent", "tags",
+                "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
+                "review_time", "n_review", "K", "disabled"]
         df = pd.DataFrame(columns=cols).set_index("ID")
         self.save_to_file(df)
 
