@@ -1179,7 +1179,7 @@ parser.add_argument("--disable", "-d",
                          when you have finished a task")
 parser.add_argument("--add", "-a",
                     action="store_true",
-                    dest='entry_to_add',
+                    dest='entries_to_add',
                     required=False,
                     help="directly add an entry by putting it inside quotation\
                     mark like so : python3 ./__main__.py -a \"do this thing\
@@ -1274,7 +1274,7 @@ if __name__ == "__main__":
     if args['review_mode'] is True and args['import_ff_arg'] is not None:
         wrong_arguments_(args)
 
-    if args['import_ff_arg'] is not None or args["entry_to_add"] is not None:
+    if args['import_ff_arg'] is not None or args["entries_to_add"] is not None:
         import_media()
 
     if args['verbose'] is True:
@@ -1300,7 +1300,7 @@ if __name__ == "__main__":
         json_periodic_save()
         raise SystemExit()
 
-    if args["entry_to_add"] is True:
+    if args["entries_to_add"] is True:
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
         if default_dir is not None:
@@ -1320,24 +1320,24 @@ Dont forget to put local links between \"\" quotation signs!\n\
 Text content of the entry?\n>"
         second_prompt = "\nEnter content of the next entry or n/no to exit:\n>"
         while True:
-            entry_to_add = prompt_we(input_prompt,
+            new_entry_content = prompt_we(input_prompt,
                                   completer=auto_complete,
                                   complete_while_typing=False,
                                   complete_in_thread=True)
-            if entry_to_add in ["n", "no"]:
+            if new_entry_content in ["n", "no"]:
                 log_("Done adding entry.", False)
                 raise SystemExit()
-            entry_to_add = entry_to_add.strip()
-            log_(f'Adding entry {entry_to_add}')
-            if entry_to_add == "":
+            new_entry_content = new_entry_content.strip()
+            log_(f'Adding entry {new_entry_content}')
+            if new_entry_content == "":
                 log_("Cannot add empty entry.", False)
                 input_prompt = second_prompt
                 continue
-            metacontent = get_meta_from_content(entry_to_add)
+            metacontent = get_meta_from_content(new_entry_content)
             if not litoy.entry_duplicate_check(litoy.df,
-                                               entry_to_add,
+                                               new_entry_content,
                                                metacontent):
-                newID = add_new_entry(litoy.df, entry_to_add, metacontent)
+                newID = add_new_entry(litoy.df, new_entry_content, metacontent)
                 print(f"New entry has ID {newID}")
                 input_prompt = second_prompt
                 pass
@@ -1361,20 +1361,20 @@ Text content of the entry?\n>"
 
     if args['remove_entries'] is not None:
         df = litoy.df.copy()
-        to_remove_list = args['remove_entries']
-        if "last" in to_remove_list:
+        id_list = args['remove_entries']
+        if "last" in id_list:
             n_max = max(litoy.df.index)
-            to_remove_list.remove("last")
-            to_remove_list.append(n_max)
-        for id_to_remove in to_remove_list:
+            id_list.remove("last")
+            id_list.append(n_max)
+        for entry_id in id_list:
             try:
-                n = int(id_to_remove)
+                entry_id = int(entry_id)
             except Exception as e:
-                print(f"ID {n}: {e}")
+                print(f"ID {entry_id}: {e}")
                 wrong_arguments_(args)
 
             try:
-                entry_id = df.loc[n, :]
+                entry_id = df.loc[entry_id, :]
             except KeyError as e:
                 print(f"Couldn't find entry with ID: {e}")
                 continue
@@ -1382,11 +1382,11 @@ Text content of the entry?\n>"
             log_(str(entry_id), False)
             ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
             if ans in ["y", "yes"]:
-                df = df.drop(n)
+                df = df.drop(entry_id)
                 litoy.save_to_file(df)
-                log_(f"Entry with ID {str(n)} was removed.", False)
+                log_(f"Entry with ID {entry_id} was removed.", False)
             else:
-                log_(f"Entry with ID {str(n)} was NOT removed.", False)
+                log_(f"Entry with ID {entry_id} was NOT removed.", False)
         raise SystemExit()
 
     if args['edit_entries'] is not None:
