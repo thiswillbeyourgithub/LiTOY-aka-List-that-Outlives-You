@@ -1,5 +1,5 @@
 # lifebar arguments :
-disable_lifebar     = "no"
+disable_lifebar     = False
 useless_first_years = 15
 useless_last_years  = 20
 user_age            = 24
@@ -19,10 +19,10 @@ n_to_review = 3
 wpm = 200
 average_word_length = 6
 
-# absolute path for autocompletion of local files, "disabled" to speed up
+# absolute path for autocompletion of local files, None to speed up
 # litoy by disabling path autocompletion
 default_dir = "/home/"
-#default_dir = "disabled"
+#default_dir = None
 
 # used when reviewing:
 questions = {
@@ -75,5 +75,3 @@ col_bold = "\033[1m"
 col_uline = "\033[4m"
 col_rst = "\033[0m"
 spacer = "    "  # nicer print message
-
-

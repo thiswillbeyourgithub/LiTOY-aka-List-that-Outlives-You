@@ -161,13 +161,14 @@ def debug_signal_handler(signal, frame):
     """
     pdb.set_trace()
 
+
 def prompt_we(*args, **kargs):
     """
     wrapper for prompt_toolkit.prompt to catch Keyboard interruption cleanly
     """
     try:
         return prompt_toolkit.prompt(*args, **kargs)
-    except (KeyboardInterrupt, EOFError) as e:
+    except (KeyboardInterrupt, EOFError):
         log_("Exiting.", False)
         raise SystemExit()
 
@@ -203,7 +204,7 @@ def DB_file_check(path):
     else:
         answer = input(f"No database file found at {path}, do you want me to\
  create it?\ny/n?")
-        if answer in "yes":
+        if answer in ["y", "yes"]:
             db_location.touch()
             return False
         else:
@@ -322,7 +323,7 @@ def print_memento_mori():
     Print a reminder to the user that life is short and times
     is always passing by faster as time goes on
     """
-    if disable_lifebar == "no":
+    if disable_lifebar is False:
         seg1 = useless_first_years
         seg2 = user_age - useless_first_years
         seg3 = user_life_expected - user_age - useless_last_years
@@ -1293,7 +1294,7 @@ Text content of the entry?\n>"
                                   completer=auto_complete,
                                   complete_while_typing=False,
                                   complete_in_thread=True)
-            if entry_to_add == "n" or entry_to_add == "no":
+            if entry_to_add in ["n", "no"]:
                 log_("Done adding entry.", False)
                 raise SystemExit()
             entry_to_add = entry_to_add.strip()
@@ -1340,7 +1341,7 @@ Text content of the entry?\n>"
         log_("Entry to remove:", False)
         log_(entry_to_remove, False)
         ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
-        if ans == "y" or ans == "yes":
+        if ans in ["y", "yes"]:
             df = df.drop(n)  # TODO
             litoy.save_to_file(df)
             log_(f"Entry # {str(n)} was removed. Exiting.", False)
