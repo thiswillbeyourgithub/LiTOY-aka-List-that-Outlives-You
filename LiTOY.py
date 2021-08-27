@@ -32,6 +32,7 @@ from other_functions import get_terminal_size
 
 from glob import glob
 import argparse
+import code
 import time
 import random
 from statistics import mean, stdev, median, StatisticsError
@@ -423,7 +424,7 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
             print("."*sizex)
         side_by_side("K factor", entry_left.K, entry_right.K)
 
-    # print all fields, used more for debugging
+    # print all fields, useful for debugging
     if all_fields == "all":
         for c in litoy.df.columns:
             side_by_side(str(c), str(entry_left[c]), str(entry_right[c]))
@@ -741,7 +742,7 @@ for  field '" + chosenfield +"'\n>",
         if action == "open debugger":
             log_("Openning debugger", False)
             print("To open a python console within the debugger, type in \
-'interact' then df=litoy.df")
+'interact'. You can load the database as a pandas DataFrame using df=litoy.df")
             pdb.set_trace()
             continue
 
@@ -1228,11 +1229,11 @@ parser.add_argument("--external", "-x",
                     action="store_true",
                     help="ask default external app to open the database. As \
 the extension is .xlsx, libreoffice is usually preferred")
-parser.add_argument("--pandas_debug", "-P",
-                    dest='pandas_debug',
+parser.add_argument("--python", "-P",
+                    dest='python',
                     required=False,
                     action="store_true",
-                    help="launches pdb (python debugger), useful to access \
+                    help="launches a python console, useful to access \
 the pandas dataframe")
 parser.add_argument("--verbose", "-v",
                     dest='verbose',
@@ -1294,12 +1295,19 @@ if __name__ == "__main__":
 
     # finally the actual code:
 
-    # launches pdb
-    if args["pandas_debug"] is not False:
-        log_("Openning pdb")
-        print("To open a python console within the debugger, type in \
-'interact' then press enter")
-        pdb.set_trace()
+    # launches python console
+    if args["python"] is not False:
+        log_("Openning console")
+        df = litoy.df
+        banner = "LiTOY database has been loaded to variable 'df'.\n\
+Type q() to quit.\
+To save dataframe to the database use litoy.save_to_file(df)\
+Press enter twice between lines to solve buggy display."
+        pp = pprint
+        q = exit
+        code.interact(banner=banner,
+                      local=locals())
+        raise SystemExit()
 
     if args['import_path'] is not None:
         importation(args['import_path'])
