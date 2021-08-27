@@ -295,6 +295,7 @@ def add_new_entry(df, content, metacontent):
     for k, v in new_dic.items():
         df.loc[newID, k] = v
     litoy.save_to_file(df)
+    return newID
 
 
 def pick_entries():
@@ -1323,7 +1324,8 @@ Text content of the entry?\n>"
             if not litoy.entry_duplicate_check(litoy.df,
                                                entry_to_add,
                                                metacontent):
-                add_new_entry(litoy.df, entry_to_add, metacontent)
+                newID = add_new_entry(litoy.df, entry_to_add, metacontent)
+                print(f"New entry has ID {newID}")
                 input_prompt = second_prompt
                 pass
             else:
