@@ -363,34 +363,35 @@ def print_memento_mori():
               col_rst)
 
 
+def side_by_side(rowname, a, b, space=2, col=""):
+    """
+    from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
+    """
+    rowname = rowname.ljust(15)
+    a = str(a)
+    b = str(b)
+    col_width = int((int(sizex)-len(rowname))/2-int(space)*2)
+    inc = 0
+    while a or b:
+        inc += 1
+        if inc == 1:
+            print(str(col) + str(rowname) + " "*space + "|" +
+                  a[:col_width].ljust(col_width) + " "*space +
+                  "|" + b[:col_width] + col_rst)
+        else:
+            print(str(col) + " "*(len(rowname)+space) + "|" +
+                  a[:col_width].ljust(col_width) + " "*space +
+                  "|" + b[:col_width] + col_rst)
+        a = a[col_width:]
+        b = b[col_width:]
+
+
 def print_2_entries(id_left, id_right, mode, all_fields="no"):
     "Show the two entries to review side by side"
     (sizex, sizey) = get_terminal_size()  # dynamic sizing
     print(col_blu + "#"*sizex + col_rst)
     print_memento_mori()
     print(col_blu + "#"*sizex + col_rst)
-
-    def side_by_side(rowname, a, b, space=2, col=""):
-        """
-        from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
-        """
-        rowname = rowname.ljust(15)
-        a = str(a)
-        b = str(b)
-        col_width = int((int(sizex)-len(rowname))/2-int(space)*2)
-        inc = 0
-        while a or b:
-            inc += 1
-            if inc == 1:
-                print(str(col) + str(rowname) + " "*space + "|" +
-                      a[:col_width].ljust(col_width) + " "*space +
-                      "|" + b[:col_width] + col_rst)
-            else:
-                print(str(col) + " "*(len(rowname)+space) + "|" +
-                      a[:col_width].ljust(col_width) + " "*space +
-                      "|" + b[:col_width] + col_rst)
-            a = a[col_width:]
-            b = b[col_width:]
 
     entry_left = litoy.df.loc[id_left, :].copy()
     entry_right = litoy.df.loc[id_right, :].copy()
