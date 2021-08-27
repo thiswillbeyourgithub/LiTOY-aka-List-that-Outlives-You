@@ -96,6 +96,15 @@ FAQ
 
 **What is the progress score?** It's the mean of `the mean and the median` of all the Delta scores, divided by the total number of non disabled entries. The idea is that the mean is too sensitive to extreme values and the median is not enough (it stays at the same value until you did 50% of the reviews). This value is at its lowest when all the reviews have been done and the entries are not moving anymore (i.e. the Delta scores stay low).
 
+**Can you give an example of how to use the python console?** Here's an example showing how to rename a tag:
+    * **make a backup first**
+    * `litoy -P`
+    * `>>> df["content"] = df["content"].str.replace("tags:TODO", "tags:todo")`
+    * `>>> df["tags"] = df["tags"].str.replace("TODO", "todo")`
+    * `>>> litoy.get_tags(df)  # to check the results`
+    * `>>> litoy.save_to_file(df)  # to save`
+    * `>>> exit()`
+
 Getting started:
 ====================
 * Read this page thoroughly. Don't be afraid to ask questions.

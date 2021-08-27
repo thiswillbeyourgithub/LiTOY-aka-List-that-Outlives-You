@@ -1300,13 +1300,16 @@ if __name__ == "__main__":
         log_("Openning console")
         df = litoy.df
         banner = "LiTOY database has been loaded to variable 'df'.\n\
-Type q() to quit.\
-To save dataframe to the database use litoy.save_to_file(df)\
+Type q() to quit.\n\
+To save dataframe to the database use litoy.save_to_file(df)\n\
 Press enter twice between lines to solve buggy display."
         pp = pprint
         q = exit
-        code.interact(banner=banner,
-                      local=locals())
+        try:
+            code.interact(banner=banner,
+                          local=locals())
+        except RuntimeError as e:
+            print(f"Exiting: {e}")
         raise SystemExit()
 
     if args['import_path'] is not None:
@@ -1330,18 +1333,20 @@ Press enter twice between lines to solve buggy display."
                                       sentence=False)
 
         input_prompt = f"Current tags: {cur_tags}\n\
-Dont forget to put local links between \"\" quotation signs!\n\
+Put local links between \"\" quotation signs!\n\
+Use <TAB> to autocomplete paths or tags\n\
 Text content of the entry?\n>"
-        second_prompt = "\nEnter content of the next entry or n/no/q to exit:\n>"
+        second_prompt = "\nEnter content of the next entry:  (n/no/q to exit, <TAB> to autocomplete)\n>"
         while True:
             new_entry_content = prompt_we(input_prompt,
                                   completer=auto_complete,
                                   complete_while_typing=False,
                                   complete_in_thread=True)
+            new_entry_content = new_entry_content.replace("tags:tags:", "tags:")
+            new_entry_content = new_entry_content.strip()
             if new_entry_content in ["n", "no", "q", "quit"]:
                 log_("Done adding entry.", False)
                 raise SystemExit()
-            new_entry_content = new_entry_content.strip()
             log_(f'Adding entry {new_entry_content}')
             if new_entry_content == "":
                 log_("Cannot add empty entry.", False)
