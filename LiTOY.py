@@ -1323,13 +1323,13 @@ if __name__ == "__main__":
         input_prompt = f"Current tags: {cur_tags}\n\
 Dont forget to put local links between \"\" quotation signs!\n\
 Text content of the entry?\n>"
-        second_prompt = "\nEnter content of the next entry or n/no to exit:\n>"
+        second_prompt = "\nEnter content of the next entry or n/no/q to exit:\n>"
         while True:
             new_entry_content = prompt_we(input_prompt,
                                   completer=auto_complete,
                                   complete_while_typing=False,
                                   complete_in_thread=True)
-            if new_entry_content in ["n", "no"]:
+            if new_entry_content in ["n", "no", "q", "quit"]:
                 log_("Done adding entry.", False)
                 raise SystemExit()
             new_entry_content = new_entry_content.strip()
