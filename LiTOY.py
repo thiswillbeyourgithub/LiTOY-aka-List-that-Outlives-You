@@ -559,14 +559,14 @@ Quitting.", False)
     def edit(entry_id):
         "edit an entry during review"
         log_(f"Editing entry {entry_id}")
+        df = litoy.df.copy()
+        field_list = list(df.columns)
+        field_auto_completer = WordCompleter(field_list, sentence=True)
         while True:
-            df = litoy.df.copy()
             entry = df.loc[entry_id, :]
-            field_list = list(df.columns)
             print(f"Current fields available for edition : {field_list}")
-            auto_completer = WordCompleter(field_list, sentence=True)
             chosenfield = prompt_we("What field do you want to edit? \
-(q to exit)\n>", completer = auto_completer)
+(q to exit)\n>", completer = field_auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
                 break
             try:
