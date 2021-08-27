@@ -7,6 +7,7 @@ youtube_dl
 prettytable
 prompt_toolkit
 openpyxl
+pygments
 XlsxWriter == 1.4.3
 pandas == 1.2.3
 pdftotext == 2.1.5
