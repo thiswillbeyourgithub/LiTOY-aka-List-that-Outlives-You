@@ -41,6 +41,7 @@ from pygments.lexers.javascript import JavascriptLexer
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
 import platform
+import requests
 import subprocess
 import sys
 import os
@@ -65,14 +66,16 @@ def import_media():
     them if needed
     """
     if "get_wayback_machine" not in sys.modules:
-        global get_wayback_machine, pdftotext, requests, youtube_dl, ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
-        import get_wayback_machine
-        import pdftotext
-        import requests
-        import youtube_dl
-        from youtube_dl.utils import ExtractorError, DownloadError
-        from bs4 import BeautifulSoup
-        from moviepy.editor import VideoFileClip
+        try:
+            import get_wayback_machine
+            import pdftotext
+            import youtube_dl
+            from youtube_dl.utils import ExtractorError, DownloadError
+            from bs4 import BeautifulSoup
+            from moviepy.editor import VideoFileClip
+            global get_wayback_machine, pdftotext, requests, youtube_dl, ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
+        except Exception as e:
+            print(col_red + f"Import failed: {e}\nThis means litoy might crash when trying to load media." + col_rst)
 
 ###############################################################################
 # Summary of each section
