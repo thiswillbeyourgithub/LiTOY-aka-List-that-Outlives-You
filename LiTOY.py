@@ -1376,12 +1376,12 @@ Text content of the entry?\n>"
                 wrong_arguments_(args)
 
             try:
-                entry_id = df.loc[entry_id, :]
+                entry = df.loc[entry_id, :]
             except KeyError as e:
                 print(f"Couldn't find entry with ID: {e}")
                 continue
             log_("Entry to remove:", False)
-            log_(str(entry_id), False)
+            log_(str(entry), False)
             ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
             if ans in ["y", "yes"]:
                 df = df.drop(entry_id)
