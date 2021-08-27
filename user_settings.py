@@ -13,7 +13,7 @@ json_auto_save = True
 n_session = 6
 
 # number of entries to pick for review at each launch (default=5):
-n_to_review = 5
+n_to_review = 3
 
 # for reading time estimation:
 wpm = 200

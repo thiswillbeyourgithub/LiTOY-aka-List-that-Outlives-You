@@ -116,7 +116,7 @@ Syntax and usage example:
     * Adds a new entry
 
 `python3.8 LiTOY.py --litoy-db database.xlsx --review
-    * Begin 6 sessions where LiTOY automatically picks 5 entries and review them (it's actually twice the maount of reviews that you have to do because you have 2 questions each time).
+    * Begin `n_session` sessions where LiTOY automatically picks `n_to_review` entries and review them (it's actually twice the maount of reviews that you have to do because you have 2 questions each time).
 
 `python3.8 LiTOY.py --litoy-db database.xlsx --import-from-file file.txt`
     * Automatically imports from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
