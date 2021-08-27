@@ -1353,6 +1353,7 @@ Text content of the entry?\n>"
             log_(f"ERROR: you only have {n} entries in your database, add 10 \
 to start using LiTOY!", False)
             raise SystemExit()
+        available_shortcut = list(chain.from_iterable(shortcuts.values()))
         for session_nb in range(n_session):
             state = "repick"  # this while loop is used to repick if the
             # user wants to use another "left entry" when reviewing
