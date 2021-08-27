@@ -58,16 +58,18 @@ from contextlib import suppress
 
 def import_media():
     """
-    these import statements take a lot of startup time so I only import them if needed
+    these import statements take a lot of startup time so I only import
+    them if needed
     """
-    global get_wayback_machine, pdftotext, requests, youtube_dl, ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
-    import get_wayback_machine
-    import pdftotext
-    import requests
-    import youtube_dl
-    from youtube_dl.utils import ExtractorError, DownloadError
-    from bs4 import BeautifulSoup
-    from moviepy.editor import VideoFileClip
+    if "get_wayback_machine" not in sys.modules:
+        global get_wayback_machine, pdftotext, requests, youtube_dl, ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
+        import get_wayback_machine
+        import pdftotext
+        import requests
+        import youtube_dl
+        from youtube_dl.utils import ExtractorError, DownloadError
+        from bs4 import BeautifulSoup
+        from moviepy.editor import VideoFileClip
 
 ###############################################################################
 # Summary of each section
