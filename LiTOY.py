@@ -723,7 +723,6 @@ for  field '" + chosenfield +"'\n>",
             import_media()
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
-                ent = df.loc[ent_id, :]
                 old_cont = df.loc[ent_id, :]["content"]
                 new_meta = get_meta_from_content(old_cont)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
