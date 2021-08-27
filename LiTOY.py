@@ -526,8 +526,8 @@ def show_stats(df, printing=True):
         else:
             table.border = False
             table2.border = False
-            log_(table)
-            log_(table2)
+            log_(str(table))
+            log_(str(table2))
             log_(f"Progress score: {round(completion_score, 3):>20}")
     except StatisticsError as e:
         log_(f"Not enough data points! {e}", False)
