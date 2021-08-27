@@ -1288,6 +1288,8 @@ if __name__ == "__main__":
     # automatic backup at startup
     json_periodic_save()
 
+    # finally the actual code:
+
     # launches pdb
     if args["pandas_debug"] is not False:
         log_("Openning pdb")
@@ -1295,7 +1297,6 @@ if __name__ == "__main__":
 'interact' then press enter")
         pdb.set_trace()
 
-    # finally the actual code:
     if args['import_path'] is not None:
         importation(args['import_path'])
         log_("Done importing from file, exiting", False)
