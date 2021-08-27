@@ -582,10 +582,6 @@ Quitting.", False)
                  False)
             break
 
-    auto_completer = WordCompleter(available_shortcut,
-                                   sentence=False,
-                                   match_middle=True,
-                                   ignore_case=True)
     action = ""
     while True:
         start_time = time.time()
@@ -594,7 +590,7 @@ Quitting.", False)
         print(f"{col_gre}{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help){col_rst}")
 
-        keypress = prompt_we(">", completer = auto_completer)
+        keypress = prompt_we(">", completer = shortcut_auto_completer)
 
         if keypress not in available_shortcut:
             log_(f"ERROR: keypress not found : {keypress}")
@@ -1357,6 +1353,10 @@ Text content of the entry?\n>"
 to start using LiTOY!", False)
             raise SystemExit()
         available_shortcut = list(chain.from_iterable(shortcuts.values()))
+        shortcut_auto_completer = WordCompleter(available_shortcut,
+                                                sentence=False,
+                                                match_middle=True,
+                                                ignore_case=True)
         for session_nb in range(n_session):
             state = "repick"  # this while loop is used to repick if the
             # user wants to use another "left entry" when reviewing
