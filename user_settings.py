@@ -51,7 +51,7 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "repick"           : ["repick", "repick_entries"],
              "show_help"        : ["h", "H", "?", "help", "info"],
              "open debugger"    : ["debug"],
-             "quit"             : ["quit", "q", "exit"] }
+             "quit"             : ["quit", "q", "exit", ":q"] }
 
 # ELO :
 K_values           =  [100, 80, 60, 40, 25, 17, 15, 12, 10]
