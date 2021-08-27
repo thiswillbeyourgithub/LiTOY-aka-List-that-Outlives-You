@@ -582,6 +582,10 @@ Quitting.", False)
                  False)
             break
 
+    auto_completer = WordCompleter(available_shortcut,
+                                   sentence=False,
+                                   match_middle=True,
+                                   ignore_case=True)
     action = ""
     start_time = time.time()
     while True:
@@ -590,7 +594,6 @@ Quitting.", False)
         print(f"{col_gre}{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help){col_rst}")
 
-        auto_completer = WordCompleter(available_shortcut, sentence=True)
         keypress = prompt_we(">", completer = auto_completer)
 
         if keypress not in available_shortcut:
