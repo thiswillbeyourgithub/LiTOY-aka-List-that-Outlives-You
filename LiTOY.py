@@ -1180,7 +1180,7 @@ parser.add_argument("--add_entries", "-a",
                     help="open prompt to add entries to litoy. Local filepaths \
 have to be between quotation \" marks. Autocompletion for filepaths can \
 be configured in the settings.")
-parser.add_argument("--remove_entries",
+parser.add_argument("--remove_entries", "-R",
                     action="extend",
                     nargs='+',
                     metavar="ID",
