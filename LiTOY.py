@@ -1350,12 +1350,12 @@ Text content of the entry?\n>"
             print(f"Couldn't find entry with ID: {e}")
             raise SystemExit()
         log_("Entry to remove:", False)
-        log_(entry_to_remove, False)
+        log_(str(entry_to_remove), False)
         ans = prompt_we("Do you confirm that you want to remove this entry? (y/n)\n>")
         if ans in ["y", "yes"]:
             df = df.drop(n)  # TODO
             litoy.save_to_file(df)
-            log_(f"Entry # {str(n)} was removed. Exiting.", False)
+            log_(f"Entry with ID {str(n)} was removed. Exiting.", False)
         else:
             log_("Entry removal aborted. Exiting.", False)
         raise SystemExit()
