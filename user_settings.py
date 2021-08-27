@@ -19,8 +19,10 @@ n_to_review = 3
 wpm = 200
 average_word_length = 6
 
-# absolute path for autocompletion of local files:
+# absolute path for autocompletion of local files, "disabled" to speed up
+# litoy by disabling path autocompletion
 default_dir = "/home/"
+#default_dir = "disabled"
 
 # used when reviewing:
 questions = {

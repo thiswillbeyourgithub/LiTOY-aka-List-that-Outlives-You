@@ -1246,15 +1246,16 @@ if __name__ == "__main__":
     if args["entry_to_add"] is True:
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
-        file_list = glob(f"{default_dir}/**/*.pdf", recursive=True)
-        file_list.extend(glob(f"/{default_dir}/**/*.md", recursive=True))
-        file_list.extend(glob(f"/{default_dir}/**/*.mp4", recursive=True))
-        file_list.extend(glob(f"/{default_dir}/**/*.mov", recursive=True))
-        file_list.extend(glob(f"/{default_dir}/**/*.avi", recursive=True))
-        file_list.extend(glob(f"/{default_dir}/**/*.webm", recursive=True))
-        for i in range(len(file_list)):  # local paths have to be between "
-            file_list[i] = "\"" + file_list[i] + "\""
-        autocomplete_list.extend(file_list)
+        if default_dir != "disabled":
+            file_list = glob(f"{default_dir}/**/*.pdf", recursive=True)
+            file_list.extend(glob(f"/{default_dir}/**/*.md", recursive=True))
+            file_list.extend(glob(f"/{default_dir}/**/*.mp4", recursive=True))
+            file_list.extend(glob(f"/{default_dir}/**/*.mov", recursive=True))
+            file_list.extend(glob(f"/{default_dir}/**/*.avi", recursive=True))
+            file_list.extend(glob(f"/{default_dir}/**/*.webm", recursive=True))
+            for i in range(len(file_list)):  # local paths have to be between "
+                file_list[i] = "\"" + file_list[i] + "\""
+            autocomplete_list.extend(file_list)
         auto_complete = WordCompleter(autocomplete_list,
                                       match_middle=True,
                                       ignore_case=True,
