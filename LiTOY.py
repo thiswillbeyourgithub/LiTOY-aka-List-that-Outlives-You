@@ -1263,6 +1263,9 @@ if __name__ == "__main__":
     if args['import_ff_arg'] is not None or args["entry_to_add"] is not None:
         import_media()
 
+    if args['verbose'] is True:
+        pprint(args)
+
     # initialize litoy class:
     if DB_file_check(args['litoy_db']) is False:
         litoy = LiTOYClass(None)
