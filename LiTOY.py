@@ -590,7 +590,7 @@ Quitting.", False)
 (q to exit)\n>", completer = field_auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
                 break
-            if chosenfield == "metacontent":
+            if chosenfield == "metacontent" or chosenfield == "tags":
                 additional_args = {"lexer": PygmentsLexer(JavascriptLexer)}
             else:
                 additional_args = {}
@@ -801,7 +801,7 @@ def get_tags_from_content(string):
         if word.startswith("tags:"):
             temp = str(word[5:])
             # removes non letter from tags, usually ,
-            while not temp.isalnum():
+            while not temp.replace("_", "").replace("-","").isalnum():
                 temp = temp[:-1]
             result.append(temp)
     return list(set(result))
@@ -1468,7 +1468,7 @@ Text content of the entry?\n>"
 (q to exit)\n>", completer = field_auto_completer)
                     if chosenfield == "q" or chosenfield == "quit":
                         break
-                    if chosenfield == "metacontent":
+                    if chosenfield == "metacontent" or chosenfield == "tags":
                         additional_args = {"lexer": PygmentsLexer(JavascriptLexer)}
                     else:
                         additional_args = {}

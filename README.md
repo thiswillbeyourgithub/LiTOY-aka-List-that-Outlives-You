@@ -95,6 +95,8 @@ FAQ
 
 **Why do some of my cards have a gELO of `-1`?** Because it has never been reviewed before.
 
+**What are the authorized valued for tags?** Only alphanumeric characters, `-` and `_`. Otherwise truncation will happen.
+
 **Can you give examples of how to use the python console?**
     * Here's an example showing how to rename a tag:
         * **make a backup first**
