@@ -388,6 +388,27 @@ def side_by_side(rowname, a, b, space=2, col=""):
         a = a[col_width:]
         b = b[col_width:]
 
+def formats_length(minutes):
+    "displays 120 minutes as 2h0m etc"
+    if minutes == "":
+        return ""
+    minutes = float(minutes)
+    hours = minutes // 60
+    days = hours // 24
+    if days == 0:
+        days = ""
+    else:
+        hours = hours-days*24
+        days = str(int(days))+"d"
+    if hours == 0 :
+        hours = ""
+    else:
+        minutes = minutes-hours*60
+        hours = str(int(hours))+"h"
+    minutes = str(int(minutes))+"min"
+    length = days+hours+minutes
+    return length
+
 
 def print_2_entries(id_left, id_right, mode, all_fields="no"):
     "Show the two entries to review side by side"
@@ -435,7 +456,8 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
         for y in ["type", "title", "length", "url"]:
             if y not in js[x].keys():
                 js[x][y] = ""
-    side_by_side("Length", js[0]["length"], js[1]["length"])
+    side_by_side("Length", formats_length(js[0]["length"]),
+            formats_length(js[1]["length"]))
     side_by_side("Title", js[0]["title"], js[1]["title"])
     print("."*sizex)
     side_by_side("Path", js[0]["url"], js[1]["url"])
