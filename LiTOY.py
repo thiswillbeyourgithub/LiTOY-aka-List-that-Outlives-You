@@ -880,15 +880,26 @@ def extract_youtube(url):
     with youtube_dl.YoutubeDL({"quiet": True}) as ydl:
         try:
             video = ydl.extract_info(url, download=False)
-            title = video['title'].strip()
-            res = {"type": "video",
-                   "length": str(round(video['duration']/60, 1)),
-                   "title": title.replace("\n", ""),
-                   "url": url}
         except (KeyError, DownloadError, ExtractorError) as e:
             log_(f"ERROR: Video link skipped because : error during information \
 extraction from {url} : {e}", False)
             res.update({"type": "video not found", "url": url})
+            return res
+
+        title = video['title'].strip()
+        res = {"type": "video",
+               "title": title.replace("\n", ""),
+               "url": url}
+        try:
+            length = str(round(video['duration']/60, 1))
+            res.update({"length": length})
+        except Exception as e:
+            log_("Youtube link looks like it's a playlist, using fallbackmethod:", False)
+            length = 0
+            for ent in video["entries"]:
+                length += ent["duration"]
+            length = str(round(length/60, 1))
+            res.update({"length": length})
     return res
 
 
