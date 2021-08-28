@@ -1417,7 +1417,7 @@ Text content of the entry?\n>"
         id_list = args['edit_entries']
         if "last" in id_list:
             n_max = max(df.index)
-            id_list.edit("last")
+            id_list.remove("last")
             id_list.append(n_max)
         for entry_id in id_list:
             try:
