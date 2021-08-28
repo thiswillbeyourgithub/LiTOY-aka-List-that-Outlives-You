@@ -1482,6 +1482,9 @@ for  field '" + chosenfield +"'\n>",
                                                default=old_value,
                                                **additional_args))
                     df.loc[entry_id, chosenfield] = new_value
+                    if chosenfield == "content":
+                        df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
+                        df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
                     litoy.save_to_file(df)
                     log_(f'Edited entry with ID {entry_id}, field "{chosenfield}", {old_value} => {new_value}',
                          False)
