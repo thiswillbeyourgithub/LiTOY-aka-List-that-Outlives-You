@@ -60,7 +60,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 from contextlib import suppress
 
-
 def import_media():
     """
     these import statements take a lot of startup time so I only import
