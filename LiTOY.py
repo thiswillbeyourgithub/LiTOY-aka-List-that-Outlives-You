@@ -1078,7 +1078,7 @@ def json_periodic_save():
     """
     if json_auto_save is True and len(litoy.df.index) > 5:
         json_dir = f'{str(Path(".").absolute())}/logs/json_backups/'
-        json_name = str(int(time.time())) + ".json"
+        json_name = "json_backup_" + str(int(time.time())) + ".json"
         Path(json_dir).mkdir(parents=True, exist_ok=True)
         jfile = Path(f"{json_dir}{json_name}")
         if jfile.exists():
