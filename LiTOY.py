@@ -1402,6 +1402,9 @@ Text content of the entry?\n>"
         query = query.lower()
         match = [x for x in df.index if query in str(df.loc[x, "content"]).lower()
                 or query in str(df.loc[x, "metacontent"]).lower()]
+        if len(match) == 0:
+            log_("No matching entries found.", False)
+            raise SystemExit()
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
