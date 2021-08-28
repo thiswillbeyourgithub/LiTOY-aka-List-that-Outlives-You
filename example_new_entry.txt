@@ -1,13 +1,7 @@
 # this file helps you understand the syntax needed to batch import entries to litoy
+# note : lines beginning with a # will be ignored, as well as empty lines
 repair the bottom shelf of your room tags:diy
-
-ask the DMV before going to Canada tags:bureaucratic
-
-read the next chapter from your manual tags:work tags:rogramming
-
-I might be wanting to read this https://en.wikipedia.org/wiki/Spacetime tags:cosmo
-
-# note : lines beginning with a # will be ignored
-
-you can also add pdf to LiTOY like so "/home/user/pdfdirectory/myfile.pdf" 
-# note : you have to use quotation marks for local links. This also works with .md files and .txt files
+ask the DMV X thing before going to Canada tags:bureaucratic
+read the next chapter from your car repair manual tags:work tags:rogramming
+read this https://en.wikipedia.org/wiki/Spacetime tags:cosmo
+you can also add pdf to LiTOY like so "/home/user/pdfdirectory/myfile.pdf",but don't forget the quotation signs
