@@ -1204,16 +1204,15 @@ parser.add_argument("--review", "-r",
                     required=False,
                     action="store_true",
                     help="began review session")
-parser.add_argument("--podium", "-p",
-                    dest='podium',
+parser.add_argument("--show", "-s",
+                    dest='show',
                     required=False,
-                    action="store_true",
-                    help="show current podium")
-parser.add_argument("--show-stats", "-s",
-                    dest='show_stats',
-                    required=False,
-                    action="store_true",
-                    help="show current database statistics")
+                    metavar="QUERY",
+                    action="append",
+                    nargs='+',
+                    help="query can be 'podium', 'quick_tasks', \
+'important_tasks', 'global_tasks', 'stats', 'by_tags todo work', \
+'starred_tasks', 'disabled_tasks', 'logs'. Those cannot be combined yet.")
 parser.add_argument("--search_content", "-S",
                     nargs=1,
                     metavar="STRING",
@@ -1525,15 +1524,107 @@ welcome!")
                                  stdout=open(os.devnull, 'wb'))
         raise SystemExit()
 
-    if args["podium"] is True:
-        log_("Showing podium")
-        show_podium(litoy.df)
-        raise SystemExit()
+    if args["show"] is not None:
+        query = args["show"]
 
-    if args["show_stats"] is True:
-        log_("Showing statistics")
-        show_stats(litoy.df)
-        raise SystemExit()
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', sizex)
+        pd.set_option('display.max_colwidth', int(sizex/2.6))
+        df = litoy.df
+        if len(df.index) == 0:
+            log_("Empty db, add more entries before calling 'show'", False)
+            raise SystemExit()
+        df["media_title"] = [(lambda x: json.loads(x)["title"]
+                               if "title" in json.loads(x).keys()
+                               else "")(x)
+                              for x in df.loc[:, "metacontent"]]
+        if len(query[0]) != 1 and query[0][0] == "by_tags":
+            log_(f"Showing tags {query}")
+            tag_list = query[0][1:]
+            rlvt_index = []
+            for tag in tag_list:
+                rlvt_index += [x for x in df.index if tag in df.loc[x, "tags"]]
+            rlvt_index = sorted(list(set(rlvt_index)))
+            df = df.loc[rlvt_index, ["media_title", "content", "gELO"]]
+            pprint(df)
+            print(f"Number of corresponding entries: {len(rlvt_index)}")
+            raise SystemExit()
+        else:
+            query = query[0][0]
+
+        if query == "stats":
+            log_("Showing statistics")
+            show_stats(df)
+            raise SystemExit()
+
+        if query in ["podium", "global", "global_tasks"]:
+            log_("Showing podium")
+            show_podium(df)
+            raise SystemExit()
+
+        if query in ["quick", "quick_tasks"]:
+            log_("Showing quick entries", False)
+            if args["verbose"] is True:  # print all fields
+                pprint(df.sort_values(by="tELO", ascending=False)[0:10])
+            else:
+                df = df.loc[df["disabled"] == 0]
+                pprint(df.loc[:,
+                               ["media_title", "content",
+                                "tELO", "tags"]
+                               ].sort_values(by="tELO", ascending=False)[0:10])
+            raise SystemExit()
+
+        if query in ["important", "important_tasks"]:
+            log_("Showing important entries", False)
+            if args["verbose"] is True:  # print all fields
+                pprint(df.sort_values(by="iELO", ascending=False)[0:10])
+            else:
+                df = df.loc[df["disabled"] == 0]
+                pprint(df.loc[:,
+                               ["media_title", "content",
+                                "iELO", "tags"]
+                               ].sort_values(by="iELO", ascending=False)[0:10])
+            raise SystemExit()
+
+        if query in ["starred", "starred_tasks"]:
+            log_("Showing starred entries", False)
+            df = df.loc[df.starred == 1].sort_values(by="gELO", ascending=False)[0:10]
+            if len(df.index) == 0:
+                log_("No starred entries.", False)
+                raise SystemExit()
+
+            if args["verbose"] is True:  # print all fields
+                pprint(df)
+            else:
+                pprint(df.loc[:,
+                               ["media_title", "content",
+                                "gELO", "tags"]
+                               ].sort_values(by="gELO", ascending=False)[0:10])
+            raise SystemExit()
+
+        if query in ["disabled", "disabled_tasks"]:
+            log_("Showing disabled entries", False)
+            df = df.loc[df.disabled == 1].sort_values(by="gELO", ascending=False)[0:10]
+            if len(df.index) == 0:
+                log_("No disabled entries.", False)
+                raise SystemExit()
+
+            if args["verbose"] is True:  # print all fields
+                pprint(df)
+            else:
+                pprint(df.loc[:,
+                               ["media_title", "content",
+                                "gELO", "tags"]
+                               ].sort_values(by="gELO", ascending=False)[0:10])
+            raise SystemExit()
+
+        if query == "logs":
+            log_("Showing logs")
+            log_file = str(handler).split(" ")[1]
+            with open(log_file) as lf:
+                print(lf.read())
+            raise SystemExit()
 
     log_("ERROR: Insufficient arguments?", False)
     wrong_arguments_(args)
