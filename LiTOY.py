@@ -111,7 +111,7 @@ crash when trying to load media. Use 'pip install -r requirements.txt' to fix th
 #          def expected_elo(elo_A, elo_B, Rp=100):
 #          def update_elo(elo, exp_score, real_score, K):
 #          def adjust_K(K0):
-#          def compute_global_score(iELO, tELO):
+#          def compute_global_score(iELO, tELO, status):
 #          def json_periodic_save():
 #              def __init__(self, db_path):
 #              def _reload_df(self):
@@ -291,7 +291,7 @@ def add_new_entry(df, content, metacontent):
                "tELO": default_score,
                "DiELO": default_score,
                "DtELO": default_score,
-               "gELO": compute_global_score(default_score, default_score),
+               "gELO": compute_global_score(),
                "review_time": 0,
                "n_review": 0,
                "K": sorted(K_values)[-1],
@@ -474,6 +474,7 @@ def show_stats(df, printing=True):
     df = litoy.df.copy()
     df_nd = df[df['disabled'] == 0]
     df_virg = df[df['n_review'] == 0]
+    df_nvirg = df[df['n_review'] != 0]
     try:
         table = PrettyTable()
         table.field_names = ["", "value"]
@@ -501,9 +502,9 @@ def show_stats(df, printing=True):
         table2.add_row(["Time score:", round(df_nd.tELO.mean(), 1),
                        round(df_nd.tELO.std(), 2),
                        round(median(df_nd.tELO), 2)])
-        table2.add_row(["Global score:", round(df_nd.gELO.mean(), 1),
-                       round(df_nd.gELO.std(), 2),
-                       round(median(df_nd.gELO), 2)])
+        table2.add_row(["Global score:", round(df_nvirg.gELO.mean(), 1),
+                       round(df_nvirg.gELO.std(), 2),
+                       round(median(df_nvirg.gELO), 2)])
 
         pooled = list(df_nd.DiELO + df_nd.DtELO)
         table2.add_row(["Delta scores:", round(mean(pooled), 1),
@@ -665,8 +666,8 @@ for  field '" + chosenfield +"'\n>",
             eR_new["K"] = adjust_K(eR_old.K)
             eL_new[Delo_fld] = abs(eL_new[elo_fld] - eL_old[elo_fld])
             eR_new[Delo_fld] = abs(eR_new[elo_fld] - eR_old[elo_fld])
-            eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO)
-            eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO)
+            eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO, 1)
+            eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO, 1)
             eL_new["review_time"] = round(eL_new["review_time"] + date
                                           - start_time, 3)
             eR_new["review_time"] = round(eR_new["review_time"] + date
@@ -1065,9 +1066,18 @@ def adjust_K(K0):
     raise SystemExit()
 
 
-def compute_global_score(iELO, tELO):
-    "returns weight adjusted sum of importance score and time score"
-    return int(global_weights[0]*int(iELO) + global_weights[1]*int(tELO))
+def compute_global_score(iELO=default_score, tELO=default_score, status=0):
+    """
+    returns weight adjusted sum of importance score and time score
+    status is used to know if the card has never been reviewed, in which 
+    case gELO is set to -1
+    """
+    status = int(status)
+    if status != 0:
+        gELO = float(global_weights[0])*int(iELO) + float(global_weights[1])*int(tELO)
+    else:
+        gELO = -1
+    return int(gELO)
 
 
 def json_periodic_save():
@@ -1292,6 +1302,23 @@ if __name__ == "__main__":
     json_periodic_save()
 
     # finally the actual code:
+
+
+    # gELO is now set to -1 if the entry has never been reviewed
+    # I coded it that way to avoir breaking changes
+    try: 
+        df = litoy.df
+        if -1 not in list(df.loc[:, "gELO"]):
+            log_("Recomputing global scores according to the new format \
+(-1 assigned to new entries):", False)
+            print(df["gELO"])
+            df["gELO"] = [compute_global_score(
+                            *list(df.loc[x, ["iELO", "tELO", "n_review"]])
+                            ) for x in df.index]
+            print(df["gELO"])
+            litoy.save_to_file(df)
+    except Exception as e:
+        print(f"Error recomputing global scores: {e}")
 
     # launches python console
     if args["python"] is not False:
