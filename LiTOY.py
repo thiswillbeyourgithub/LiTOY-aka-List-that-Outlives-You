@@ -1261,6 +1261,7 @@ if __name__ == "__main__":
     (sizex, sizey) = get_terminal_size()
     args = parser.parse_args().__dict__
     signal.signal(signal.SIGINT, debug_signal_handler)
+    log.info("\n\n")
     log_("STARTUP")
 
     # checks if the arguments are sane
@@ -1315,6 +1316,7 @@ Press enter twice between lines to solve buggy display."
         raise SystemExit()
 
     if args["add_entries"] is True:
+        log_("Adding entries.")
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
         if default_dir is not None:
@@ -1363,6 +1365,7 @@ Text content of the entry?\n>"
                 continue
 
     if args['search_query'] is not None:
+        log_("Searching entries")
         query = args['search_query'][0]
         df = litoy.df
         query = query.lower()
@@ -1376,6 +1379,7 @@ Text content of the entry?\n>"
         raise SystemExit()
 
     if args['remove_entries'] is not None:
+        log_("Removing entries.")
         df = litoy.df.copy()
         id_list = args['remove_entries']
         if "last" in id_list:
@@ -1406,6 +1410,7 @@ Text content of the entry?\n>"
         raise SystemExit()
 
     if args['edit_entries'] is not None:
+        log_("Editing entries.")
         df = litoy.df.copy()
         field_list = list(df.columns)
         field_auto_completer = WordCompleter(field_list, sentence=True)
@@ -1459,6 +1464,7 @@ for  field '" + chosenfield +"'\n>",
         raise SystemExit()
 
     if args['review_mode'] is True:
+        log_("Entering review mode.")
         show_stats(litoy.df, printing=False)
         n = len(litoy.df.index)
         if n < 10:
@@ -1511,7 +1517,7 @@ to start using LiTOY!", False)
         raise SystemExit()
 
     if args["external_open"] is True:
-        log_("Openning libreoffice", False)
+        log_("Openning external app", False)
         path = args['db']
         if platform.system() == "Linux":
             if platform.system() == "Windows":
@@ -1626,5 +1632,5 @@ welcome!")
                 print(lf.read())
             raise SystemExit()
 
-    log_("ERROR: Insufficient arguments?", False)
+    log_("ERROR: Reached last line of code, insufficient arguments?", False)
     wrong_arguments_(args)
