@@ -87,20 +87,26 @@ FAQ
 
 **What is the difference between the entry on the left and on the right?** LiTOY actually picks `n_to_review+1` entries : one is the reference entry on the left and all the others appear on the right. This way it is easier for the mind (i.e. less cognitive fatigue) to do several reviews in a row.
 
-**Can I open the database using libreoffice?** Yes, it's why I chose this format. But close LiTOY first and don't forget to save your changes in libreoffice. Note that the whole database is saves as a json file at each startup too.
+**Can I open the database using libreoffice?** Yes, it's why I chose this format. But close LiTOY first and don't forget to save your changes in libreoffice. Note that the whole database is saves as a json file at each startup too (in the `logs` directory).
 
 **What do you call a review?** It's just a pairwise comparison between two entries. I chose this name because I use [Anki](https://apps.ankiweb.net/) **a lot**.
 
 **What is the progress score?** It's the mean of `the mean and the median` of all the Delta scores, divided by the total number of non disabled entries. The idea is that the mean is too sensitive to extreme values and the median is not enough (it stays at the same value until you did 50% of the reviews). This value is at its lowest when all the reviews have been done and the entries are not moving anymore (i.e. the Delta scores stay low).
 
-**Can you give an example of how to use the python console?** Here's an example showing how to rename a tag:
-    * **make a backup first**
-    * `litoy -P`
-    * `>>> df["content"] = df["content"].str.replace("tags:TODO", "tags:todo")`
-    * `>>> df["tags"] = df["tags"].str.replace("TODO", "todo")`
-    * `>>> litoy.get_tags(df)  # to check the results`
-    * `>>> litoy.save_to_file(df)  # to save`
-    * `>>> exit()`
+**Can you give examples of how to use the python console?**
+    * Here's an example showing how to rename a tag:
+        * **make a backup first**
+        * `litoy -P`
+        * `>>> df["content"] = df["content"].str.replace("tags:TODO", "tags:todo")`
+        * `>>> df["tags"] = df["tags"].str.replace("TODO", "todo")`
+        * `>>> litoy.get_tags(df)  # to check the results`
+        * `>>> litoy.save_to_file(df)  # to save`
+        * `>>> exit()`
+    * Here's an example showing how to restore from a json backup:
+        * `litoy -P`
+        * `>>> df = pd.read_json("path_to_file.json", compression="bz2")`
+        * `>>> litoy.save_to_file(df)`
+        * `>>> exit()`
 
 Getting started:
 ====================
