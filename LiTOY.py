@@ -1345,7 +1345,7 @@ Text content of the entry?\n>"
             new_entry_content = new_entry_content.replace("tags:tags:", "tags:")
             new_entry_content = new_entry_content.strip()
             if new_entry_content in ["n", "no", "q", "quit"]:
-                log_("Done adding entry.", False)
+                log_("Exiting without adding more entries.", False)
                 raise SystemExit()
             log_(f'Adding entry {new_entry_content}')
             if new_entry_content == "":
