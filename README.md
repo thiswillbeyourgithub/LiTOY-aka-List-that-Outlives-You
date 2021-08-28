@@ -96,16 +96,27 @@ FAQ
 **Can you give examples of how to use the python console?**
     * Here's an example showing how to rename a tag:
         * **make a backup first**
+
         * `litoy -P`
+
         * `>>> df["content"] = df["content"].str.replace("tags:TODO", "tags:todo")`
+        
         * `>>> df["tags"] = df["tags"].str.replace("TODO", "todo")`
+
         * `>>> litoy.get_tags(df)  # to check the results`
+
         * `>>> litoy.save_to_file(df)  # to save`
+
         * `>>> exit()`
+
     * Here's an example showing how to restore from a json backup:
+
         * `litoy -P`
+
         * `>>> df = pd.read_json("path_to_file.json", compression="bz2")`
+
         * `>>> litoy.save_to_file(df)`
+
         * `>>> exit()`
 
 Getting started:
@@ -138,7 +149,39 @@ Syntax and usage example:
     * To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
 `python3.8 LiTOY.py --help`
-    * Display full usage
+    * Display full usage:
+
+```
+        usage: LiTOY.py [-h] [--db PATH] [--import_from_file [PATH]] [--add_entries]
+                        [--remove_entries ID [ID ...]] [--edit_entries ID [ID ...]] [--review]
+                        [--show QUERY [QUERY ...]] [--search_content STRING] [--external] [--python] [--verbose]
+
+        optional arguments:
+          -h, --help            show this help message and exit
+          --db PATH             path to the litoy database
+          --import_from_file [PATH], -i [PATH]
+                                path of a text file containing entries to import
+          --add_entries, -a     open prompt to add entries to litoy. Local filepaths have to be between quotation
+                                " marks. Autocompletion for filepaths can be configured in the settings.
+          --remove_entries ID [ID ...], -R ID [ID ...]
+                                removes entries according to their ID. 'last' can be used as placeholder for the
+                                last added entry
+          --edit_entries ID [ID ...], -e ID [ID ...]
+                                edit entries according to their ID. 'last' can be used as placeholder for the
+                                last added entry
+          --review, -r          began review session
+          --show QUERY [QUERY ...], -s QUERY [QUERY ...]
+                                query can be 'podium', 'quick_tasks', 'important_tasks', 'global_tasks', 'stats',
+                                'by_tags todo work', 'starred_tasks', 'disabled_tasks', 'logs'. Those cannot be
+                                combined yet.
+          --search_content STRING, -S STRING
+                                show entries that match the content
+          --external, -x        ask default external app to open the database. As the extension is .xlsx,
+                                libreoffice is usually preferred
+          --python, -P          launches a python console, useful to access the pandas dataframe
+          --verbose, -v         prints debug logs during runtime
+```
+
 
 
 TODO and planned features:
