@@ -204,9 +204,8 @@ def log_(string, onlyLogging=True):
     else:
         prefix = ""
     log.info(f"{time.asctime()}: {prefix}{string}")
-    if onlyLogging is False or args["verbose"] is not False:
+    if onlyLogging is False or args["verbose"] is True:
         tqdm.write(string)
-        # print(string)
 
 
 def DB_file_check(path):
