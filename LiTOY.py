@@ -580,7 +580,7 @@ Quitting.", False)
                     raise SystemExit()
                 found = action
         if action == "":
-            log_(f"ERROR: No {str(user_input)} shortcut found")
+            log_(f"ERROR: No {str(user_input)} shortcut found", False)
             action = "show_help"
         return found
 
