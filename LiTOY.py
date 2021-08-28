@@ -1359,7 +1359,8 @@ Press enter twice between lines to solve buggy display."
         auto_complete = WordCompleter(autocomplete_list,
                                       match_middle=True,
                                       ignore_case=True,
-                                      sentence=False)
+                                      sentence=False) 
+        # I would prefer setting sentence to True but it seems to only autocomplete once
 
         input_prompt = f"Current tags: {cur_tags}\n\
 Put local links between \"\" quotation signs!\n\
