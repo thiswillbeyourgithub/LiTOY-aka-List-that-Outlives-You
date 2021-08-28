@@ -182,7 +182,7 @@ def prompt_we(*args, **kargs):
     """
     wrapper for prompt_toolkit.prompt to catch Keyboard interruption cleanly
     """
-    style = Style.from_dict({"":"yellow"})
+    style = Style.from_dict({"": "ansibrightyellow"})
     try:
         return prompt_toolkit.prompt(*args, **kargs, style=style)
     except (KeyboardInterrupt, EOFError):
