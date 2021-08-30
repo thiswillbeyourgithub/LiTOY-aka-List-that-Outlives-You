@@ -1502,7 +1502,7 @@ Text content of the entry?\n>"
             log_("Entry to edit:", False)
             log_(str(entry), False)
             ans = prompt_we("Do you confirm that you want to edit this entry? (y/n)\n>")
-            if ans in ["y", "yes"]:
+            if ans in ["y", "yes", ""]:
                 log_(f"Editing entry {entry_id}")
                 while True:
                     print(f"Fields available for edition : {field_list}")
