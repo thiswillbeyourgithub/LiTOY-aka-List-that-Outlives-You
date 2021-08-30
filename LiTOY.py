@@ -1036,7 +1036,8 @@ def extract_webpage(url):
         res = requests.get(url, headers=headers)
     html_page = res.content
     soup = BeautifulSoup(html_page, 'html.parser')
-    text_content = ' '.join(soup.find_all(text=True)).replace("\n", " ")
+    #text_content = ' '.join(soup.find_all(text=True)).replace("\n", " ")
+    text_content = soup.get_text().replace("\n", " ")
 
     title = "No title"
     for t in soup.find_all('title'):
