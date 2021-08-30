@@ -630,7 +630,7 @@ for  field '" + chosenfield +"'\n>",
                 df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
                 df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
             litoy.save_to_file(df)
-            log_(f'Edited field "{chosenfield}", {old_value} => {new_value}',
+            log_(f'Edited field "{chosenfield}":\n* {old_value}\nbecame:\n* {new_value}',
                  False)
             break
 
