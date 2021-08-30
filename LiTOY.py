@@ -1346,7 +1346,8 @@ if __name__ == "__main__":
         df = litoy.df
         if -1 not in list(df.loc[:, "gELO"]):
             log_("Recomputing global scores according to the new format \
-(-1 assigned to new entries):", False)
+(-1 is now assigned to new entries, this message should appear only once for \
+a given database):", False)
             print(df["gELO"])
             df["gELO"] = [compute_global_score(
                             *list(df.loc[x, ["iELO", "tELO", "n_review"]])
