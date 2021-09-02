@@ -1319,11 +1319,11 @@ if __name__ == "__main__":
     # checks if the arguments are sane
     if args['db'] is None:
         wrong_arguments_(args)
-    elif not args['db'][0].endswith(".xlsx"):
+    args['db'] = args['db'][0]
+    if not args['db'][0].endswith(".xlsx"):
         log_(f"ERROR: Not a valid xlsx filename : {args['db']}\n\
                 Please add '.xlsx' at the end of the filename")
-    else:
-        args['db'] = args['db'][0]
+        wrong_arguments_(args)
 
     if (args['import_path'] is None and args['db'] is None) or (args['review_mode'] is True and args['import_path'] is not None):
         wrong_arguments_(args)
