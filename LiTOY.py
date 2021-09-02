@@ -53,6 +53,7 @@ from pathlib import Path
 from pprint import pprint
 from tqdm import tqdm
 from prettytable import PrettyTable
+import threading
 
 import pdb
 import signal
@@ -749,7 +750,7 @@ for  field '" + chosenfield +"'\n>",
 
         if action == "reload_media":
             log_("Reloading media")
-            import_media()
+            import_thread.join()
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
                 old_cont = df.loc[ent_id, :]["content"]
@@ -1324,7 +1325,9 @@ if __name__ == "__main__":
         wrong_arguments_(args)
 
     if args['import_path'] is not None or args["add_entries"] is not None:
-        import_media()
+        # asynchronous loading
+        import_thread = threading.Thread(target=import_media)
+        import_thread.start()
 
     if args['verbose'] is True:
         pprint(args)
@@ -1402,6 +1405,7 @@ Put local links between \"\" quotation signs!\n\
 Use <TAB> to autocomplete paths or tags\n\
 Text content of the entry?\n>"
         second_prompt = "\nEnter content of the next entry:  (n/no/q to exit, <TAB> to autocomplete)\n>"
+        import_thread.join()
         while True:
             new_entry_content = prompt_we(input_prompt,
                                   completer=auto_complete,
