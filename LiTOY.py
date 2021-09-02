@@ -1404,7 +1404,7 @@ Press enter twice between lines to solve buggy display."
 Put local links between \"\" quotation signs!\n\
 Use <TAB> to autocomplete paths or tags\n\
 Text content of the entry?\n>"
-        second_prompt = "\nEnter content of the next entry:  (n/no/q to exit, <TAB> to autocomplete)\n>"
+        second_prompt = "\nEnter content of the next entry:  (n/no/q/'' to exit, <TAB> to autocomplete)\n>"
         import_thread.join()
         while True:
             new_entry_content = prompt_we(input_prompt,
@@ -1413,14 +1413,10 @@ Text content of the entry?\n>"
                                   complete_in_thread=True)
             new_entry_content = new_entry_content.replace("tags:tags:", "tags:")
             new_entry_content = new_entry_content.strip()
-            if new_entry_content in ["n", "no", "q", "quit"]:
+            if new_entry_content in ["n", "no", "q", "quit", ""]:
                 log_("Exiting without adding more entries.", False)
                 raise SystemExit()
             log_(f'Adding entry {new_entry_content}')
-            if new_entry_content == "":
-                log_("Cannot add empty entry.", False)
-                input_prompt = second_prompt
-                continue
             metacontent = get_meta_from_content(new_entry_content)
             if not litoy.entry_duplicate_check(litoy.df,
                                                new_entry_content,
