@@ -566,8 +566,8 @@ def shortcut_and_action(id_left, id_right, mode, progress):
     makes the link between keypresses and actions
     shortcuts are stored at the top of the file
     """
-    entry_left = litoy.df.loc[id_left, :].copy()
-    entry_right = litoy.df.loc[id_right, :].copy()
+    entry_left = litoy.df.loc[id_left, :]
+    entry_right = litoy.df.loc[id_right, :]
     log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
 
     def fetch_action(user_input):
