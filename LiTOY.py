@@ -1445,8 +1445,11 @@ Text content of the entry?\n>"
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
-        pd.set_option('display.max_colwidth', -1)
-        print(df.loc[match, "content"])
+        pd.set_option('display.max_colwidth', None)
+        if args["verbose"] is False:
+            print(df.loc[match, "content"])
+        else:
+            print(df.loc[match, :])
         raise SystemExit()
 
     if args['remove_entries'] is not None:
