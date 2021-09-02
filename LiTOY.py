@@ -756,6 +756,8 @@ for  field '" + chosenfield +"'\n>",
                 old_cont = df.loc[ent_id, :]["content"]
                 new_meta = get_meta_from_content(old_cont)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
+                entry_left = df.loc[id_left, :]
+                entry_right = df.loc[id_right, :]
                 litoy.save_to_file(df)
                 log_(f"New metacontent value for {ent_id} : {new_meta}")
             print("\n"*10)
