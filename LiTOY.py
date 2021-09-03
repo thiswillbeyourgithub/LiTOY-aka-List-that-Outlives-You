@@ -1,5 +1,4 @@
 #!/usr/bin/env python3.9
-
 from user_settings import (disable_lifebar,
                            useless_first_years,
                            useless_last_years,
