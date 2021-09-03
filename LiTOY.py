@@ -1316,7 +1316,7 @@ if __name__ == "__main__":
     if args['db'] is None:
         wrong_arguments_(args)
     args['db'] = args['db'][0]
-    if not args['db'][0].endswith(".xlsx"):
+    if not args['db'].endswith(".xlsx"):
         log_(f"ERROR: Not a valid xlsx filename : {args['db']}\n\
                 Please add '.xlsx' at the end of the filename")
         wrong_arguments_(args)
