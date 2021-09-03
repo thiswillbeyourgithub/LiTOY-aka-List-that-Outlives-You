@@ -58,8 +58,8 @@ import prompt_toolkit
 
 def import_media():
     """
-    these import statements take a lot of startup time so I only import
-    them if needed
+    import some media library, put aside because I want people to be able to 
+    install and use litoy even if they can't install those libraries (ex raspi)
     """
     if "get_wayback_machine" not in sys.modules:
         try:
@@ -237,6 +237,7 @@ def importation(path):
         lines = f.readlines()
     lines = [li for li in lines if not str(li).startswith("#") and
              str(li) != "" and str(li) != "\n"]
+    import_thread.join()
     for line in tqdm(lines, desc="Processing line by line", unit="line",
                      ascii=False, dynamic_ncols=True, mininterval=0):
         line = line.strip()
