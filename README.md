@@ -123,6 +123,17 @@ FAQ
 
         * `>>> exit()`
 
+    * Here's an example showing how to reload the metacontent:
+        *  `litoy -P`
+
+        * `>>> for i in tqdm(df.index):
+          ... df.loc[i, "metacontent"] = json.dumps(get_meta_from_content(df.loc[i, "content"]))
+          ... time.sleep(1)`
+
+        * `>>> litoy.save_to_file(df)`
+
+        * `>>> exit()`
+
 Getting started:
 ====================
 * Read this page thoroughly. Don't be afraid to ask questions.
