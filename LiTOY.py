@@ -54,6 +54,7 @@ import signal
 import logging
 from logging.handlers import RotatingFileHandler
 from contextlib import suppress
+import prompt_toolkit
 
 def import_media():
     """
