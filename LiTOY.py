@@ -1324,7 +1324,7 @@ if __name__ == "__main__":
     if (args['import_path'] is None and args['db'] is None) or (args['review_mode'] is True and args['import_path'] is not None):
         wrong_arguments_(args)
 
-    if args['import_path'] is not None or args["add_entries"] is not None:
+    if args['import_path'] is not None or args["add_entries"] is not None or args["review_mode"] is True:
         # asynchronous loading
         import_thread = threading.Thread(target=import_media)
         import_thread.start()
