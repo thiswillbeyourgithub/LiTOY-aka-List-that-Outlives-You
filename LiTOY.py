@@ -1505,7 +1505,7 @@ Text content of the entry?\n>"
                 print(f"Couldn't find entry with ID: {e}")
                 continue
             except ValueError as e:
-                print(f"ID {n}: {e}")
+                print(f"ID {entry_id}: {e}")
                 wrong_arguments_(args)
 
             log_("Entry to edit:", False)
