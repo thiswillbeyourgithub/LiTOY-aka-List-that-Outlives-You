@@ -35,11 +35,6 @@ import code
 import time
 import random
 from statistics import mean, stdev, median, StatisticsError
-import prompt_toolkit
-from prompt_toolkit.completion import WordCompleter
-from pygments.lexers.javascript import JavascriptLexer
-from prompt_toolkit.lexers import PygmentsLexer
-from prompt_toolkit.styles import Style
 import platform
 import requests
 import subprocess
@@ -182,7 +177,7 @@ def prompt_we(*args, **kargs):
     """
     wrapper for prompt_toolkit.prompt to catch Keyboard interruption cleanly
     """
-    style = Style.from_dict({"": "ansibrightyellow"})
+    style = prompt_toolkit.styles.Style.from_dict({"": "ansibrightyellow"})
     try:
         return prompt_toolkit.prompt(*args, **kargs, style=style)
     except (KeyboardInterrupt, EOFError):
@@ -606,7 +601,7 @@ Quitting.", False)
         log_(f"Editing entry {entry_id}")
         df = litoy.df.copy()
         field_list = list(df.columns)
-        field_auto_completer = WordCompleter(field_list, sentence=True)
+        field_auto_completer = prompt_toolkit.completion.WordCompleter(field_list, sentence=True)
         while True:
             entry = df.loc[entry_id, :]
             print(f"Fields available for edition : {field_list}")
@@ -615,7 +610,7 @@ Quitting.", False)
             if chosenfield == "q" or chosenfield == "quit":
                 break
             if chosenfield == "metacontent" or chosenfield == "tags":
-                additional_args = {"lexer": PygmentsLexer(JavascriptLexer)}
+                additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(prompt_toolkit.lexers.javascript.JavascriptLexer)}
             else:
                 additional_args = {}
             try:
@@ -1488,7 +1483,7 @@ Text content of the entry?\n>"
         log_("Editing entries.")
         df = litoy.df.copy()
         field_list = list(df.columns)
-        field_auto_completer = WordCompleter(field_list, sentence=True)
+        field_auto_completer = prompt_toolkit.completion.WordCompleter(field_list, sentence=True)
         id_list = args['edit_entries']
         if "last" in id_list:
             n_max = max(df.index)
@@ -1517,7 +1512,7 @@ Text content of the entry?\n>"
                     if chosenfield == "q" or chosenfield == "quit":
                         break
                     if chosenfield == "metacontent" or chosenfield == "tags":
-                        additional_args = {"lexer": PygmentsLexer(JavascriptLexer)}
+                        additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
                     else:
                         additional_args = {}
                     try:
@@ -1550,7 +1545,7 @@ for  field '" + chosenfield +"'\n>",
 to start using LiTOY!", False)
             raise SystemExit()
         available_shortcut = list(chain.from_iterable(shortcuts.values()))
-        shortcut_auto_completer = WordCompleter(available_shortcut,
+        shortcut_auto_completer = prompt_toolkit.completion.WordCompleter(available_shortcut,
                                                 sentence=False,
                                                 match_middle=True,
                                                 ignore_case=True)
