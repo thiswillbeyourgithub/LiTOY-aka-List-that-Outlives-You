@@ -148,7 +148,7 @@ Getting started:
 
 Syntax and usage example:
 -------------------------
-*I recommend python 3.8 instead of 3.9 because some users using pyenv can run into weird issues with pandas.*
+*I recommend python 3.8 instead of 3.9 because some users using pyenv can run into weird issues with pandas.* Note that example of the python console can be found in the FAQ above.
 
 `python3.8 LiTOY.py --db database.xlsx --add`
     * Add new entries
