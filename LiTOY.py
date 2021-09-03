@@ -1387,18 +1387,24 @@ Press enter twice between lines to solve buggy display."
         log_("Adding entries.")
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
+
         if default_dir is not None:
-            file_list = []
-            for ext in ["pdf", "md", "mp4", "mov", "avi", "webm"]:
-                file_list.extend(glob(f"/{default_dir}/**/*.{ext}", recursive=True))
-            for i in range(len(file_list)):  # local paths have to be between "
-                file_list[i] = "\"" + file_list[i].replace("//", "/") + "\""
-            autocomplete_list.extend(file_list)
-        auto_complete = WordCompleter(autocomplete_list,
+            def load_autocomplete_list():
+                "asynchronous loading of paths for autocompletion"
+                file_list = []
+                for ext in ["pdf", "md", "mp4", "mov", "avi", "webm"]:
+                    file_list.extend(glob(f"/{default_dir}/**/*.{ext}", recursive=True))
+                for i in range(len(file_list)):  # local paths have to be between "
+                    file_list[i] = "\"" + file_list[i].replace("//", "/") + "\""
+                autocomplete_list.extend(file_list)
+            autocomplete_thread = threading.Thread(target=load_autocomplete_list)
+            autocomplete_thread.start()
+
+        auto_complete = prompt_toolkit.completion.WordCompleter(autocomplete_list,
                                       match_middle=True,
                                       ignore_case=True,
-                                      sentence=False) 
-        # I would prefer setting sentence to True but it seems to only autocomplete once
+                                      sentence=False) # I would prefer 
+# setting sentence to True but it seems to only autocomplete once
 
         input_prompt = f"Current tags: {cur_tags}\n\
 Put local links between \"\" quotation signs!\n\
