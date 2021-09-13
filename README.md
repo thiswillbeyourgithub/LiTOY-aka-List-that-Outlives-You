@@ -201,6 +201,9 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* implement support for deadline tags, that are used for global scoring
+* implement support for arbitrary additional fields
+* add --export-as to export as txt, csv, etc
 * always move tags at the end of the entry
 * find an easy way to open links without doing reviews
 * implement a two letter shortcut code to answer importance and time at the same time
