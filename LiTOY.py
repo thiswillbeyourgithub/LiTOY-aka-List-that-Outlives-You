@@ -422,8 +422,8 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
         print("."*sizex)
 
         if "".join(entry_left.tags + entry_right.tags) != "":
-            tag_left = ','.join(json.loads(entry_left.tags))
-            tag_right = ','.join(json.loads(entry_right.tags))
+            tag_left = ', '.join(json.loads(entry_left.tags))
+            tag_right = ', '.join(json.loads(entry_right.tags))
             side_by_side("Tags", tag_left, tag_right)
             print("."*sizex)
         if int(entry_left.starred) + int(entry_right.starred) != 0:
