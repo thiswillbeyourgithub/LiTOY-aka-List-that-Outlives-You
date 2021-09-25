@@ -48,6 +48,7 @@ from pprint import pprint
 from tqdm import tqdm
 from prettytable import PrettyTable
 import threading
+import webbrowser
 
 import pdb
 import signal
@@ -728,15 +729,18 @@ for  field '" + chosenfield +"'\n>",
                 ent = litoy.df.loc[ent_id, :]
                 try:
                     path = str(json.loads(ent.metacontent)["url"])
-                    if platform.system() == "Linux":
-                        subprocess.Popen(["xdg-open", path],
-                                         stdout=open(os.devnull, 'wb'))
-                    elif platform.system() == "Windows":
-                        os.startfile(path)
-                    elif platform.system() == "Darwin":
-                        subprocess.Popen(["open", path])
+                    if "http" in path:
+                        webbrowser.open(path)
                     else:
-                        log_("Platform system not found.", False)
+                        if platform.system() == "Linux":
+                            subprocess.Popen(["xdg-open", path],
+                                             stdout=open(os.devnull, 'wb'))
+                        elif platform.system() == "Windows":
+                            os.startfile(path)
+                        elif platform.system() == "Darwin":
+                            subprocess.Popen(["open", path])
+                        else:
+                            log_("Platform system not found.", False)
                 except (KeyError, AttributeError) as e:
                     log_(f"url not found in entry {ent_id} : {e}")
             time.sleep(1.5)  # better display
