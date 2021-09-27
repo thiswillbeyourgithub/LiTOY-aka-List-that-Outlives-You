@@ -693,10 +693,10 @@ for  field '" + chosenfield +"'\n>",
             eR_new[Delo_fld] = abs(eR_new[elo_fld] - eR_old[elo_fld])
             eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO, 1)
             eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO, 1)
-            eL_new["review_time"] = round(eL_new["review_time"] + date
-                                          - start_time, 3)
-            eR_new["review_time"] = round(eR_new["review_time"] + date
-                                          - start_time, 3)
+            eL_new["review_time"] = round(eL_new["review_time"] + min(date
+                                          - start_time, 30), 3)
+            eR_new["review_time"] = round(eR_new["review_time"] + min(date
+                                          - start_time, 30), 3)
             eL_new["n_review"] += 1
             eR_new["n_review"] += 1
 
