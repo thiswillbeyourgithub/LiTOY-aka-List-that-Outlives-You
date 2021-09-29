@@ -750,13 +750,16 @@ for  field '" + chosenfield +"'\n>",
                             mode=mode)
             continue
 
-        if action == "reload_media":
+        if action == "reload_media" or action == "reload_media_fallback_text":
             log_("Reloading media")
             import_thread.join()
+            additional_args = {}
+            if action == "reload_media_fallback_text":
+                additional_args.update({"fallback_text_extractor": True})
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
                 old_cont = df.loc[ent_id, :]["content"]
-                new_meta = get_meta_from_content(old_cont)
+                new_meta = get_meta_from_content(old_cont, additional_args)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
                 entry_left = df.loc[id_left, :]
                 entry_right = df.loc[id_right, :]
@@ -837,7 +840,7 @@ def get_tags_from_content(string):
     return list(set(result))
 
 
-def get_meta_from_content(string):
+def get_meta_from_content(string, additional_args):
     """
     extracts all metadata from a line in the import file
     this does not include tags, which are indicated using tags:sometag in the
@@ -878,7 +881,7 @@ def get_meta_from_content(string):
             # if here then is probably just an html
             # and should be treated as text
             log_(f"Extracting text from webpage {word}")
-            return extract_webpage(word)
+            return extract_webpage(word, **additional_args)
 
     if "/" in string:  # might be a link to a file
         for part in string.split("\""):
@@ -1014,7 +1017,7 @@ def extract_txt(path):
         return res
 
 
-def extract_webpage(url):
+def extract_webpage(url, fallback_text_extractor=False):
     """
     extracts reading time from a webpage, output is a tupple containing
     estimation of the reading time ; title of the page ; if the wayback
@@ -1041,8 +1044,25 @@ def extract_webpage(url):
         res = requests.get(url, headers=headers)
     html_page = res.content
     soup = BeautifulSoup(html_page, 'html.parser')
-    #text_content = ' '.join(soup.find_all(text=True)).replace("\n", " ")
-    text_content = soup.get_text().replace("\n", " ")
+
+    # the smallest text find is usually the best
+    if fallback_text_extractor is False:
+        text_content = " ".join(
+                        " ".join(
+                            [x.text.replace("\n", " ")
+                             for x in soup.find_all('p')]
+                            ).split())
+    else:
+        log_("Using fallback text extractor")
+        parsed_text_trial = []
+        parsed_text_trial.append(' '.join([x.text.replace("\n", " ")
+                                           for x in soup.find_all("div")]))
+        parsed_text_trial.append(soup.get_text().replace("\n", " "))
+        parsed_text_trial.append(" ".join([x.text.replace("\n", " ")
+                                           for x in soup.find_all('p')]))
+        parsed_text_trial = [" ".join(x.split()) for x in parsed_text_trial]
+        parsed_text_trial.sort(key=lambda x: len(x))
+        text_content = parsed_text_trial[0]
 
     titles = soup.find_all('title')
     if len(titles) != 0:
