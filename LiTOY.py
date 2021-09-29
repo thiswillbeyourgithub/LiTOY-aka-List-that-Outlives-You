@@ -750,11 +750,11 @@ for  field '" + chosenfield +"'\n>",
                             mode=mode)
             continue
 
-        if action == "reload_media" or action == "reload_media_fallback_text":
+        if action == "reload_media" or action == "reload_media_fallback_text_extractor":
             log_("Reloading media")
             import_thread.join()
             additional_args = {}
-            if action == "reload_media_fallback_text":
+            if action == "reload_media_fallback_text_extractor":
                 additional_args.update({"fallback_text_extractor": True})
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
