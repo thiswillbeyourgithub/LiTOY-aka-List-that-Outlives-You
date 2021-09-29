@@ -1036,7 +1036,7 @@ def extract_webpage(url):
             res = {"title": "web page not found",
                    "url": url,
                    "length": "-1",
-                   "used_wayback_machine": "wayback url no found"}
+                   "used_wayback_machine": "wayback url not found"}
             return res
         res = requests.get(url, headers=headers)
     html_page = res.content
