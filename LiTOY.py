@@ -1044,9 +1044,11 @@ def extract_webpage(url):
     #text_content = ' '.join(soup.find_all(text=True)).replace("\n", " ")
     text_content = soup.get_text().replace("\n", " ")
 
-    title = "No title"
-    for t in soup.find_all('title'):
-        title = t.get_text()
+    titles = soup.find_all('title')
+    if len(titles) != 0:
+        title = soup.find_all('title')[0].get_text()
+    else:
+        title = "No title found"
 
     total_words = len(text_content)/average_word_length
     estimatedReadingTime = str(round(total_words/wpm, 1))
