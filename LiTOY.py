@@ -56,6 +56,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from contextlib import suppress
 import prompt_toolkit
+from pygments.lexers import JavascriptLexer
 
 def import_media():
     """
@@ -613,7 +614,7 @@ Quitting.", False)
             if chosenfield == "q" or chosenfield == "quit":
                 break
             if chosenfield == "metacontent" or chosenfield == "tags":
-                additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(prompt_toolkit.lexers.javascript.JavascriptLexer)}
+                additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
             else:
                 additional_args = {}
             try:
