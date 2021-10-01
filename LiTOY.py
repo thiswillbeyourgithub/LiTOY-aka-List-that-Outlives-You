@@ -841,7 +841,7 @@ def get_tags_from_content(string):
     return list(set(result))
 
 
-def get_meta_from_content(string, additional_args):
+def get_meta_from_content(string, additional_args=None):
     """
     extracts all metadata from a line in the import file
     this does not include tags, which are indicated using tags:sometag in the
@@ -849,6 +849,8 @@ def get_meta_from_content(string, additional_args):
     appears in the content.
     If several links are supplied, only the first one will be used
     """
+    if additional_args is None:
+        additional_args = {}
     with suppress(UnboundLocalError):
         since = time.time() - last
         last = time.time()
