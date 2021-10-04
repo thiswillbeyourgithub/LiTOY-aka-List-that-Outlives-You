@@ -1558,7 +1558,7 @@ Text content of the entry?\n>"
                         log_("ERROR: Shortcut : edit : wrong field name", False)
                         continue
                     new_value = str(prompt_we("Enter the desired new value \
-for  field '" + chosenfield +"'\n>",
+for field '" + chosenfield +"'\n>",
                                                default=old_value,
                                                **additional_args))
                     df.loc[entry_id, chosenfield] = new_value
