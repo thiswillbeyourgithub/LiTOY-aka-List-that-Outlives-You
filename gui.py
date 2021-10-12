@@ -193,9 +193,9 @@ class search_w(QWidget):
 
         lab = QLabel("Query:")
         self.allFields = QCheckBox("Only content", self, checkable=True)
+        self.allFields.setChecked(True)
         self.queryIn = QLineEdit(self)
 
-        self.allFields.setChecked(False)
         self.queryIn.editingFinished.connect(self.process_query)
         self.allFields.stateChanged.connect(self.process_query)
         lab.setAlignment(Qt.AlignTop)
