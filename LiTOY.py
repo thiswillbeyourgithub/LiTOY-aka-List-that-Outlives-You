@@ -1246,6 +1246,11 @@ parser.add_argument("--db",
                     type=str,
                     required=False,
                     help="path to the litoy database")
+parser.add_argument("--graphical", "-g",
+                    dest='gui',
+                    action="store_true",
+                    required=False,
+                    help="enable GUI")
 parser.add_argument("--import_from_file", "-i",
                     nargs="?",
                     metavar="PATH",
@@ -1405,6 +1410,12 @@ Press enter twice between lines to solve buggy display."
                           local=locals())
         except RuntimeError as e:
             print(f"Exiting: {e}")
+        raise SystemExit()
+
+    if args["gui"] is True:
+        log_("Launching GUI")
+        from gui import launch_gui
+        launch_gui(args, litoy, handler)
         raise SystemExit()
 
     if args['import_path'] is not None:
