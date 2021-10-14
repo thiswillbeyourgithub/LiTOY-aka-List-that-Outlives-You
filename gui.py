@@ -74,26 +74,27 @@ class main_menu(QWidget):
 
         btn_review = QPushButton("Review")
         btn_add    = QPushButton("Add")
-        btn_search = QPushButton("Search")
+        btn_browse = QPushButton("browse")
         btn_q      = QPushButton("Quit")
         btn_log    = QPushButton("Logs")
 
         btn_review.setAutoDefault(True)
         btn_review.setShortcut("R")
         btn_add.setShortcut("A")
-        btn_search.setShortcut("S")
+        btn_browse.setShortcut("B")
+        btn_browse.setShortcut("S")
         btn_q.setShortcut("Q")
         btn_log.setShortcut("L")
 
         btn_review.setToolTip("Start reviewing your entries")
         btn_add.setToolTip("Add new entries to LiTOY")
-        btn_search.setToolTip("Search entries")
+        btn_browse.setToolTip("browse entries")
         btn_q.setToolTip("Quit")
         btn_log.setToolTip("Show logs")
 
         btn_review.clicked.connect(self.launch_review)
         btn_add.clicked.connect(self.launch_add)
-        btn_search.clicked.connect(self.launch_search)
+        btn_browse.clicked.connect(self.launch_browse)
         btn_q.clicked.connect(QApplication.quit)
         btn_log.clicked.connect(self.show_logs)
 
@@ -107,7 +108,7 @@ class main_menu(QWidget):
         vbox.addStretch()
         vbox.addWidget(btn_add)
         vbox.addStretch()
-        vbox.addWidget(btn_search)
+        vbox.addWidget(btn_browse)
         vbox.addStretch()
         vbox.addWidget(btn_q)
         vbox.addStretch()
@@ -129,9 +130,9 @@ class main_menu(QWidget):
         p = self.parent()
         p.setCentralWidget(add_w(self.litoy, p))
 
-    def launch_search(self):
+    def launch_browse(self):
         p = self.parent()
-        p.setCentralWidget(search_w(self.litoy, p))
+        p.setCentralWidget(browse_w(self.litoy, p))
 
     def show_logs(self):
         p = self.parent()
@@ -183,7 +184,7 @@ class review_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
 
-class search_w(QWidget):
+class browse_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
         self.litoy = litoy
