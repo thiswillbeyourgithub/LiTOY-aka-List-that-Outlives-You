@@ -178,10 +178,12 @@ class add_w(QWidget):
         if not self.litoy.entry_duplicate_check(self.litoy.df,
                                            query,
                                            metacontent):
-            newID = add_new_entry(litoy.df, query, metacontent)
-            self.logEnt.append(f"ID: {newID}: {query}\n")
+            newID = add_new_entry(self.litoy.df, query, metacontent)
+            msg = f"ID: {newID}: {query}\n"
         else:
-            self.logEnt.append("Database already contains this entry, not added.\n")
+            msg ="Database already contains this entry, not added.\n"
+        self.litoy.gui_log(msg)
+        self.logEnt.append(msg)
 
 
 class review_w(QWidget):
