@@ -10,7 +10,7 @@ import sys
 from user_settings import user_age, user_life_expected
 from PandasModel import PandasModel
 import prompt_toolkit
-from LiTOY import get_meta_from_content, add_new_entry, log_
+from LiTOY import get_meta_from_content, add_new_entry
 import logging
 
 class Communicate(QObject):
@@ -174,14 +174,14 @@ class add_w(QWidget):
         query = self.editor.text()
 
         query = query.replace("tags:tags:", "tags:").strip()
-        metacontent = get_meta_from_content(query)
+        metacontent = get_meta_from_content(query, gui_log = self.litoy.gui_log)
         if not self.litoy.entry_duplicate_check(self.litoy.df,
                                            query,
                                            metacontent):
-            newID = add_new_entry(self.litoy.df, query, metacontent)
+            newID = add_new_entry(self.litoy.df, query, metacontent, self.litoy, self.litoy.gui_log)
             msg = f"ID: {newID}: {query}\n"
         else:
-            msg ="Database already contains this entry, not added.\n"
+            msg = "Database already contains this entry, not added.\n"
         self.litoy.gui_log(msg)
         self.logEnt.append(msg)
 

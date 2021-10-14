@@ -256,9 +256,13 @@ def wrong_arguments_(args):
     raise SystemExit()
 
 
-def add_new_entry(df, content, metacontent):
+def add_new_entry(df, content, metacontent, gui_litoy=None, gui_log=None):
     "Add a new entry to the pandas dataframe"
     tags = get_tags_from_content(content)
+    if gui_litoy is not None:
+        litoy = gui_litoy
+    if gui_log is not None:
+        log_ = gui_log
 
     # in case metacontent doesn't contain those keys, ignore exceptions:
     with suppress(KeyError, TypeError):
@@ -841,7 +845,7 @@ def get_tags_from_content(string):
     return list(set(result))
 
 
-def get_meta_from_content(string, additional_args=None):
+def get_meta_from_content(string, additional_args=None, gui_log=None):
     """
     extracts all metadata from a line in the import file
     this does not include tags, which are indicated using tags:sometag in the
@@ -851,6 +855,8 @@ def get_meta_from_content(string, additional_args=None):
     """
     if additional_args is None:
         additional_args = {}
+    if gui_log is not None:
+        log_ = gui_log
     with suppress(UnboundLocalError):
         since = time.time() - last
         last = time.time()
@@ -1178,7 +1184,7 @@ class LiTOYClass:
             self.path = db_path
             self.df = pd.read_excel(db_path).set_index("ID").sort_index()
         self.log_ = log_
-        self.gui_log = lambda x, y: self.log_(f"GUI: {x}", y)
+        self.gui_log = lambda x, y=False: self.log_(f"GUI: {x}", y)
 
     def _reload_df(self):
         "used to reload the df from the file"
