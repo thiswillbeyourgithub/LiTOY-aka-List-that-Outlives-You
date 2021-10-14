@@ -204,6 +204,7 @@ TODO and planned features:
 * gui: auto scroll down the logs
 * gui: right click on browse to delete an entry
 * gui: implement reviews
+* gui: darkmode
 
 * detect channel name of youtube video
 * use lazy import to speed up
