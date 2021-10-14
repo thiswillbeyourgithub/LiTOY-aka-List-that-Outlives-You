@@ -31,14 +31,15 @@ class main_window(QMainWindow):
         self.to_mainmenu(litoy)
 
         menuBar = self.menuBar()
-        back = QAction("Main menu", self)
-        back.triggered.connect(lambda : self.to_mainmenu(litoy))
-        back.setShortcut(Qt.Key_Escape)
-        back.setShortcut(Qt.Key_Backspace)
+        back_to_mm = QAction("Main menu", self)
+        back_to_mm.triggered.connect(lambda : self.to_mainmenu(litoy))
+        back_to_mm.setShortcut(Qt.Key_Escape)
+        back_to_mm.setShortcut(Qt.Key_backspace)
+        back_to_mm.setShortcut("Ctrl+m")
         quit = QAction("Exit", self)
         quit.triggered.connect(self.close)
         quit.setShortcut("Ctrl+Q")
-        menuBar.addAction(back)
+        menuBar.addAction(back_to_mm)
         menuBar.addAction(quit)
 
 
