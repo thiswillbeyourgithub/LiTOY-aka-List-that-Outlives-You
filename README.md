@@ -201,6 +201,10 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* gui: auto scroll down the logs
+* gui: right click on browse to delete an entry
+* gui: implement reviews
+
 * detect channel name of youtube video
 * use lazy import to speed up
 * implement a boost argument that multiplies by 1.5 ELO and DELO
