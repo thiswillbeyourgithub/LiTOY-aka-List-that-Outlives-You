@@ -138,11 +138,14 @@ class main_menu(QWidget):
         p = self.parent()
         log_file = str(p.handler).split(" ")[1]
         with open(log_file) as lf:
-            content = lf.read()
-        content = content.replace("\n", "<br>")
-        textEd = QTextEdit(content, self)
+            #content = lf.read().replace("\n", "<br>").split("")[-1000:]
+            content = "<br>".join(lf.read().split("\n")[-1000:])
+        content = "#"*50 + "<br>" + "#"*50 + "<br>" + "#"*10 + "CROPPED EARLIER MESSAGES" + "#"*10 + "<br>"*10 + content
+        textEd = QTextEdit(content)
         textEd.setReadOnly(True)
+        textEd.verticalScrollBar().setValue(textEd.verticalScrollBar().maximum())
         p.setCentralWidget(textEd)
+
 
 class add_w(QWidget):
     def __init__(self, litoy, p):
