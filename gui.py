@@ -203,6 +203,29 @@ class add_w(QWidget):
 class review_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
+        self.litoy = litoy
+        self.df = litoy.df
+        self.litoy.gui_log(f"Opened review window.")
+
+        self.hbox = QHBoxLayout()
+        self.vbox = QVBoxLayout()
+
+        ansLabel = QLabel("Input:")
+        ansLabel.setAlignment(Qt.AlignBottom)
+        self.userInput = QLineEdit(self)
+        self.userInput.setToolTip("Enter your commands here, type \"help\" if \
+you're lost.")
+        self.vbox.addWidget(ansLabel)
+        self.vbox.addWidget(self.userInput)
+
+        self.vbox.addLayout(self.hbox)
+        self.setLayout(self.vbox)
+        self.show()
+
+    def process_answer(self, ans):
+        print(dir(self))
+        pass
+
 
 class browse_w(QWidget):
     def __init__(self, litoy, p):
