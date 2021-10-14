@@ -8,7 +8,7 @@ from PyQt5.QtCore import *
 
 import sys
 from user_settings import user_age, user_life_expected
-from PandasModel import PandasModel, Viewer
+from PandasModel import PandasModel
 import prompt_toolkit
 from LiTOY import get_meta_from_content, add_new_entry, log_
 import logging
