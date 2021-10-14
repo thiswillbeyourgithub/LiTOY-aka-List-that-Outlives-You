@@ -207,8 +207,8 @@ class search_w(QWidget):
 
         self.vbox.addLayout(self.hbox)
 
-        self.previous_t = QTableView()
-        self.vbox.addWidget(self.previous_t)
+        self.table = QTableView(self)
+        self.vbox.addWidget(self.table)
 
         self.setLayout(self.vbox)
         self.show()
@@ -219,7 +219,7 @@ class search_w(QWidget):
 
         match = [x for x in df.index if query in str(df.loc[x, "content"]).lower()
                 or query in str(df.loc[x, "metacontent"]).lower()]
-        t = QTableView()
+        t = self.table
         if self.allFields.isChecked() is False:
             col = df.columns
         else:
@@ -227,10 +227,6 @@ class search_w(QWidget):
         model = PandasModel(df.loc[match, col])
         t.setModel(model)
         t.resizeColumnsToContents()
-        t.show()
-        self.previous_t.setParent(None)
-        self.previous_t = t
-        self.vbox.addWidget(t)
 
 
 def launch_gui(args, litoy, handler):
