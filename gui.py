@@ -8,7 +8,7 @@ from PyQt5.QtCore import *
 
 import sys
 from user_settings import user_age, user_life_expected
-from PandasModel import PandasModel
+from PandasModel import PandasModel, Viewer
 import prompt_toolkit
 from LiTOY import get_meta_from_content, add_new_entry, log_
 import logging
@@ -186,6 +186,7 @@ class review_w(QWidget):
 class search_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
+        self.litoy = litoy
         self.df = litoy.df
 
         self.vbox = QVBoxLayout()
@@ -207,7 +208,7 @@ class search_w(QWidget):
 
         self.vbox.addLayout(self.hbox)
 
-        self.table = QTableView(self)
+        self.table = QTableView(Viewer)
         self.vbox.addWidget(self.table)
 
         self.setLayout(self.vbox)
@@ -224,7 +225,7 @@ class search_w(QWidget):
             col = df.columns
         else:
             col = ["content"]
-        model = PandasModel(df.loc[match, col])
+        model = PandasModel(df.loc[match, col], self.litoy)
         t.setModel(model)
         t.resizeColumnsToContents()
 

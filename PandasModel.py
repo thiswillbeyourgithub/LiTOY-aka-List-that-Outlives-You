@@ -10,9 +10,13 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QKeyS
 from PyQt5 import QtPrintSupport
 
 class PandasModel(QAbstractTableModel):
-    def __init__(self, df = pd.DataFrame(), parent=None): 
+    def __init__(self, df = pd.DataFrame(), litoy=None, parent=None): 
         QAbstractTableModel.__init__(self, parent=None)
-        self._df = df
+        if litoy=None:
+            self._df = df
+        else:
+            self._df = litoy.df
+            self.litoy = litoy
         self.setChanged = False
         self.dataChanged.connect(self.setModified)
 
@@ -50,9 +54,11 @@ class PandasModel(QAbstractTableModel):
     def setData(self, index, value, role):
         row = self._df.index[index.row()]
         col = self._df.columns[index.column()]
-        #self._df.at[row, col] = value
-        self._df.values[row][col] = value
+        self._df.at[row, col] = value
+        #self._df.values[row][col] = value
         self.dataChanged.emit(index, index)
+        self.litoy.save_to_file(self._df)
+        self.litoy.reload_df()
         return True
 
     def rowCount(self, parent=QModelIndex()): 
