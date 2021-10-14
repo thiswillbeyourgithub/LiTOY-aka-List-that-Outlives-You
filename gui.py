@@ -144,8 +144,17 @@ class main_menu(QWidget):
         content = "#"*50 + "<br>" + "#"*50 + "<br>" + "#"*10 + "CROPPED EARLIER MESSAGES" + "#"*10 + "<br>"*10 + content
         textEd = QTextEdit(content)
         textEd.setReadOnly(True)
-        textEd.verticalScrollBar().setValue(textEd.verticalScrollBar().maximum())
+
+        scr = textEd.verticalScrollBar()
+        scr_max = scr.maximum()
+        scr.setValue(scr_max)
+
+        large_font = QFont()
+        large_font.setPointSize(18)
+        textEd.setFont(large_font)
+
         p.setCentralWidget(textEd)
+
 
 
 class add_w(QWidget):
