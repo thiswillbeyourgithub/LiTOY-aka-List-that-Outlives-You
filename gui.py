@@ -207,9 +207,8 @@ class search_w(QWidget):
 
         self.vbox.addLayout(self.hbox)
 
-        self.previous_t = QSpacerItem(100, 100, QSizePolicy.Preferred)
-        self.vbox.addItem(self.previous_t)
-        self.vbox.addItem(self.previous_t)
+        self.previous_t = QTableView()
+        self.vbox.addWidget(self.previous_t)
 
         self.setLayout(self.vbox)
         self.show()
@@ -229,10 +228,7 @@ class search_w(QWidget):
         t.setModel(model)
         t.resizeColumnsToContents()
         t.show()
-        if "QSpacerItem" in str(type(self.previous_t)):
-            self.vbox.removeItem(self.previous_t)
-        else:
-            self.previous_t.setParent(None)
+        self.previous_t.setParent(None)
         self.previous_t = t
         self.vbox.addWidget(t)
 
