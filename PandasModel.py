@@ -10,7 +10,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QKeyS
 from PyQt5 import QtPrintSupport
 
 class PandasModel(QAbstractTableModel):
-    def __init__(self, df, litoy, parent=None): 
+    def __init__(self, df=pd.DataFrame(), litoy=None, parent=None):
         QAbstractTableModel.__init__(self, parent=None)
         self.setChanged = False
         self.dataChanged.connect(self.setModified)
