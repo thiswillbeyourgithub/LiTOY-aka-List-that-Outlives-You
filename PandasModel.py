@@ -46,10 +46,8 @@ class PandasModel(QAbstractTableModel):
         if index.isValid():
             if (role == Qt.EditRole):
                 return self._df.values[index.row()][index.column()]
-                #return self._df.iloc[index.row(), index.column()]
             elif (role == Qt.DisplayRole):
                 return self._df.values[index.row()][index.column()]
-                #return self._df.iloc[index.row(), index.column()]
         return None
 
     def setData(self, index, new_value, role):
@@ -57,7 +55,6 @@ class PandasModel(QAbstractTableModel):
         col = self._df.columns[index.column()]
         old_value = self._df.loc[row, col]
         self._df.at[row, col] = new_value
-        #self._df.values[row][col] = new_value
         self.litoy.df.loc[row, col] = new_value
         self.litoy.gui_log(f'Edited entry with ID {row}, field "{col}", {old_value} => {new_value}',
                          False)
