@@ -10,19 +10,20 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QKeyS
 from PyQt5 import QtPrintSupport
 
 class PandasModel(QAbstractTableModel):
-    def __init__(self, df = pd.DataFrame(), litoy=None, parent=None): 
+    def __init__(self, df, litoy, parent=None): 
         QAbstractTableModel.__init__(self, parent=None)
-        if litoy=None:
-            self._df = df
-        else:
-            self._df = litoy.df
-            self.litoy = litoy
         self.setChanged = False
         self.dataChanged.connect(self.setModified)
 
+        self._df = df
+        self.litoy = litoy
+
     def setModified(self):
         self.setChanged = True
-        print(self.setChanged)
+        print("Changed something in PandasModel.")
+        self.litoy.save_to_file(self.litoy.df)
+        self.litoy._reload_df()
+        print("Saved and reloaded LiTOY db.")
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
@@ -56,9 +57,8 @@ class PandasModel(QAbstractTableModel):
         col = self._df.columns[index.column()]
         self._df.at[row, col] = value
         #self._df.values[row][col] = value
+        self.litoy.df.loc[row, col] = value
         self.dataChanged.emit(index, index)
-        self.litoy.save_to_file(self._df)
-        self.litoy.reload_df()
         return True
 
     def rowCount(self, parent=QModelIndex()): 
@@ -70,8 +70,9 @@ class PandasModel(QAbstractTableModel):
     def sort(self, column, order):
         colname = self._df.columns.tolist()[column]
         self.layoutAboutToBeChanged.emit()
-        self._df.sort_values(colname, ascending= order == Qt.AscendingOrder, inplace=True)
-        self._df.reset_index(inplace=True, drop=True)
+#        self._df.sort_values(colname, ascending= order == Qt.AscendingOrder, inplace=True)
+#        self._df.reset_index(inplace=True, drop=True)
+        print("Stopped inplace commands!")
         self.layoutChanged.emit()
 
 class Viewer(QMainWindow):
