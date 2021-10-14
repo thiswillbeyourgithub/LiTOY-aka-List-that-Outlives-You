@@ -205,6 +205,7 @@ TODO and planned features:
 * gui: right click on browse to delete an entry
 * gui: implement reviews
 * gui: darkmode
+* gui: add: show full card in log + better autocompletion + possibility to add file directly
 
 * detect channel name of youtube video
 * use lazy import to speed up
