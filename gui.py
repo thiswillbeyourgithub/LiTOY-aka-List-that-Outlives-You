@@ -151,6 +151,7 @@ class add_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
         self.litoy = litoy
+        self.litoy.gui_log(f"Openned adding window.")
 
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
@@ -192,6 +193,7 @@ class browse_w(QWidget):
         super().__init__()
         self.litoy = litoy
         self.df = litoy.df
+        self.litoy.gui_log(f"Openned browsing window.")
 
         self.vbox = QVBoxLayout()
         self.hbox = QHBoxLayout()
@@ -221,6 +223,7 @@ class browse_w(QWidget):
     def process_query(self):
         df = self.df
         query = self.queryIn.text().lower()
+        self.litoy.gui_log(f"Searched for {query}")
 
         match = [x for x in df.index if query in str(df.loc[x, "content"]).lower()
                 or query in str(df.loc[x, "metacontent"]).lower()]
