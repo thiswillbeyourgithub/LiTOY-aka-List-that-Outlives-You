@@ -161,7 +161,7 @@ class add_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
         self.litoy = litoy
-        self.litoy.gui_log(f"Openned adding window.")
+        self.litoy.gui_log(f"Opened adding window.")
 
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
@@ -205,7 +205,7 @@ class browse_w(QWidget):
         super().__init__()
         self.litoy = litoy
         self.df = litoy.df
-        self.litoy.gui_log(f"Openned browsing window.")
+        self.litoy.gui_log(f"Opened browsing window.")
 
         self.vbox = QVBoxLayout()
         self.hbox = QHBoxLayout()
