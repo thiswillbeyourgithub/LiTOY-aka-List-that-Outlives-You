@@ -175,6 +175,10 @@ class add_w(QWidget):
         self.logEnt = QTextEdit("Entry added:\n", self)
         self.logEnt.setReadOnly(True)
 
+        large_font = QFont()
+        large_font.setPointSize(18)
+        self.logEnt.setFont(large_font)
+
         vbox.addWidget(self.editor)
         vbox.addWidget(self.logEnt)
         self.setLayout(vbox)
