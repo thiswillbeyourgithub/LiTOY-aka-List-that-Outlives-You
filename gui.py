@@ -221,6 +221,8 @@ class browse_w(QWidget):
 
         self.setLayout(self.vbox)
         self.show()
+        self.queryIn.setFocus()
+        self.queryIn.setFocusPolicy(Qt.StrongFocus)
 
     def process_query(self):
         df = self.df
@@ -236,6 +238,8 @@ class browse_w(QWidget):
             model = PandasModel(df.loc[match, ["content"]], self.litoy)
         t.setModel(model)
         t.resizeColumnsToContents()
+        self.queryIn.setFocus()
+        self.queryIn.setFocusPolicy(Qt.StrongFocus)
 
 
 def launch_gui(args, litoy, handler):
