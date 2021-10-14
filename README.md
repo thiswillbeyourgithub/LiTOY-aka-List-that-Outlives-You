@@ -207,6 +207,7 @@ TODO and planned features:
 
 * detect channel name of youtube video
 * use lazy import to speed up
+* add defaults value for argparse arguments
 * implement a boost argument that multiplies by 1.5 ELO and DELO
 * implement support for deadline tags, that are used for global scoring
 * implement support for arbitrary additional fields
