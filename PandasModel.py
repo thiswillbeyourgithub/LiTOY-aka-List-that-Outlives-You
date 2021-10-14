@@ -52,12 +52,15 @@ class PandasModel(QAbstractTableModel):
                 #return self._df.iloc[index.row(), index.column()]
         return None
 
-    def setData(self, index, value, role):
+    def setData(self, index, new_value, role):
         row = self._df.index[index.row()]
         col = self._df.columns[index.column()]
-        self._df.at[row, col] = value
-        #self._df.values[row][col] = value
-        self.litoy.df.loc[row, col] = value
+        old_value = self._df.loc[row, col]
+        self._df.at[row, col] = new_value
+        #self._df.values[row][col] = new_value
+        self.litoy.df.loc[row, col] = new_value
+        self.litoy.gui_log(f'Edited entry with ID {row}, field "{col}", {old_value} => {new_value}',
+                         False)
         self.dataChanged.emit(index, index)
         return True
 

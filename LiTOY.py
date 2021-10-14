@@ -1169,7 +1169,7 @@ def json_periodic_save():
 # class
 class LiTOYClass:
     "Class that interacts with the database using panda etc"
-    def __init__(self, db_path):
+    def __init__(self, db_path, log_):
         if db_path is None:
             db_path = args['db']
             self.path = db_path
@@ -1177,6 +1177,8 @@ class LiTOYClass:
         else:
             self.path = db_path
             self.df = pd.read_excel(db_path).set_index("ID").sort_index()
+        self.log_ = log_
+        self.gui_log = lambda x, y: self.log_(f"GUI: {x}", y)
 
     def _reload_df(self):
         "used to reload the df from the file"
@@ -1368,9 +1370,9 @@ if __name__ == "__main__":
 
     # initialize litoy class:
     if DB_file_check(args['db']) is False:
-        litoy = LiTOYClass(None)
+        litoy = LiTOYClass(None, log_)
     else:
-        litoy = LiTOYClass(args['db'])
+        litoy = LiTOYClass(args['db'], log_)
 
     # automatic backup at startup
     json_periodic_save()
