@@ -201,12 +201,15 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* gui: auto scroll down the logs
-* gui: implement reviews
-* gui: darkmode
-* gui: add: show full card in log + better autocompletion + possibility to add file directly
+* gui: browser: ctrl+f to focus on search field
+* gui: browser: ability to delete several entries at once
+* gui: logs: auto scroll down
+* gui: reviews
+* gui: all: darkmode
+* gui: add: show full card in log + better autocompletion + ability to add file directly
 * gui: show podium at startup
-* gui: add settings and logs in shortcut and menu action + align search etc + remove bars + add spacer
+* gui: settings
+* gui: remove stretch on the side and add spacers instead
 
 * detect channel name of youtube video
 * use lazy import to speed up
