@@ -258,6 +258,13 @@ class browse_w(QWidget):
         self.vbox.addLayout(self.hbox)
 
         self.table = QTableView(self)
+        if self.allFields.isChecked() is False:
+            model = PandasModel(df=self.litoy.df.loc[:, self.litoy.df.columns], litoy=self.litoy)
+        else:
+            model = PandasModel(df=self.litoy.df.loc[:, ["content"]], litoy=self.litoy)
+        self.table.setModel(model)
+        self.table.resizeColumnsToContents()
+
         self.vbox.addWidget(self.table)
 
         self.setLayout(self.vbox)
