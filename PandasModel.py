@@ -59,15 +59,21 @@ class PandasModel(QAbstractTableModel):
         return None
 
     def setData(self, index, new_value, role):
-        row = self._df.index[index.row()]
-        col = self._df.columns[index.column()]
-        old_value = self._df.loc[row, col]
-        self._df.at[row, col] = new_value
-        self.litoy.df.loc[row, col] = new_value
-        self.litoy.gui_log(f'Edited entry with ID {row}, field "{col}", {old_value} => {new_value}',
-                         False)
-        self.dataChanged.emit(index, index)
-        return True
+        if self.logging: print("Pandas: setData")
+        certain = QMessageBox.question(self.parent(), "Confirm editing",
+                    "Are you sure you want to edit this entry?",
+                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if certain == QMessageBox.No:
+            return False
+        if certain == QMessageBox.Yes:
+            row = self._df.index[index.row()]
+            col = self._df.columns[index.column()]
+            old_value = self._df.loc[row, col]
+            self._df.at[row, col] = new_value
+            self.litoy.df.loc[row, col] = new_value
+            self.litoy.gui_log(f'Edited entry with ID {row}, field "{col}", {old_value} => {new_value}', False)
+            self.dataChanged.emit(index, index)
+            return True
 
     def rowCount(self, parent=QModelIndex()): 
         if self.logging: print("Pandas: rowCount")
