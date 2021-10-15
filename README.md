@@ -201,14 +201,14 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* gui: browser: understand why only one shortcut works
 * gui: browser: ctrl+f to focus on search field
 * gui: browser: ability to delete several entries at once
-* gui: logs: auto scroll down
-* gui: reviews
-* gui: add: show full card in log + better autocompletion + ability to add file directly
-* gui: show podium at startup
-* gui: settings
 * gui: remove stretch on the side and add spacers instead
+* gui: logs: auto scroll down
+* gui: add: show full card in log + better autocompletion + ability to add file directly
+* gui: settings
+* gui: reviews
 
 * detect channel name of youtube video
 * use lazy import to speed up
