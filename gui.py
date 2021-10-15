@@ -12,6 +12,7 @@ from PandasModel import PandasModel
 import prompt_toolkit
 from LiTOY import get_meta_from_content, add_new_entry
 import logging
+from pprint import pprint
 
 class Communicate(QObject):
     sig = pyqtSignal()
@@ -31,14 +32,17 @@ class main_window(QMainWindow):
         self.to_mainmenu(litoy)
 
         menuBar = self.menuBar()
+
         back_to_mm = QAction("Main menu", self)
         back_to_mm.triggered.connect(lambda : self.to_mainmenu(litoy))
         back_to_mm.setShortcut(Qt.Key_Escape)
         back_to_mm.setShortcut(Qt.Key_Backspace)
         back_to_mm.setShortcut("Ctrl+m")
+
         quit = QAction("Exit", self)
         quit.triggered.connect(self.close)
         quit.setShortcut("Ctrl+Q")
+
         menuBar.addAction(back_to_mm)
         menuBar.addAction(quit)
 
