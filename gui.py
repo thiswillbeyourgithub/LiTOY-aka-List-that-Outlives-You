@@ -371,8 +371,28 @@ class browse_w(QWidget):
         self.process_query()
         return True
 
-def launch_gui(args, litoy, handler):
+def launch_gui(args, litoy, handler, dark_mode):
     app = QApplication(sys.argv)
+
+    if dark_mode:
+        # https://stackoverflow.com/questions/48256772/dark-theme-for-qt-widgets
+        app.setStyle("Fusion")
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        palette.setColor(QPalette.WindowText, Qt.white)
+        palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        palette.setColor(QPalette.ToolTipBase, Qt.black)
+        palette.setColor(QPalette.ToolTipText, Qt.white)
+        palette.setColor(QPalette.Text, Qt.white)
+        palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        palette.setColor(QPalette.ButtonText, Qt.white)
+        palette.setColor(QPalette.BrightText, Qt.red)
+        palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        palette.setColor(QPalette.HighlightedText, Qt.black)
+        app.setPalette(palette)
+
     win = main_window(args, litoy, handler)
     sys.exit(app.exec_())
 

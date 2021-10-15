@@ -205,7 +205,6 @@ TODO and planned features:
 * gui: browser: ability to delete several entries at once
 * gui: logs: auto scroll down
 * gui: reviews
-* gui: all: darkmode
 * gui: add: show full card in log + better autocompletion + ability to add file directly
 * gui: show podium at startup
 * gui: settings

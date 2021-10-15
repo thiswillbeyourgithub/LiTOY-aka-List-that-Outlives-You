@@ -1263,6 +1263,11 @@ parser.add_argument("--graphical", "-g",
                     action="store_true",
                     required=False,
                     help="enable GUI")
+parser.add_argument("--gui-darkmode",
+                    dest='darkmode',
+                    action="store_true",
+                    default=False,
+                    help="toggle GUI darkmode")
 parser.add_argument("--import_from_file", "-i",
                     nargs="?",
                     metavar="PATH",
@@ -1427,7 +1432,7 @@ Press enter twice between lines to solve buggy display."
     if args["gui"] is True:
         log_("Launching GUI")
         from gui import launch_gui
-        launch_gui(args, litoy, handler)
+        launch_gui(args, litoy, handler, args["darkmode"])
         raise SystemExit()
 
     if args['import_path'] is not None:
