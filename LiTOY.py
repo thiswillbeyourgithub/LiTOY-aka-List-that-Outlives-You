@@ -1179,7 +1179,7 @@ def json_periodic_save():
 # class
 class LiTOYClass:
     "Class that interacts with the database using panda etc"
-    def __init__(self, db_path, log_):
+    def __init__(self, db_path, log_, handler):
         if db_path is None:
             db_path = args['db']
             self.path = db_path
@@ -1188,6 +1188,7 @@ class LiTOYClass:
             self.path = db_path
             self.df = pd.read_excel(db_path).set_index("ID").sort_index()
         self.log_ = log_
+        self.handler = handler
         self.gui_log = lambda x, y=False: self.log_(f"GUI: {x}", y)
 
     def _reload_df(self):
@@ -1385,9 +1386,9 @@ if __name__ == "__main__":
 
     # initialize litoy class:
     if DB_file_check(args['db']) is False:
-        litoy = LiTOYClass(None, log_)
+        litoy = LiTOYClass(None, log_, handler)
     else:
-        litoy = LiTOYClass(args['db'], log_)
+        litoy = LiTOYClass(args['db'], log_, handler)
 
     # automatic backup at startup
     json_periodic_save()
@@ -1432,7 +1433,7 @@ Press enter twice between lines to solve buggy display."
     if args["gui"] is True:
         log_("Launching GUI")
         from gui import launch_gui
-        launch_gui(args, litoy, handler)
+        launch_gui(args, litoy)
         raise SystemExit()
 
     if args['import_path'] is not None:

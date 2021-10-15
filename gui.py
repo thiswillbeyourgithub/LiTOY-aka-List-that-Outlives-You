@@ -19,14 +19,14 @@ class Communicate(QObject):
     sig = pyqtSignal()
 
 class main_window(QMainWindow):
-    def __init__(self, args, litoy, handler):
+    def __init__(self, args, litoy):
         super().__init__()
-        self.initUI(args, litoy, handler)
+        self.initUI(args, litoy)
 
-    def initUI(self, args, litoy, handler):
+    def initUI(self, args, litoy):
         self.args = args
         self.litoy = litoy
-        self.handler = handler
+        self.handler = litoy.handler
         self.setGeometry(600, 600, 500, 300)
         self.setWindowTitle('LiTOY')
         self.statusBar().showMessage(f"Loaded database {self.args['db']}")
@@ -430,7 +430,7 @@ class browse_w(QWidget):
         self.process_query()
         return True
 
-def launch_gui(args, litoy, handler):
+def launch_gui(args, litoy):
     app = QApplication(sys.argv)
 
     if args['darkmode']:
@@ -452,7 +452,7 @@ def launch_gui(args, litoy, handler):
         palette.setColor(QPalette.HighlightedText, Qt.black)
         app.setPalette(palette)
 
-    win = main_window(args, litoy, handler)
+    win = main_window(args, litoy)
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
