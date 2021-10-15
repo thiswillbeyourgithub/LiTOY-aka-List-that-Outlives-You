@@ -5,6 +5,8 @@ useless_last_years  = 20
 user_age            = 24
 user_life_expected  = 90
 
+gui_font_size = 18
+
 # save very often a copy of the whole database as a json file:
 json_auto_save = True
 

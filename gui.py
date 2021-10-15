@@ -162,7 +162,7 @@ class main_menu(QWidget):
         scr.setValue(scr_max)
 
         large_font = QFont()
-        large_font.setPointSize(18)
+        large_font.setPointSize(gui_font_size)
         textEd.setFont(large_font)
 
         p.setCentralWidget(textEd)
@@ -244,7 +244,7 @@ class add_w(QWidget):
         self.logEnt.setReadOnly(True)
 
         large_font = QFont()
-        large_font.setPointSize(18)
+        large_font.setPointSize(gui_font_size)
         self.logEnt.setFont(large_font)
 
         vbox.addWidget(self.editor)
