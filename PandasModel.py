@@ -10,7 +10,8 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QKeyS
 from PyQt5 import QtPrintSupport
 
 class PandasModel(QAbstractTableModel):
-    def __init__(self, df=pd.DataFrame(), litoy=None, parent=None):
+    def __init__(self, df=pd.DataFrame(), litoy=None, parent=None, logging=False):
+        print("Pandas: init")
         QAbstractTableModel.__init__(self, parent=None)
         self.setChanged = False
         self.dataChanged.connect(self.setModified)
@@ -20,8 +21,10 @@ class PandasModel(QAbstractTableModel):
             df["date"] = [str(x) for x in df["date"].values.tolist()]
         self._df = df
         self.litoy = litoy
+        self.logging = logging
 
     def setModified(self):
+        if self.logging: print("Pandas: setModified")
         self.setChanged = True
         print("Changed something in PandasModel.")
         self.litoy.save_to_file(self.litoy.df)
@@ -29,6 +32,7 @@ class PandasModel(QAbstractTableModel):
         print("Saved and reloaded LiTOY db.")
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if self.logging: print("Pandas: headerData")
         if role != Qt.DisplayRole:
             return QVariant()
         if orientation == Qt.Horizontal:
@@ -43,9 +47,11 @@ class PandasModel(QAbstractTableModel):
                 return QVariant()
 
     def flags(self, index):
+        if self.logging: print("Pandas: flags")
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
 
     def data(self, index, role=Qt.DisplayRole):
+        if self.logging: print("Pandas: data")
         if index.isValid():
             if (role == Qt.EditRole):
                 return self._df.values[index.row()][index.column()]
@@ -65,9 +71,11 @@ class PandasModel(QAbstractTableModel):
         return True
 
     def rowCount(self, parent=QModelIndex()): 
+        if self.logging: print("Pandas: rowCount")
         return len(self._df.index)
 
     def columnCount(self, parent=QModelIndex()): 
+        if self.logging: print("Pandas: columnCount")
         return len(self._df.columns)
 
 #    def sort(self, column, order):
