@@ -28,7 +28,6 @@ class PandasModel(QAbstractTableModel):
         self.setChanged = True
         print("Changed something in PandasModel.")
         self.litoy.save_to_file(self.litoy.df)
-        self.litoy._reload_df()
         print("Saved and reloaded LiTOY db.")
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
