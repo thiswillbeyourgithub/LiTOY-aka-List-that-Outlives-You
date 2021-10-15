@@ -310,17 +310,19 @@ def add_new_entry(df, content, metacontent, gui_litoy=None, gui_log=None):
     return newID
 
 
-def pick_entries():
+def pick_entries(gui_litoy=None):
     """
     Pick entries for the reviews : the left one is chosen randomly
     among the 5 with the highest pick_factor, then n_to_review other entries
     are selected at random among the half with the highest pick factor.
     Note: the pick_score goes down fast.
     """
-    df = litoy.df.copy()
-    df = df.loc[df.disabled == 0]
+    if gui_litoy is None:
+        df = litoy.df.loc[litoy.df.disabled == 0].copy()
+    else:
+        df = gui_litoy.df.loc[gui_litoy.df.disabled == 0].copy()
 
-    df["pick_score"] = df.DiELO + df.DtELO
+    df["pick_score"] = df.loc[:, "DiELO"].values + df.loc[:, "DtELO"]
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
     left_choice_id = df.iloc[0:10].sample(1).index[0]
 
