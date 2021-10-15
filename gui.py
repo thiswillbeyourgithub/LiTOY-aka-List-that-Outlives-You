@@ -281,14 +281,95 @@ class browse_w(QWidget):
                 or query in str(df.loc[x, "metacontent"]).lower()]
         t = self.table
         if self.allFields.isChecked() is False:
-            model = PandasModel(df.loc[match, df.columns], self.litoy)
+            model = PandasModel(df=df.loc[match, df.columns], litoy=self.litoy)
         else:
-            model = PandasModel(df.loc[match, ["content"]], self.litoy)
+            model = PandasModel(df=df.loc[match, ["content"]], litoy=self.litoy)
         t.setModel(model)
+
         t.resizeColumnsToContents()
         self.queryIn.setFocus()
         self.queryIn.setFocusPolicy(Qt.StrongFocus)
 
+    def contextMenuEvent(self, event):
+        context_menu = QMenu(self)
+        add_ent = context_menu.addAction("Add new entry")
+        remove_ent = context_menu.addAction("Remove entry")
+        action = context_menu.exec_(self.mapToGlobal(event.pos()))
+        if action == add_ent:
+            self.browse_add_entry()
+
+        if action == remove_ent:
+            self.browse_remove_entry()
+
+    def browse_add_entry(self):
+        litoy = self.litoy
+        self.litoy.gui_log(f"Browser: adding entry")
+
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle("Add entry")
+        dialog.setLabelText("Content of the new entry:")
+        dialog.setTextValue("")
+        le = dialog.findChild(QLineEdit)
+        cur_tags = litoy.get_tags(litoy.df)
+        autocomplete_list = ["tags:"+tags for tags in cur_tags]
+        compl = QCompleter(autocomplete_list, self)
+        compl.setCompletionMode(QCompleter.InlineCompletion)
+        le.setCompleter(compl)
+        dialog.show()
+
+        ok, entry = (
+            dialog.exec_() == QDialog.Accepted,
+            str(dialog.textValue()),
+        )
+        if ok is False:
+            return False
+
+        entry = entry.replace("tags:tags:", "tags:").strip()
+
+        metacontent = get_meta_from_content(entry, gui_log = self.litoy.gui_log)
+        if not self.litoy.entry_duplicate_check(self.litoy.df,
+                                           entry,
+                                           metacontent):
+            newID = add_new_entry(self.litoy.df, entry, metacontent, self.litoy, self.litoy.gui_log)
+            msg = f"ID: {newID}: {entry}\n"
+            title = "Added"
+        else:
+            msg = f"Database already contains entry '{entry}', not added.\n"
+            title = "Error"
+
+        confirmation = QMessageBox.question(self,
+                title, msg, QMessageBox.Yes, QMessageBox.Yes)
+        self.litoy.gui_log(msg)
+        self.df = self.litoy.df
+        self.process_query()
+        return True
+
+    def browse_remove_entry(self):
+        self.litoy.gui_log(f"Browser: removing entry")
+
+        select = self.table.selectionModel()
+        indexes = select.selectedIndexes()
+        for index in indexes:
+            displayed_row = int(index.row())
+            mod = self.table.model()
+            entry_id = mod._df.index.tolist()[displayed_row]
+
+        content = self.litoy.df.loc[entry_id, "content"]
+        certain = QMessageBox.question(self.parent(), "Confirm removal",
+                    "Are you sure you want to remove this entry?\n{content}",
+                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if certain == QMessageBox.No:
+            self.litoy.gui_log(f"Entry with ID {entry_id} was NOT removed.", False)
+            return False
+        self.litoy.save_to_file(self.litoy.df.drop(entry_id))
+        self.litoy.gui_log(f"Entry with ID {entry_id} was removed.", False)
+
+        msg = f"Successfuly removed entry {entry_id}"
+        confirmation = QMessageBox.question(self,
+                "Removed", msg, QMessageBox.Yes, QMessageBox.Yes)
+        self.df = self.litoy.df
+        self.process_query()
+        return True
 
 def launch_gui(args, litoy, handler):
     app = QApplication(sys.argv)
