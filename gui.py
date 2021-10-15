@@ -430,10 +430,10 @@ class browse_w(QWidget):
         self.process_query()
         return True
 
-def launch_gui(args, litoy, handler, dark_mode):
+def launch_gui(args, litoy, handler):
     app = QApplication(sys.argv)
 
-    if dark_mode:
+    if args['darkmode']:
         # https://stackoverflow.com/questions/48256772/dark-theme-for-qt-widgets
         app.setStyle("Fusion")
         palette = QPalette()

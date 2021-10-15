@@ -1432,7 +1432,7 @@ Press enter twice between lines to solve buggy display."
     if args["gui"] is True:
         log_("Launching GUI")
         from gui import launch_gui
-        launch_gui(args, litoy, handler, args["darkmode"])
+        launch_gui(args, litoy, handler)
         raise SystemExit()
 
     if args['import_path'] is not None:
