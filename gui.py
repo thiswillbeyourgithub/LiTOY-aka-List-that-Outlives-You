@@ -36,16 +36,21 @@ class main_window(QMainWindow):
 
         back_to_mm = QAction("Main menu", self)
         back_to_mm.triggered.connect(lambda : self.to_mainmenu(litoy))
-        back_to_mm.setShortcut(Qt.Key_Escape)
-        back_to_mm.setShortcut(Qt.Key_Backspace)
         back_to_mm.setShortcut("Ctrl+m")
+        menuBar.addAction(back_to_mm)
+
 
         quit = QAction("Exit", self)
         quit.triggered.connect(self.close)
         quit.setShortcut("Ctrl+Q")
-
-        menuBar.addAction(back_to_mm)
         menuBar.addAction(quit)
+
+    def keyPressEvent(self, event):
+        "to handle multiple shortcuts for the same action"
+        if event.key() in [Qt.Key_Escape, Qt.Key_Backspace]:
+            self.to_mainmenu(self.litoy)
+        if event.text() == "b":
+            self.mm.launch_browse()
 
 
     def to_mainmenu(self, litoy):
@@ -87,7 +92,6 @@ class main_menu(QWidget):
         btn_review.setAutoDefault(True)
         btn_review.setShortcut("R")
         btn_add.setShortcut("A")
-        btn_browse.setShortcut("B")
         btn_browse.setShortcut("S")
         btn_q.setShortcut("Q")
         btn_log.setShortcut("L")
