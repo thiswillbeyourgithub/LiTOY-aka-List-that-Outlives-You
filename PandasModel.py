@@ -15,6 +15,9 @@ class PandasModel(QAbstractTableModel):
         self.setChanged = False
         self.dataChanged.connect(self.setModified)
 
+        if "date" in df.columns:
+            print("formated date")
+            df["date"] = [str(x) for x in df["date"].values.tolist()]
         self._df = df
         self.litoy = litoy
 
