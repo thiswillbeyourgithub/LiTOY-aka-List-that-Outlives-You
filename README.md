@@ -202,10 +202,11 @@ Syntax and usage example:
 TODO and planned features:
 ======
 * gui: auto scroll down the logs
-* gui: right click on browse to delete an entry
 * gui: implement reviews
 * gui: darkmode
 * gui: add: show full card in log + better autocompletion + possibility to add file directly
+* gui: show podium at startup
+* gui: add settings and logs in shortcut and menu action + align search etc + remove bars + add spacer
 
 * detect channel name of youtube video
 * use lazy import to speed up
@@ -218,8 +219,8 @@ TODO and planned features:
 * code a way to open links without doing reviews
 * implement a two letter shortcut code to answer importance and time at the same time
 * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
-* use strong type hints
-* create a desktop file to make it executable
+* use static type hints
+* create a desktop file to make it easily executable on linux
 * make it into a pip package on PyPI
 * talk about it on LW and answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
 
