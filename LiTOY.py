@@ -261,7 +261,9 @@ def add_new_entry(df, content, metacontent, gui_litoy=None, gui_log=None):
     tags = get_tags_from_content(content)
     if gui_litoy is not None:
         litoy = gui_litoy
-    if gui_log is not None:
+    if gui_log is None:
+        global log_
+    else:
         log_ = gui_log
 
     # in case metacontent doesn't contain those keys, ignore exceptions:
@@ -855,7 +857,9 @@ def get_meta_from_content(string, additional_args=None, gui_log=None):
     """
     if additional_args is None:
         additional_args = {}
-    if gui_log is not None:
+    if gui_log is None:
+        global log_
+    else:
         log_ = gui_log
     with suppress(UnboundLocalError):
         since = time.time() - last
