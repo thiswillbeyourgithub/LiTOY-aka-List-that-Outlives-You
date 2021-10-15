@@ -67,10 +67,10 @@ class PandasModel(QAbstractTableModel):
     def columnCount(self, parent=QModelIndex()): 
         return len(self._df.columns)
 
-    def sort(self, column, order):
-        colname = self._df.columns.tolist()[column]
-        self.layoutAboutToBeChanged.emit()
-#        self._df.sort_values(colname, ascending= order == Qt.AscendingOrder, inplace=True)
-#        self._df.reset_index(inplace=True, drop=True)
-        print("Stopped inplace commands!")
+#    def sort(self, column, order):
+#        colname = self._df.columns.tolist()[column]
+#        self.layoutAboutToBeChanged.emit()
+##        self._df.sort_values(colname, ascending= order == Qt.AscendingOrder, inplace=True)
+##        self._df.reset_index(inplace=True, drop=True)
+#        print("Stopped inplace commands!")
         self.layoutChanged.emit()

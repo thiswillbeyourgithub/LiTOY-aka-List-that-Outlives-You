@@ -1216,7 +1216,7 @@ class LiTOYClass:
         "checks if an entry already exists before adding it"
         # strangely, this was faster than using lapply
         for i in list(df.index):
-            content = df.loc[i, "content"].strip()
+            content = str(df.loc[i, "content"]).strip()
             content = content.replace("\n", "")
             metacontent = json.loads(df.loc[i, "metacontent"])
             if newc == content:
