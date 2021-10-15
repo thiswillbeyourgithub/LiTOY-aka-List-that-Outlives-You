@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QLabel, QPus
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+import json
 
 import sys
 from user_settings import user_age, user_life_expected
@@ -12,7 +13,7 @@ from PandasModel import PandasModel
 import prompt_toolkit
 from LiTOY import get_meta_from_content, add_new_entry
 import logging
-from pprint import pprint
+from pprint import pprint as pp
 
 class Communicate(QObject):
     sig = pyqtSignal()
@@ -103,11 +104,13 @@ class main_menu(QWidget):
         btn_q.clicked.connect(QApplication.quit)
         btn_log.clicked.connect(self.show_logs)
 
+        self.tab_widget = tab_widget(self.litoy)
 
         # layout
         vbox = QVBoxLayout()
         vbox.addWidget(title)
         vbox.addWidget(self.pbar)
+        vbox.addWidget(self.tab_widget)
         vbox.addStretch()
         vbox.addWidget(btn_review)
         vbox.addStretch()
@@ -159,6 +162,62 @@ class main_menu(QWidget):
 
         p.setCentralWidget(textEd)
 
+
+class tab_widget(QTabWidget):
+    def __init__(self, litoy):
+        super().__init__()
+        self.litoy = litoy
+        df = self.litoy.df
+        self.tab_podium = QWidget()
+        self.tab_imp = QWidget()
+        self.tab_quick = QWidget()
+        self.addTab(self.tab_podium, "Podium")
+        self.addTab(self.tab_imp, "Important")
+        self.addTab(self.tab_quick, "Quick")
+        self.tab_init_ui(df)
+
+    def tab_init_ui(self, df):
+      dfp = df.loc[:, ["content", "gELO", "iELO", "tELO",
+                       "tags", "disabled", "metacontent"]
+                   ][df["disabled"] == 0]
+      dfp["media_title"] = [(lambda x: json.loads(x)["title"]
+                             if "title" in json.loads(x).keys()
+                             else "")(x)
+                            for x in dfp.loc[:, "metacontent"]]
+
+      # podium
+      cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+      to_show = dfp.sort_values(by="gELO", ascending=False)[0:10]
+      grid = QGridLayout(self)
+      for x, idx in enumerate(to_show.index):
+          for y, col in enumerate(cols):
+              widget = QLabel(str(dfp.loc[idx, col]))
+              grid.addWidget(widget, x+1, y)
+      [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y) for y, s in enumerate(cols)]
+      self.tab_podium.setLayout(grid)
+
+      # important
+      cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+      to_show = dfp.sort_values(by="iELO", ascending=False)[0:10]
+      grid = QGridLayout(self)
+      for x, idx in enumerate(to_show.index):
+          for y, col in enumerate(cols):
+              widget = QLabel(str(dfp.loc[idx, col]))
+              grid.addWidget(widget, x+1, y)
+      [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y) for y, s in enumerate(cols)]
+      self.tab_imp.setLayout(grid)
+
+      # quick
+      cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+      to_show = dfp.sort_values(by="iELO", ascending=False)[0:10]
+      grid = QGridLayout(self)
+      for x, idx in enumerate(to_show.index):
+          for y, col in enumerate(cols):
+              widget = QLabel(str(dfp.loc[idx, col]))
+              grid.addWidget(widget, x+1, y)
+      [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y) for y, s in enumerate(cols)]
+      self.tab_quick.setLayout(grid)
+      return True
 
 
 class add_w(QWidget):
