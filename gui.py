@@ -474,26 +474,28 @@ class browse_w(QWidget):
 
         select = self.table.selectionModel()
         indexes = select.selectedIndexes()
+        entry_idx = []
         for index in indexes:
             displayed_row = int(index.row())
             mod = self.table.model()
-            entry_id = mod._df.index.tolist()[displayed_row]
+            entry_idx.append(mod._df.index.tolist()[displayed_row])
 
-        content = self.litoy.df.loc[entry_id, "content"]
-        certain = QMessageBox.question(self.parent(), "Confirm removal",
-                    "Are you sure you want to remove this entry?\n{content}",
-                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if certain == QMessageBox.No:
-            self.litoy.gui_log(f"Entry with ID {entry_id} was NOT removed.", False)
-            return False
-        self.litoy.save_to_file(self.litoy.df.drop(entry_id))
-        self.litoy.gui_log(f"Entry with ID {entry_id} was removed.", False)
+        for entry_id in entry_idx:
+            content = self.litoy.df.loc[entry_id, "content"]
+            certain = QMessageBox.question(self.parent(), "Confirm removal",
+                        f"Are you sure you want to remove this entry?\n{content}",
+                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if certain == QMessageBox.No:
+                self.litoy.gui_log(f"Entry with ID {entry_id} was NOT removed.", False)
+            elif certain == QMessageBox.Yes:
+                self.litoy.save_to_file(self.litoy.df.drop(entry_id))
+                self.litoy.gui_log(f"Entry with ID {entry_id} was removed.", False)
 
-        msg = f"Successfuly removed entry {entry_id}"
-        confirmation = QMessageBox.question(self,
-                "Removed", msg, QMessageBox.Yes, QMessageBox.Yes)
-        self.df = self.litoy.df
-        self.process_query()
+                msg = f"Successfuly removed entry {entry_id}"
+                confirmation = QMessageBox.question(self,
+                        "Removed", msg, QMessageBox.Yes, QMessageBox.Yes)
+                self.df = self.litoy.df
+                self.process_query()
         return True
 
 def launch_gui(args, litoy):
