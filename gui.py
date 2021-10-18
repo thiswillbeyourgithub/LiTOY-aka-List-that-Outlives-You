@@ -3,12 +3,12 @@
 import json
 from itertools import chain
 import sys
+from pathlib import Path
 
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QLabel, QPushButton, QWidget, QHBoxLayout
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QLabel, QPushButton, QWidget, QHBoxLayout, QAction, QMenu, QProgressBar, QMessageBox, QTabWidget, QGridLayout, QLineEdit, QCheckBox, QTableView, QTextEdit, QCompleter
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPalette, QFont, QPixmap
 
 from user_settings import user_age, user_life_expected, shortcuts, n_session, n_to_review, questions, gui_font_size
 from PandasModel import PandasModel
