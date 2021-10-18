@@ -88,50 +88,104 @@ class main_window(QMainWindow):
             self.mm.launch_browse()
 
 
+    def open_settings(self, litoy):
+        self.sett_window = settings_w(litoy)
+        self.change_font_size(0)
+
     def to_mainmenu(self, litoy):
         self.mm = main_menu(litoy)
         self.setCentralWidget(self.mm)
         self.show()
 
-    def show_logs(self, handler):
-        self.logs_window = logs_w(handler)
-        self.logs_window.show()
+    def show_logs(self, handler, fontsize, litoy):
+        self.logs_window = logs_w(handler, fontsize, litoy)
 
-class logs_w(QMainWindow):
-    def __init__(self, handler):
+class settings_w(QWidget):
+    def __init__(self, litoy):
         super().__init__()
-        self.initUI(handler)
+        self.initUI(litoy)
 
-    def initUI(self, handler):
+    def initUI(self, litoy):
+        litoy.gui_log(f"Opened settings window.")
+        sett_file = Path("./user_settings.py")
+        with open(sett_file) as lf:
+            content = lf.read()
+        self.editor = QTextEdit(self)
+        self.editor.setText(content)
+
+        self.btn_save = QPushButton("Save", self)
+        self.btn_save.clicked.connect(self.save_settings)
+        self.btn_cancel = QPushButton("Cancel", self)
+        self.btn_cancel.clicked.connect(self.cancel_settings)
+
+        large_font = QFont()
+        large_font.setPointSize(gui_font_size)
+        self.editor.setFont(large_font)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.editor)
+        hbox = QHBoxLayout()
+        hbox.addStretch()
+        hbox.addWidget(self.btn_save)
+        hbox.addWidget(self.btn_cancel)
+        hbox.setAlignment(Qt.AlignBottom)
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
+        self.show()
+
+    def save_settings(self):
+        pass
+
+    def cancel_settings(self):
+        confirmation = QMessageBox.question(self,
+                "Cancel", "Not saved.", QMessageBox.Ok, QMessageBox.Ok)
+        self.close()
+
+class logs_w(QWidget):
+    def __init__(self, handler, fontsize, litoy):
+        super().__init__()
+        self.initUI(handler, fontsize, litoy)
+
+    def initUI(self, handler, fontsize, litoy):
+        litoy.gui_log(f"Opened settings window.")
         self.log_file = str(handler).split(" ")[1]
+        self.current_font_size = fontsize
 
         self.textEd = QTextEdit(self)
         self.textEd.setReadOnly(True)
         large_font = QFont()
-        large_font.setPointSize(gui_font_size)
+        large_font.setPointSize(fontsize)
         self.textEd.setFont(large_font)
 
-        scr = self.textEd.verticalScrollBar()
-        scr_max = scr.maximum()
-        scr.setValue(scr_max)
-
-        self.btn = QPushButton("Show full", self, checkable=True)
-        self.btn.clicked.connect(self.show_full_logs)
+        self.btn_full = QPushButton("Show full", self, checkable=True)
+        self.btn_full.clicked.connect(self.show_full_logs)
+        self.btn_fontp = QPushButton("Font +", self)
+        self.btn_fontp.clicked.connect(lambda : self.change_font_size(1))
+        self.btn_fontp.setShortcut("Ctrl++")
+        self.btn_fontm = QPushButton("Font -", self)
+        self.btn_fontm.clicked.connect(lambda : self.change_font_size(-1))
+        self.btn_fontm.setShortcut("Ctrl+-")
 
         vbox = QVBoxLayout()
         hbox = QHBoxLayout()
         hbox.addWidget(QLabel("Logs:"))
-        hbox.addWidget(self.btn)
+        hbox.addWidget(self.btn_full)
+        hbox.addWidget(self.btn_fontp)
+        hbox.addWidget(self.btn_fontm)
+        hbox.addStretch()
         vbox.addLayout(hbox)
         vbox.addWidget(self.textEd)
         self.setLayout(vbox)
 
         self.show_full_logs()
-        self.setCentralWidget(self.textEd)
         self.show()
 
+        scr = self.textEd.verticalScrollBar()
+        scr_max = scr.maximum()
+        scr.setValue(scr_max)
+
     def show_full_logs(self):
-        if self.btn.isChecked() is True:
+        if self.btn_full.isChecked() is True:
             msg = "FULL LOGS"
             nlimit = 0
         else:
@@ -141,6 +195,17 @@ class logs_w(QMainWindow):
             content = "#"*50 + "<br>" + "#"*50 + "<br>" + "#"*10 + msg + "#"*10 + "<br>"*10 + "<br>".join(lf.read().split("\n")[-nlimit:])
         self.textEd.setText(content)
         return True
+
+    def change_font_size(self, incr):
+            allW = self.findChildren(QWidget)
+            self.current_font_size += incr
+            new_font = QFont()
+            new_font.setPointSize(self.current_font_size)
+            for w in allW:
+                try:
+                    w.setFont(new_font)
+                except:
+                    print(f"Failed to resize {w}")
 
 class main_menu(QWidget):
     def __init__(self, litoy):
