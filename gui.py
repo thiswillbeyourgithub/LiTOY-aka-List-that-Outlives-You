@@ -33,9 +33,13 @@ class main_window(QMainWindow):
 
         back_to_mm = QAction("Main menu", self)
         back_to_mm.triggered.connect(lambda : self.to_mainmenu(litoy))
-        back_to_mm.setShortcut("Ctrl+m")
+        back_to_mm.setShortcut("Ctrl+M")
         menuBar.addAction(back_to_mm)
 
+        open_logs = QAction("Show logs", self)
+        open_logs.triggered.connect(lambda : self.show_logs(litoy.handler))
+        open_logs.setShortcut("Ctrl+L")
+        menuBar.addAction(open_logs)
 
         quit = QAction("Exit", self)
         quit.triggered.connect(self.close)
@@ -55,6 +59,54 @@ class main_window(QMainWindow):
         self.setCentralWidget(self.mm)
         self.show()
 
+    def show_logs(self, handler):
+        self.logs_window = logs_w(handler)
+        self.logs_window.show()
+
+class logs_w(QMainWindow):
+    def __init__(self, handler):
+        super().__init__()
+        self.initUI(handler)
+
+    def initUI(self, handler):
+        self.log_file = str(handler).split(" ")[1]
+
+        self.textEd = QTextEdit(self)
+        self.textEd.setReadOnly(True)
+        large_font = QFont()
+        large_font.setPointSize(gui_font_size)
+        self.textEd.setFont(large_font)
+
+        scr = self.textEd.verticalScrollBar()
+        scr_max = scr.maximum()
+        scr.setValue(scr_max)
+
+        self.btn = QPushButton("Show full", self, checkable=True)
+        self.btn.clicked.connect(self.show_full_logs)
+
+        vbox = QVBoxLayout()
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel("Logs:"))
+        hbox.addWidget(self.btn)
+        vbox.addLayout(hbox)
+        vbox.addWidget(self.textEd)
+        self.setLayout(vbox)
+
+        self.show_full_logs()
+        self.setCentralWidget(self.textEd)
+        self.show()
+
+    def show_full_logs(self):
+        if self.btn.isChecked() is True:
+            msg = "FULL LOGS"
+            nlimit = 0
+        else:
+            msg = "CROPPED EARLIER LOGS"
+            nlimit = 1000
+        with open(self.log_file) as lf:
+            content = "#"*50 + "<br>" + "#"*50 + "<br>" + "#"*10 + msg + "#"*10 + "<br>"*10 + "<br>".join(lf.read().split("\n")[-nlimit:])
+        self.textEd.setText(content)
+        return True
 
 class main_menu(QWidget):
     def __init__(self, litoy):
@@ -84,26 +136,22 @@ class main_menu(QWidget):
         btn_add    = QPushButton("Add")
         btn_browse = QPushButton("browse")
         btn_q      = QPushButton("Quit")
-        btn_log    = QPushButton("Logs")
 
         btn_review.setAutoDefault(True)
         btn_review.setShortcut("R")
         btn_add.setShortcut("A")
         btn_browse.setShortcut("S")
         btn_q.setShortcut("Q")
-        btn_log.setShortcut("L")
 
         btn_review.setToolTip("Start reviewing your entries")
         btn_add.setToolTip("Add new entries to LiTOY")
         btn_browse.setToolTip("browse entries")
         btn_q.setToolTip("Quit")
-        btn_log.setToolTip("Show logs")
 
         btn_review.clicked.connect(self.launch_review)
         btn_add.clicked.connect(self.launch_add)
         btn_browse.clicked.connect(self.launch_browse)
         btn_q.clicked.connect(QApplication.quit)
-        btn_log.clicked.connect(self.show_logs)
 
         self.tab_widget = tab_widget(self.litoy)
 
@@ -121,7 +169,6 @@ class main_menu(QWidget):
         vbox.addStretch()
         vbox.addWidget(btn_q)
         vbox.addStretch()
-        vbox.addWidget(btn_log)
 
         hbox = QHBoxLayout()
         hbox.addStretch()
@@ -142,26 +189,6 @@ class main_menu(QWidget):
     def launch_browse(self):
         p = self.parent()
         p.setCentralWidget(browse_w(self.litoy, p))
-
-    def show_logs(self):
-        p = self.parent()
-        log_file = str(p.handler).split(" ")[1]
-        with open(log_file) as lf:
-            #content = lf.read().replace("\n", "<br>").split("")[-1000:]
-            content = "<br>".join(lf.read().split("\n")[-1000:])
-        content = "#"*50 + "<br>" + "#"*50 + "<br>" + "#"*10 + "CROPPED EARLIER MESSAGES" + "#"*10 + "<br>"*10 + content
-        textEd = QTextEdit(content)
-        textEd.setReadOnly(True)
-
-        scr = textEd.verticalScrollBar()
-        scr_max = scr.maximum()
-        scr.setValue(scr_max)
-
-        large_font = QFont()
-        large_font.setPointSize(gui_font_size)
-        textEd.setFont(large_font)
-
-        p.setCentralWidget(textEd)
 
 
 class tab_widget(QTabWidget):
