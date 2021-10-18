@@ -201,7 +201,6 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* gui: add: show full card in log + ability to add file directly
 * gui: browser: right click to open an edit window with all fields + also useful when reviewing
 * gui: browser: ctrl+f to focus on search field
 * gui: main menu: remove stretch on the side and add spacers instead

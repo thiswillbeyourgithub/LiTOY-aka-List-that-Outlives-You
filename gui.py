@@ -383,9 +383,9 @@ class add_w(QWidget):
                                            query,
                                            metacontent):
             newID = add_new_entry(self.litoy.df, query, metacontent, self.litoy, self.litoy.gui_log)
-            msg = f"ID: {newID}: {query}\n"
+            msg = f"ID: {newID}\ncontent: {query}\nmetacontent: {metacontent}\n\n"
         else:
-            msg = "Database already contains this entry, not added.\n"
+            msg = "Database already contains this entry, not added.\n\n"
         self.litoy.gui_log(msg)
         self.logEnt.append(msg)
 
