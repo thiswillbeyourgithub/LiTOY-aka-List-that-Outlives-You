@@ -259,7 +259,9 @@ def wrong_arguments_(args):
 def add_new_entry(df, content, metacontent, gui_litoy=None, gui_log=None):
     "Add a new entry to the pandas dataframe"
     tags = get_tags_from_content(content)
-    if gui_litoy is not None:
+    if gui_litoy is None:
+        global litoy
+    else:
         litoy = gui_litoy
     if gui_log is None:
         global log_
