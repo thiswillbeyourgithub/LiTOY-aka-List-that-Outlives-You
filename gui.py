@@ -1,23 +1,19 @@
 #!/usr/bin/env python3.9
 
+import json
+from itertools import chain
+import sys
+
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QLabel, QPushButton, QWidget, QHBoxLayout
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import json
-from itertools import chain
 
-import sys
 from user_settings import user_age, user_life_expected, shortcuts, n_session, n_to_review, questions, gui_font_size
 from PandasModel import PandasModel
-import prompt_toolkit
 from LiTOY import get_meta_from_content, add_new_entry, pick_entries
-import logging
 from pprint import pprint as pp
-
-class Communicate(QObject):
-    sig = pyqtSignal()
 
 class main_window(QMainWindow):
     def __init__(self, args, litoy):
