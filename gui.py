@@ -24,6 +24,8 @@ class main_window(QMainWindow):
         self.args = args
         self.litoy = litoy
         self.handler = litoy.handler
+        self.orig_font_size = gui_font_size
+        self.current_font_size = gui_font_size
         self.setGeometry(600, 600, 500, 300)
         self.setWindowTitle('LiTOY')
         self.statusBar().showMessage(f"Loaded database {self.args['db']}")
@@ -34,17 +36,49 @@ class main_window(QMainWindow):
         back_to_mm = QAction("Main menu", self)
         back_to_mm.triggered.connect(lambda : self.to_mainmenu(litoy))
         back_to_mm.setShortcut("Ctrl+M")
-        menuBar.addAction(back_to_mm)
 
         open_logs = QAction("Show logs", self)
-        open_logs.triggered.connect(lambda : self.show_logs(litoy.handler))
+        open_logs.triggered.connect(lambda : self.show_logs(litoy.handler, self.current_font_size, litoy))
         open_logs.setShortcut("Ctrl+L")
-        menuBar.addAction(open_logs)
 
         quit = QAction("Exit", self)
         quit.triggered.connect(self.close)
         quit.setShortcut("Ctrl+Q")
+
+        fontMenu = QMenu("Font", self)
+
+        increaseFont = QAction("Increase font size", self)
+        increaseFont.triggered.connect(lambda: self.change_font_size(1))
+        increaseFont.setShortcut("Ctrl++")
+        fontMenu.addAction(increaseFont)
+
+        decreaseFont = QAction("Decrease font size", self)
+        decreaseFont.triggered.connect(lambda: self.change_font_size(-1))
+        decreaseFont.setShortcut("Ctrl+-")
+        fontMenu.addAction(decreaseFont)
+
+        sett = QAction("Settings", self)
+        sett.triggered.connect(lambda : self.open_settings(litoy))
+        sett.setShortcut("Ctrl+?")
+
+        menuBar.addAction(back_to_mm)
+        menuBar.addMenu(fontMenu)
+        menuBar.addAction(open_logs)
+        menuBar.addAction(sett)
         menuBar.addAction(quit)
+
+        self.change_font_size(0)
+
+    def change_font_size(self, incr):
+            allW = self.findChildren(QWidget)
+            self.current_font_size += incr
+            new_font = QFont()
+            new_font.setPointSize(self.current_font_size)
+            for w in allW:
+                try:
+                    w.setFont(new_font)
+                except:
+                    print(f"Failed to resize {w}")
 
     def keyPressEvent(self, event):
         "to handle multiple shortcuts for the same action"
