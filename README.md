@@ -201,15 +201,15 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* gui: add: show full card in log + ability to add file directly
 * gui: browser: right click to open an edit window with all fields + also useful when reviewing
 * gui: browser: ctrl+f to focus on search field
-* gui: remove stretch on the side and add spacers instead
-* gui: add: show full card in log + ability to add file directly
+* gui: main menu: remove stretch on the side and add spacers instead
 * gui: settings: save
-* gui: reviewer
+* gui: reviewer: implement skipping and see if it works fine
 
 * detect channel name of youtube video
-* use lazy import to speed up
+* use lazy import to speed up launch?
 * add defaults value for argparse arguments
 * implement a boost argument that multiplies by 1.5 ELO and DELO
 * implement support for deadline tags, that are used for global scoring
