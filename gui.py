@@ -12,7 +12,7 @@ from PyQt5.QtGui import QPalette, QFont, QPixmap, QColor
 
 from user_settings import user_age, user_life_expected, shortcuts, n_session, n_to_review, questions, gui_font_size
 from PandasModel import PandasModel
-from LiTOY import get_meta_from_content, add_new_entry, pick_entries
+import LiTOY
 from pprint import pprint as pp
 
 class main_window(QMainWindow):
@@ -378,11 +378,11 @@ class add_w(QWidget):
         query = self.editor.text()
 
         query = query.replace("tags:tags:", "tags:").strip()
-        metacontent = get_meta_from_content(query, gui_log = self.litoy.gui_log)
+        metacontent = LiTOY.get_meta_from_content(query, gui_log = self.litoy.gui_log)
         if not self.litoy.entry_duplicate_check(self.litoy.df,
                                            query,
                                            metacontent):
-            newID = add_new_entry(self.litoy.df, query, metacontent, self.litoy, self.litoy.gui_log)
+            newID = LiTOY.add_new_entry(self.litoy.df, query, metacontent, self.litoy, self.litoy.gui_log)
             msg = f"ID: {newID}\ncontent: {query}\nmetacontent: {metacontent}\n\n"
         else:
             msg = "Database already contains this entry, not added.\n\n"
@@ -402,7 +402,7 @@ class review_w(QWidget):
         self.n_review_done = 0
         self.n_session_done = 0
         self.mode = "importance"
-        self.picked_ids = pick_entries(litoy)
+        self.picked_ids = LiTOY.pick_entries(litoy)
 
         self.entry_display = QTabWidget(self)
 
@@ -440,7 +440,7 @@ you're lost.")
             if self.n_session_done == n_session:
                 self.finished()
             else:
-                self.picked_ids = pick_entries(self.litoy)
+                self.picked_ids = LiTOY.pick_entries(self.litoy)
         if self.mode == "time":
             self.mode = "importance"
         elif self.mode == "importance":
@@ -577,7 +577,7 @@ class browse_w(QWidget):
 
         entry = entry.replace("tags:tags:", "tags:").strip()
 
-        metacontent = get_meta_from_content(entry, gui_log = self.litoy.gui_log)
+        metacontent = LiTOY.get_meta_from_content(entry, gui_log = self.litoy.gui_log)
         if not self.litoy.entry_duplicate_check(self.litoy.df,
                                            entry,
                                            metacontent):
