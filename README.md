@@ -201,12 +201,14 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* gui: browser: understand why only one shortcut works
+* gui: the logs should be open as a subwindow and not accessible via the menu
+* gui: ability to change font size dynamically, using findChildren
+* gui: browser: right click to open an edit window with all fields
 * gui: browser: ctrl+f to focus on search field
 * gui: browser: ability to delete several entries at once
 * gui: remove stretch on the side and add spacers instead
 * gui: logs: auto scroll down
-* gui: add: show full card in log + better autocompletion + ability to add file directly
+* gui: add: show full card in log + ability to add file directly
 * gui: settings
 * gui: reviews
 
