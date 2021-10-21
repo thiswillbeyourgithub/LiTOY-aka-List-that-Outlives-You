@@ -211,14 +211,11 @@ TODO and planned features:
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: reviewer: implement skipping and see if it works fine
 
-* detect channel name of youtube video
 * use lazy import to speed up launch?
 * add defaults value for argparse arguments
-* implement a boost argument that multiplies by 1.5 ELO and DELO
-* implement support for deadline tags, that are used for global scoring
 * implement support for arbitrary additional fields
 * add --export-as to export as txt, csv, etc
-* always move tags at the end of the entry
+* always move tags etc at the end of the entry
 * code a way to open links without doing reviews
 * implement a two letter shortcut code to answer importance and time at the same time
 * implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
