@@ -807,8 +807,10 @@ for  field '" + chosenfield +"'\n>",
                 additional_args.update({"fallback_text_extractor": True})
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
-                old_cont = df.loc[ent_id, :]["content"]
-                new_meta = get_meta_from_content(old_cont, additional_args)
+                df.loc[ent_id, "content"] = move_flags_at_end(
+                                        df.loc[ent_id, "content"])
+                new_meta = get_meta_from_content(df.loc[ent_id, :]["content"],
+                                                 additional_args)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
                 entry_left = df.loc[id_left, :]
                 entry_right = df.loc[id_right, :]
