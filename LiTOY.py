@@ -937,6 +937,9 @@ extraction from {url} : {e}", False)
         res = {"type": "video",
                "title": title.replace("\n", ""),
                "url": url}
+        if "uploader" in video.keys():
+            res.update({"channel": video["uploader"]})
+            print(video["uploader"])
         try:
             length = str(round(video['duration']/60, 1))
             res.update({"length": length})
