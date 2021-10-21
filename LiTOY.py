@@ -40,6 +40,7 @@ import requests
 import subprocess
 import sys
 import os
+import re
 import json
 import pandas as pd
 from itertools import chain
@@ -397,26 +398,40 @@ def side_by_side(rowname, a, b, space=2, col=""):
         a = a[col_width:]
         b = b[col_width:]
 
-def formats_length(minutes):
+def format_length(to_format, reverse=False):
     "displays 120 minutes as 2h0m etc"
-    if minutes == "":
-        return ""
-    minutes = float(minutes)
-    hours = minutes // 60
-    days = hours // 24
-    if days == 0:
-        days = ""
+    if reverse is False:
+        minutes = to_format
+        if minutes == "":
+            return ""
+        minutes = float(minutes)
+        hours = minutes // 60
+        days = hours // 24
+        if days == 0:
+            days = ""
+        else:
+            hours = hours-days*24
+            days = str(int(days))+"d"
+        if hours == 0 :
+            hours = ""
+        else:
+            minutes = minutes-hours*60
+            hours = str(int(hours))+"h"
+        minutes = str(int(minutes))+"min"
+        length = days+hours+minutes
+        return length
     else:
-        hours = hours-days*24
-        days = str(int(days))+"d"
-    if hours == 0 :
-        hours = ""
-    else:
-        minutes = minutes-hours*60
-        hours = str(int(hours))+"h"
-    minutes = str(int(minutes))+"min"
-    length = days+hours+minutes
-    return length
+        length = 0
+        days = re.findall("\d+j", to_format)
+        hours = re.findall("\d+h", to_format)
+        minutes = re.findall("\d+m", to_format)
+        if days:
+            length += 1440*int(days[0][:-1])
+        if hours:
+            length += 60*int(hours[0][:-1])
+        if minutes:
+            length += int(minutes[0][:-1])
+        return str(length)
 
 
 def print_2_entries(id_left, id_right, mode, all_fields="no"):
@@ -872,60 +887,72 @@ def get_meta_from_content(string, additional_args=None, gui_log=None):
         global log_
     else:
         log_ = gui_log
-    with suppress(UnboundLocalError):
+    with suppress(UnboundLocalError, NameError):
+        global last
         since = time.time() - last
         last = time.time()
         if since < 2:
             log_(f"Sleeping for {2-since} seconds", False)
             time.sleep(2-since)
-
+    
     splitted = string.split(" ")
+    res = {}
     for word in splitted:
         if word == "type:video":  # this forces to analyse as a video
             for word in splitted:
                 if word.startswith("http") or word.startswith("www."):
                     log_(f"Extracting info from video {word}")
-                    return extract_youtube(word)
+                    res = extract_youtube(word)
 
-        if word == "type:local_video":  # fetch local video files
+        elif word == "type:local_video":  # fetch local video files
             for part in string.split("\""):
                 if "/" in part:
                     log_(f"Extracting info from local video {part}")
-                    return extract_local_video(part)
+                    res = extract_local_video(part)
 
-        if word.startswith("http") or word.startswith("www."):
+        elif word.startswith("http") or word.startswith("www."):
             if "ytb" in word or "youtube" in word:
                 log_(f"Extracting info from video {word}")
-                return extract_youtube(word)
+                res = extract_youtube(word)
 
-            if word.endswith(".pdf"):
+            elif word.endswith(".pdf"):
                 log_(f"Extracting pdf from {word}")
-                return extract_pdf_url(word)
+                res = extract_pdf_url(word)
 
             # if here then is probably just an html
             # and should be treated as text
             log_(f"Extracting text from webpage {word}")
-            return extract_webpage(word, **additional_args)
+            res = extract_webpage(word, **additional_args)
 
-    if "/" in string:  # might be a link to a file
-        for part in string.split("\""):
-            if ".mp4" in part or\
-                    ".mov" in part or\
-                    ".avi" in part or\
-                    ".webm" in part:
-                if "/" in part:
-                    log_(f"Extracting info from local video {part}")
-                    return extract_local_video(part)
+    if res == {}:
+        if "/" in string:  # might be a link to a file
+            for part in string.split("\""):
+                if ".mp4" in part or\
+                        ".mov" in part or\
+                        ".avi" in part or\
+                        ".webm" in part:
+                    if "/" in part:
+                        log_(f"Extracting info from local video {part}")
+                        res = extract_local_video(part)
 
-            if ".pdf" in part:
-                log_(f"Extracting pdf from {part}")
-                return extract_pdf_local(part)
+                elif ".pdf" in part:
+                    log_(f"Extracting pdf from {part}")
+                    res = extract_pdf_local(part)
 
-            if ".md" in part or ".txt" in part:
-                log_(f"Extracting text data from {part}")
-                return extract_txt(part)
-    log_(f"No metadata were extracted for {string}")
-    return {}
+                elif ".md" in part or ".txt" in part:
+                    log_(f"Extracting text data from {part}")
+                    res = extract_txt(part)
+
+    set_length = re.findall(r"set_length:((?:\d+[jhm])+)", string)
+    if set_length:
+        new_length = format_length(set_length[0], reverse=True)
+        log_(f"Setting length to {set_length[0]}", False)
+        res["length"] = new_length
+
+    if res == {}:
+        log_(f"No metadata were extracted for {string}")
+
+    return res
 
 
 def extract_youtube(url):
@@ -1458,7 +1485,7 @@ Press enter twice between lines to solve buggy display."
     if args["add_entries"] is True:
         log_("Adding entries.")
         cur_tags = litoy.get_tags(litoy.df)
-        autocomplete_list = ["tags:"+tags for tags in cur_tags]
+        autocomplete_list = ["tags:"+tags for tags in cur_tags] + ["set_length:"]
 
         if default_dir is not None:
             def load_autocomplete_list():
