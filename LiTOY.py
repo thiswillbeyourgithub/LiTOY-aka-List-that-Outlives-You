@@ -269,7 +269,7 @@ def move_flags_at_end(string):
     for m in match:
         string = string.replace(m, "")
     string += f" {' '.join(match)}"
-    string == re.sub("\s+", " ", string)
+    string = " ".join(string.split())
     return string.strip()
 
 def add_new_entry(df, content, metacontent, gui_litoy=None, gui_log=None):
