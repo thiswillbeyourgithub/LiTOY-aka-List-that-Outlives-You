@@ -468,7 +468,9 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
             if y not in js[x].keys():
                 js[x][y] = "X"
     if (js[0]["length"] + js[1]["length"]) != "XX":
-        side_by_side("Length", js[0]["length"], js[1]["length"])
+        side_by_side("Length",
+                     format_length(js[0]["length"]),
+                     format_length(js[1]["length"]))
     if (js[0]["title"] + js[1]["title"]) != "XX":
         side_by_side("Title", js[0]["title"], js[1]["title"])
         print("."*sizex)
