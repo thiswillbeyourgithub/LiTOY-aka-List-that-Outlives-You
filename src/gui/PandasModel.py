@@ -1,13 +1,9 @@
 # from https://github.com/Axel-Erfurt/QTableView_pandas/blob/master/QTableView_pandas.py
-import sys
-import csv, codecs 
-import os
 import pandas as pd
-from PyQt5.QtCore import Qt, QDir, QItemSelectionModel, QAbstractTableModel, QModelIndex, QVariant, QSize, QSettings
-from PyQt5.QtWidgets import (QMainWindow, QTableView, QApplication, QToolBar, QLineEdit, QComboBox, QDialog, 
-                                                            QAction, QMenu, QFileDialog, QAbstractItemView, QMessageBox, QWidget)
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QKeySequence, QTextDocument, QTextCursor, QTextTableFormat
-from PyQt5 import QtPrintSupport
+from PyQt5.QtCore import Qt, QDir, QItemSelectionModel, QAbstractTableModel, QModelIndex, QVariant, QSize
+from PyQt5.QtWidgets import (QMainWindow, QTableView, QApplication, QToolBar, QLineEdit, QComboBox, QDialog,
+                                                            QAction, QMenu, QFileDialog, QAbstractItemView, QMessageBox)
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QKeySequence, QTextDocument, QTextCursor
 
 class PandasModel(QAbstractTableModel):
     def __init__(self, df=pd.DataFrame(), litoy=None, parent=None, logging=False):

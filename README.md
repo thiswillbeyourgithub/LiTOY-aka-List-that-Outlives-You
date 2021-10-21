@@ -33,7 +33,7 @@ Current state
 * This is a personal project that I use daily.
 * PRs and issues are extremely appreciated.
 * Here's a screenshot:
-    ![screenshot.png](./screenshot.png)
+    ![screenshot.png](github_content/screenshot.png)
 
 
 FAQ
@@ -202,7 +202,7 @@ Syntax and usage example:
 TODO and planned features:
 ======
 * add a failsafe when there is no internet connectivity
-* major: separate backend from LiTOY.py to backend.py
+* when editing content, autocomplete flags and tags
 
 * gui: add: fix adding media
 * gui: browser: right click to open an edit window with all fields + also useful when reviewing
