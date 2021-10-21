@@ -201,11 +201,14 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* add a failsafe when there is no internet connectivity
+* major: separate backend from LiTOY.py to backend.py
+
 * gui: add: fix adding media
 * gui: browser: right click to open an edit window with all fields + also useful when reviewing
 * gui: browser: ctrl+f to focus on search field
 * gui: main menu: remove stretch on the side and add spacers instead
-* gui: settings: save
+* gui: settings: ask people what module to use to manage settings and settings panel
 * gui: reviewer: implement skipping and see if it works fine
 
 * detect channel name of youtube video
