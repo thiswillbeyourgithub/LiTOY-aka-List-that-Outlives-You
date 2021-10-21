@@ -437,7 +437,7 @@ def format_length(to_format, reverse=False):
         return length
     else:
         length = 0
-        days = re.findall("\d+j", to_format)
+        days = re.findall("\d+[jd]", to_format)
         hours = re.findall("\d+h", to_format)
         minutes = re.findall("\d+m", to_format)
         if days:
