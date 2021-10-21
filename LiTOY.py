@@ -247,6 +247,7 @@ def importation(path):
         line = line.replace("\n", "")
         metacontent = get_meta_from_content(line)
         if not litoy.entry_duplicate_check(litoy.df, line, metacontent):
+            line = move_flags_at_end(line)
             add_new_entry(litoy.df, line, metacontent)
 
 
@@ -256,6 +257,20 @@ def wrong_arguments_(args):
     pprint(args)
     raise SystemExit()
 
+def move_flags_at_end(string):
+    """
+    used to turn 'do something tags:reading it's important' to
+    'do something it's important tags:reading
+    """
+    match = re.findall("tags:\w+", string)
+    match.extend(re.findall("set_length:[0-9jhm]+", string))
+    if "" in match:
+        match.remove("")
+    for m in match:
+        string = string.replace(m, "")
+    string += f" {' '.join(match)}"
+    string == re.sub("\s+", " ", string)
+    return string.strip()
 
 def add_new_entry(df, content, metacontent, gui_litoy=None, gui_log=None):
     "Add a new entry to the pandas dataframe"
@@ -658,10 +673,11 @@ Quitting.", False)
 for  field '" + chosenfield +"'\n>",
                                        default=old_value,
                                        **additional_args))
-            df.loc[entry_id, chosenfield] = new_value
             if chosenfield == "content":
+                new_value = move_flags_at_end(new_value)
                 df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
                 df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
+            df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
             log_(f'Edited field "{chosenfield}":\n* {old_value}\nbecame:\n* {new_value}',
                  False)
@@ -1512,21 +1528,22 @@ Text content of the entry?\n>"
         second_prompt = "\nEnter content of the next entry:  (n/no/q/'' to exit, <TAB> to autocomplete)\n>"
         import_thread.join()
         while True:
-            new_entry_content = prompt_we(input_prompt,
+            new_content = prompt_we(input_prompt,
                                   completer=auto_complete,
                                   complete_while_typing=False,
                                   complete_in_thread=True)
-            new_entry_content = new_entry_content.replace("tags:tags:", "tags:")
-            new_entry_content = new_entry_content.strip()
-            if new_entry_content in ["n", "no", "q", "quit", ""]:
+            new_content = new_content.replace("tags:tags:", "tags:")
+            new_content = move_flags_at_end(new_content)
+            
+            if new_content in ["n", "no", "q", "quit", ""]:
                 log_("Exiting without adding more entries.", False)
                 raise SystemExit()
-            log_(f'Adding entry {new_entry_content}')
-            metacontent = get_meta_from_content(new_entry_content)
+            log_(f'Adding entry {new_content}')
+            metacontent = get_meta_from_content(new_content)
             if not litoy.entry_duplicate_check(litoy.df,
-                                               new_entry_content,
+                                               new_content,
                                                metacontent):
-                newID = add_new_entry(litoy.df, new_entry_content, metacontent)
+                newID = add_new_entry(litoy.df, new_content, metacontent)
                 print(f"New entry has ID {newID}")
                 input_prompt = second_prompt
                 pass
@@ -1631,10 +1648,11 @@ Text content of the entry?\n>"
 for field '" + chosenfield +"'\n>",
                                                default=old_value,
                                                **additional_args))
-                    df.loc[entry_id, chosenfield] = new_value
                     if chosenfield == "content":
+                        new_value = move_flags_at_end(new_value)
                         df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
                         df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
+                    df.loc[entry_id, chosenfield] = new_value
                     litoy.save_to_file(df)
                     log_(f'Edited entry with ID {entry_id}, field "{chosenfield}", {old_value} => {new_value}',
                          False)
