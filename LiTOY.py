@@ -78,49 +78,6 @@ def import_media():
 crash when trying to load media. Use 'pip install -r requirements.txt' to fix this." + col_rst)
 
 ###############################################################################
-# Summary of each section
-#-1. Import statements
-# 0. Banner and license
-# 1. Fonctions, Classes, etc :
-#          def debug_signal_handler(signal, frame):
-#          def log_(string, onlyLogging=True):
-#          def DB_file_check(path):
-#          def importation(path):
-#          def wrong_arguments_(args):
-#          def add_new_entry(df, content):
-#          def pick_entries():
-#          def print_memento_mori(): # remember you will die
-#          def print_2_entries(id_left, id_right, mode, all_fields="no"):
-#              def side_by_side(rowname, a, b, space=2, col=""):
-#          def show_podium(df):
-#          def show_stats(df, printing=True):
-#          def shortcut_and_action(id_left, id_right, mode, progress):
-#              def fetch_action(input):
-#              def star(entry):
-#              def disable(entry):
-#              def edit(entry):
-#          def get_tags_from_content(string):
-#          def get_meta_from_content(string):
-#          def extract_youtube(url):
-#          def extract_local_video(link):
-#          def extract_pdf_url(url):
-#          def extract_pdf_local(path):
-#          def extract_txt(path):
-#          def extract_webpage(url):
-#          def expected_elo(elo_A, elo_B, Rp=100):
-#          def update_elo(elo, exp_score, real_score, K):
-#          def adjust_K(K0):
-#          def compute_global_score(iELO, tELO, status):
-#          def json_periodic_save():
-#              def __init__(self, db_path):
-#              def _reload_df(self):
-#              def save_to_file(self, df):
-#              def create_database(self):
-#              def entry_duplicate_check(self, df, new):
-#              def get_tags(self, df):
-# 2. Main routine
-
-###############################################################################
 # 0. Banner and license
 
 ###################################################################
