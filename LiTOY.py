@@ -464,15 +464,20 @@ def print_2_entries(id_left, id_right, mode, all_fields="no"):
     js.append(json.loads(entry_left.metacontent))
     js.append(json.loads(entry_right.metacontent))
     for x in [0, 1]:
-        for y in ["type", "title", "length", "url"]:
+        for y in ["length", "title", "url", "type", "channel"]:
             if y not in js[x].keys():
-                js[x][y] = ""
-    side_by_side("Length", formats_length(js[0]["length"]),
-            formats_length(js[1]["length"]))
-    side_by_side("Title", js[0]["title"], js[1]["title"])
-    print("."*sizex)
-    side_by_side("Path", js[0]["url"], js[1]["url"])
-    side_by_side("Media type", js[0]["type"], js[1]["type"])
+                js[x][y] = "X"
+    if (js[0]["length"] + js[1]["length"]) != "XX":
+        side_by_side("Length", js[0]["length"], js[1]["length"])
+    if (js[0]["title"] + js[1]["title"]) != "XX":
+        side_by_side("Title", js[0]["title"], js[1]["title"])
+        print("."*sizex)
+    if (js[0]["url"] + js[1]["url"]) != "XX":
+        side_by_side("Location", js[0]["url"], js[1]["url"])
+    if (js[0]["channel"] + js[1]["channel"]) != "XX":
+        side_by_side("Channel", js[0]["channel"], js[1]["channel"])
+    if (js[0]["type"] + js[1]["type"]) != "XX":
+        side_by_side("Media type", js[0]["type"], js[1]["type"])
 
     print(col_blu + "#"*sizex + col_rst)
 
