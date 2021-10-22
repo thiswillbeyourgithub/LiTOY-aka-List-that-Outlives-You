@@ -57,7 +57,7 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "quit"             : ["quit", "q", "exit", ":q"] }
 
 # ELO :
-K_values           =  sorted([100, 80, 60, 40, 25, 17, 15, 12, 10])
+K_values           =  sorted([100, 80, 60, 40, 25, 17, 15, 12, 10], reverse=True)
 # if you decide to change the setting, be careful : each new term has to be
 # different and lower than the last one
 default_score      =  1000  # default 1000
