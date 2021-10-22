@@ -71,21 +71,16 @@ def format_length(to_format, reverse=False):
         minutes = to_format
         if minutes == "X":
             return "X"
-        minutes = float(minutes)
-        hours = minutes // 60
-        days = hours // 24
-        if days == 0:
-            days = ""
-        else:
-            hours = hours-days*24
-            days = str(int(days))+"d"
-        if hours == 0 :
-            hours = ""
-        else:
-            minutes = minutes-hours*60
-            hours = str(int(hours))+"h"
-        minutes = str(int(minutes))+"min"
-        length = days+hours+minutes
+        minutes = int(float(minutes))
+        days = int(minutes//60//24)
+        hours = int(minutes//60 - days*24)
+        length = ""
+        if days != 0:
+            length += str(days)+"d"
+        if hours != 0:
+            length += str(hours)+"h"
+        if minutes != 0:
+            length += str(minutes)+"min"
         return length
     else:
         length = 0
@@ -244,6 +239,8 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields="no"):
         for y in ["length", "title", "url", "type", "channel"]:
             if y not in js[x].keys():
                 js[x][y] = "X"
+            else:
+                js[x][y] == str(js[x][y])
     if (js[0]["length"] + js[1]["length"]) != "XX":
         side_by_side("Length",
                      format_length(js[0]["length"]),

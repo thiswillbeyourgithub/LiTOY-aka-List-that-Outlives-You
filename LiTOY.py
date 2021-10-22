@@ -110,7 +110,7 @@ from src.gui.gui import launch_gui
 
 class LiTOYClass:
     "Class that interacts with the database using panda etc"
-    def __init__(self, db_path, log_, handler):
+    def __init__(self, db_path):
         if db_path is None:
             db_path = args['db']
             self.path = db_path
@@ -119,7 +119,6 @@ class LiTOYClass:
             self.path = db_path
             self.df = pd.read_excel(db_path).set_index("ID").sort_index()
         self.log_ = log_
-        self.handler = handler
         self.gui_log = lambda x, y=False: self.log_(f"GUI: {x}", y)
 
     def _reload_df(self):
@@ -292,19 +291,19 @@ if __name__ == "__main__":
     if (args['import_path'] is None and args['db'] is None) or (args['review_mode'] is True and args['import_path'] is not None):
         wrong_arguments_(args)
 
+    # initialize litoy class:
+    if DB_file_check(args['db']) is False:
+        litoy = LiTOYClass(None)
+    else:
+        litoy = LiTOYClass(args['db'])
+
     if args['import_path'] is not None or args["add_entries"] is not None or args["review_mode"] is True:
         # asynchronous loading
-        import_thread = threading.Thread(target=import_media)
-        import_thread.start()
+        litoy.import_thread = threading.Thread(target=import_media)
+        litoy.import_thread.start()
 
     if args['verbose'] is True:
         pprint(args)
-
-    # initialize litoy class:
-    if DB_file_check(args['db']) is False:
-        litoy = LiTOYClass(None, log_, handler)
-    else:
-        litoy = LiTOYClass(args['db'], log_, handler)
 
     # automatic backup at startup
     json_periodic_save(litoy)
@@ -385,7 +384,7 @@ Put local links between \"\" quotation signs!\n\
 Use <TAB> to autocomplete paths or tags\n\
 Text content of the entry?\n>"
         second_prompt = "\nEnter content of the next entry:  (n/no/q/'' to exit, <TAB> to autocomplete)\n>"
-        import_thread.join()
+        litoy.import_thread.join()
         while True:
             new_content = prompt_we(input_prompt,
                                   completer=auto_complete,
@@ -688,7 +687,7 @@ welcome!")
 
         if query == "logs":
             log_("Showing logs")
-            log_file = str(handler).split(" ")[1]
+            log_file = "logs/rotating_log"
             with open(log_file) as lf:
                 print(lf.read())
             raise SystemExit()

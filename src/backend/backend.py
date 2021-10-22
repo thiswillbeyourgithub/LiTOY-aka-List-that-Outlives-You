@@ -56,7 +56,7 @@ def importation(path):
         lines = f.readlines()
     lines = [li for li in lines if not str(li).startswith("#") and
              str(li) != "" and str(li) != "\n"]
-    import_thread.join()
+    litoy.import_thread.join()
     for line in tqdm(lines, desc="Processing line by line", unit="line",
                      ascii=False, dynamic_ncols=True, mininterval=0):
         line = line.strip()
@@ -165,10 +165,10 @@ def pick_entries(df):
     are selected at random among the half with the highest pick factor.
     Note: the pick_score goes down fast.
     """
-    df
-
+    df = df.loc[df.disabled == 0].copy()
     df["pick_score"] = df.loc[:, "DiELO"].values + df.loc[:, "DtELO"]
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
+    
     left_choice_id = df.iloc[0:10].sample(1).index[0]
 
     df_h = df.iloc[0: int(len(df.index)/2), :]
@@ -223,7 +223,7 @@ Quitting.", False)
     def disable(entry_id):
         "disables an entry during review"
         df = litoy.df.copy()
-        assert df.loc[entry_id, "disabled"] == 0
+        assert str(df.loc[entry_id, "disabled"]) == "0"
         df.loc[entry_id, "disabled"] = 1
         litoy.save_to_file(df)
         log_(f"Disabled entry {entry_id}", False)
@@ -377,12 +377,13 @@ for  field '" + chosenfield +"'\n>",
             print("\n"*10)
             print_2_entries(int(id_left),
                             int(id_right),
-                            mode=mode)
+                            mode=mode,
+                            litoy=litoy)
             continue
 
         if action == "reload_media" or action == "reload_media_fallback_text_extractor":
             log_("Reloading media")
-            import_thread.join()
+            litoy.import_thread.join()
             additional_args = {}
             if action == "reload_media_fallback_text_extractor":
                 additional_args.update({"fallback_text_extractor": True})
@@ -393,14 +394,15 @@ for  field '" + chosenfield +"'\n>",
                 new_meta = get_meta_from_content(df.loc[ent_id, :]["content"],
                                                  additional_args)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
+                litoy.save_to_file(df)
                 entry_left = df.loc[id_left, :]
                 entry_right = df.loc[id_right, :]
-                litoy.save_to_file(df)
                 log_(f"New metacontent value for {ent_id} : {new_meta}")
             print("\n"*10)
             print_2_entries(int(id_left),
                             int(id_right),
-                            mode=mode)
+                            mode=mode,
+                            litoy=litoy)
             continue
 
         if action == "open debugger":
@@ -412,11 +414,11 @@ for  field '" + chosenfield +"'\n>",
 
         if action == "edit_left":
             edit(id_left)
-            print_2_entries(id_left, id_right, mode)
+            print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
             continue
         if action == "edit_right":
             edit(id_right)
-            print_2_entries(id_left, id_right, mode)
+            print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
             continue
         if action == "star_left":
             star(id_left)
@@ -492,7 +494,7 @@ def get_meta_from_content(string, additional_args=None, gui_log=None):
         if since < 2:
             log_(f"Sleeping for {2-since} seconds", False)
             time.sleep(2-since)
-    
+
     splitted = string.split(" ")
     res = {}
     for word in splitted:
@@ -542,10 +544,11 @@ def get_meta_from_content(string, additional_args=None, gui_log=None):
                     res = extract_txt(part)
 
     set_length = re.findall(r"set_length:((?:\d+[jhm])+)", string)
+    print(set_length)
     if set_length:
         new_length = format_length(set_length[0], reverse=True)
         log_(f"Setting length to {set_length[0]}", False)
-        res["length"] = new_length
+        res.update({"length": new_length})
 
     if res == {}:
         log_(f"No metadata were extracted for {string}")
