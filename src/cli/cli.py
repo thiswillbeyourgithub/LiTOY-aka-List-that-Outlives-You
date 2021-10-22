@@ -96,7 +96,7 @@ def format_length(to_format, reverse=False):
         return str(length)
 
 
-def show_podium(df):
+def show_podium(df, sizex, args):
     "Show the highest ranked things to do in LiTOY "
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)

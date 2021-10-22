@@ -64,7 +64,7 @@ def importation(path):
         metacontent = get_meta_from_content(line)
         if not litoy.entry_duplicate_check(litoy.df, line, metacontent):
             line = move_flags_at_end(line)
-            add_new_entry(litoy.df, line, metacontent)
+            add_new_entry(litoy, line, metacontent)
 
 
 def import_media():
@@ -102,17 +102,10 @@ def move_flags_at_end(string):
     return string.strip()
 
 
-def add_new_entry(df, content, metacontent, gui_litoy=None, gui_log=None):
+def add_new_entry(litoy, content, metacontent):
     "Add a new entry to the pandas dataframe"
+    df = litoy.df
     tags = get_tags_from_content(content)
-    if gui_litoy is None:
-        global litoy
-    else:
-        litoy = gui_litoy
-    if gui_log is None:
-        global log_
-    else:
-        log_ = gui_log
 
     # in case metacontent doesn't contain those keys, ignore exceptions:
     with suppress(KeyError, TypeError):
@@ -473,7 +466,7 @@ def get_tags_from_content(string):
     return list(set(result))
 
 
-def get_meta_from_content(string, additional_args=None, gui_log=None):
+def get_meta_from_content(string, additional_args=None):
     """
     extracts all metadata from a line in the import file
     this does not include tags, which are indicated using tags:sometag in the
@@ -483,10 +476,6 @@ def get_meta_from_content(string, additional_args=None, gui_log=None):
     """
     if additional_args is None:
         additional_args = {}
-    if gui_log is None:
-        global log_
-    else:
-        log_ = gui_log
     with suppress(UnboundLocalError, NameError):
         global last
         since = time.time() - last

@@ -5,12 +5,13 @@ from itertools import chain
 import sys
 from pathlib import Path
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QLabel, QPushButton, QWidget, QHBoxLayout, QAction, QMenu, QProgressBar, QMessageBox, QTabWidget, QGridLayout, QLineEdit, QCheckBox, QTableView, QTextEdit, QCompleter
+from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QLabel, QPushButton, QWidget, QHBoxLayout, QAction, QMenu, QProgressBar, QMessageBox, QTabWidget, QGridLayout, QLineEdit, QCheckBox, QTableView, QTextEdit, QCompleter, QInputDialog, QDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QFont, QPixmap, QColor
 
 from user_settings import user_age, user_life_expected, shortcuts, n_session, n_to_review, questions, gui_font_size
 from .PandasModel import PandasModel
+from ..backend.backend import pick_entries, get_meta_from_content, add_new_entry
 
 class main_window(QMainWindow):
     def __init__(self, args, litoy):
@@ -20,7 +21,7 @@ class main_window(QMainWindow):
     def initUI(self, args, litoy):
         self.args = args
         self.litoy = litoy
-        self.handler = litoy.handler
+        self.handler = "logs/rotating_log"
         self.orig_font_size = gui_font_size
         self.current_font_size = gui_font_size
         self.setGeometry(600, 600, 500, 300)
@@ -35,7 +36,8 @@ class main_window(QMainWindow):
         back_to_mm.setShortcut("Ctrl+M")
 
         open_logs = QAction("Show logs", self)
-        open_logs.triggered.connect(lambda : self.show_logs(litoy.handler, self.current_font_size, litoy))
+        open_logs.triggered.connect(lambda : self.show_logs(
+            self.handler, self.current_font_size, litoy))
         open_logs.setShortcut("Ctrl+L")
 
         quit = QAction("Exit", self)
@@ -55,7 +57,7 @@ class main_window(QMainWindow):
         fontMenu.addAction(decreaseFont)
 
         sett = QAction("Settings", self)
-        sett.triggered.connect(lambda : self.open_settings(litoy))
+        sett.triggered.connect(lambda: self.open_settings(litoy))
         sett.setShortcut("Ctrl+?")
 
         menuBar.addAction(back_to_mm)
@@ -67,15 +69,15 @@ class main_window(QMainWindow):
         self.change_font_size(0)
 
     def change_font_size(self, incr):
-            allW = self.findChildren(QWidget)
-            self.current_font_size += incr
-            new_font = QFont()
-            new_font.setPointSize(self.current_font_size)
-            for w in allW:
-                try:
-                    w.setFont(new_font)
-                except:
-                    print(f"Failed to resize {w}")
+        allW = self.findChildren(QWidget)
+        self.current_font_size += incr
+        new_font = QFont()
+        new_font.setPointSize(self.current_font_size)
+        for w in allW:
+            try:
+                w.setFont(new_font)
+            except:
+                print(f"Failed to resize {w}")
 
     def keyPressEvent(self, event):
         "to handle multiple shortcuts for the same action"
@@ -103,7 +105,7 @@ class settings_w(QWidget):
         self.initUI(litoy)
 
     def initUI(self, litoy):
-        litoy.gui_log(f"Opened settings window.")
+        litoy.gui_log("Opened settings window.")
         sett_file = Path("./user_settings.py")
         with open(sett_file) as lf:
             content = lf.read()
@@ -134,7 +136,7 @@ class settings_w(QWidget):
         pass
 
     def cancel_settings(self):
-        confirmation = QMessageBox.question(self,
+        QMessageBox.question(self,
                 "Cancel", "Not saved.", QMessageBox.Ok, QMessageBox.Ok)
         self.close()
 
@@ -144,8 +146,8 @@ class logs_w(QWidget):
         self.initUI(handler, fontsize, litoy)
 
     def initUI(self, handler, fontsize, litoy):
-        litoy.gui_log(f"Opened settings window.")
-        self.log_file = str(handler).split(" ")[1]
+        litoy.gui_log("Opened settings window.")
+        self.log_file = handler
         self.current_font_size = fontsize
 
         self.textEd = QTextEdit(self)
@@ -333,7 +335,7 @@ class tab_widget(QTabWidget):
 
       # quick
       cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
-      to_show = dfp.sort_values(by="iELO", ascending=False)[0:10]
+      to_show = dfp.sort_values(by="tELO", ascending=False)[0:10]
       grid = QGridLayout(self)
       for x, idx in enumerate(to_show.index):
           for y, col in enumerate(cols):
@@ -348,7 +350,7 @@ class add_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
         self.litoy = litoy
-        self.litoy.gui_log(f"Opened adding window.")
+        self.litoy.gui_log("Opened adding window.")
 
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags]
@@ -375,11 +377,11 @@ class add_w(QWidget):
         query = self.editor.text()
 
         query = query.replace("tags:tags:", "tags:").strip()
-        metacontent = LiTOY.get_meta_from_content(query, gui_log = self.litoy.gui_log)
+        metacontent = get_meta_from_content(query)
         if not self.litoy.entry_duplicate_check(self.litoy.df,
-                                           query,
-                                           metacontent):
-            newID = LiTOY.add_new_entry(self.litoy.df, query, metacontent, self.litoy, self.litoy.gui_log)
+                                                query,
+                                                metacontent):
+            newID = add_new_entry(self.litoy, query, metacontent)
             msg = f"ID: {newID}\ncontent: {query}\nmetacontent: {metacontent}\n\n"
         else:
             msg = "Database already contains this entry, not added.\n\n"
@@ -391,15 +393,14 @@ class review_w(QWidget):
     def __init__(self, litoy, p):
         super().__init__()
         self.litoy = litoy
-        df = litoy.df
-        self.litoy.gui_log(f"Opened review window.")
+        self.litoy.gui_log("Opened review window.")
 
         self.large_font = QFont()
         self.large_font.setPointSize(18)
         self.n_review_done = 0
         self.n_session_done = 0
         self.mode = "importance"
-        self.picked_ids = LiTOY.pick_entries(litoy)
+        self.picked_ids = pick_entries(litoy.df)
 
         self.entry_display = QTabWidget(self)
 
@@ -437,7 +438,7 @@ you're lost.")
             if self.n_session_done == n_session:
                 self.finished()
             else:
-                self.picked_ids = LiTOY.pick_entries(self.litoy)
+                self.picked_ids = pick_entries(self.litoy.df)
         if self.mode == "time":
             self.mode = "importance"
         elif self.mode == "importance":
@@ -465,9 +466,9 @@ you're lost.")
         for y, idx in enumerate([0] + self.run):
             for x, col in enumerate(cols):
                 if y == 0:
-                    l = QLabel(f"<b>{col}</b>")
-                    l.setFont(self.large_font)
-                    grid.addWidget(l, x, 0)
+                    lab = QLabel(f"<b>{col}</b>")
+                    lab.setFont(self.large_font)
+                    grid.addWidget(lab, x, 0)
                 else:
                     widget = QLabel(str(self.litoy.df.reset_index().loc[idx, col]))
                     widget.setWordWrap(True)
@@ -484,7 +485,7 @@ class browse_w(QWidget):
         super().__init__()
         self.litoy = litoy
         self.df = litoy.df
-        self.litoy.gui_log(f"Opened browsing window.")
+        self.litoy.gui_log("Opened browsing window.")
 
         self.vbox = QVBoxLayout()
         self.hbox = QHBoxLayout()
@@ -526,7 +527,7 @@ class browse_w(QWidget):
         self.litoy.gui_log(f"Searched for {query}")
 
         match = [x for x in df.index if query in str(df.loc[x, "content"]).lower()
-                or query in str(df.loc[x, "metacontent"]).lower()]
+                 or query in str(df.loc[x, "metacontent"]).lower()]
         t = self.table
         if self.allFields.isChecked() is False:
             model = PandasModel(df=df.loc[match, df.columns], litoy=self.litoy)
@@ -551,7 +552,7 @@ class browse_w(QWidget):
 
     def browse_add_entry(self):
         litoy = self.litoy
-        self.litoy.gui_log(f"Browser: adding entry")
+        self.litoy.gui_log("Browser: adding entry")
 
         dialog = QInputDialog(self)
         dialog.setWindowTitle("Add entry")
@@ -574,26 +575,25 @@ class browse_w(QWidget):
 
         entry = entry.replace("tags:tags:", "tags:").strip()
 
-        metacontent = LiTOY.get_meta_from_content(entry, gui_log = self.litoy.gui_log)
+        metacontent = get_meta_from_content(entry)
         if not self.litoy.entry_duplicate_check(self.litoy.df,
-                                           entry,
-                                           metacontent):
-            newID = add_new_entry(self.litoy.df, entry, metacontent, self.litoy, self.litoy.gui_log)
+                                                entry,
+                                                metacontent):
+            newID = add_new_entry(self.litoy, entry, metacontent)
             msg = f"ID: {newID}: {entry}\n"
             title = "Added"
         else:
             msg = f"Database already contains entry '{entry}', not added.\n"
             title = "Error"
 
-        confirmation = QMessageBox.question(self,
-                title, msg, QMessageBox.Yes, QMessageBox.Yes)
+        QMessageBox.question(self, title, msg, QMessageBox.Yes, QMessageBox.Yes)
         self.litoy.gui_log(msg)
         self.df = self.litoy.df
         self.process_query()
         return True
 
     def browse_remove_entry(self):
-        self.litoy.gui_log(f"Browser: removing entry")
+        self.litoy.gui_log("Browser: removing entry")
 
         select = self.table.selectionModel()
         indexes = select.selectedIndexes()
@@ -615,7 +615,7 @@ class browse_w(QWidget):
                 self.litoy.gui_log(f"Entry with ID {entry_id} was removed.", False)
 
                 msg = f"Successfuly removed entry {entry_id}"
-                confirmation = QMessageBox.question(self,
+                QMessageBox.question(self,
                         "Removed", msg, QMessageBox.Yes, QMessageBox.Yes)
                 self.df = self.litoy.df
                 self.process_query()

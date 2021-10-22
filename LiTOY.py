@@ -347,7 +347,6 @@ Press enter twice between lines to solve buggy display."
 
     if args["gui"] is True:
         log_("Launching GUI")
-        from gui import launch_gui
         launch_gui(args, litoy)
         raise SystemExit()
 
@@ -401,7 +400,7 @@ Text content of the entry?\n>"
             if not litoy.entry_duplicate_check(litoy.df,
                                                new_content,
                                                metacontent):
-                newID = add_new_entry(litoy.df, new_content, metacontent)
+                newID = add_new_entry(litoy, new_content, metacontent)
                 print(f"New entry has ID {newID}")
                 input_prompt = second_prompt
                 pass
@@ -610,11 +609,17 @@ welcome!")
             tag_list = query[0][1:]
             rlvt_index = []
             for tag in tag_list:
-                rlvt_index += [x for x in df.index if tag in df.loc[x, "tags"]]
+                rlvt_index += [x for x in df.index if tag.lower() in str(
+                    df.loc[x, "tags"]).lower()]
             rlvt_index = sorted(list(set(rlvt_index)))
             df = df.loc[rlvt_index, ["media_title", "content", "gELO"]]
-            pprint(df)
-            print(f"Number of corresponding entries: {len(rlvt_index)}")
+            if len(rlvt_index) != 0:
+                pprint(df)
+                print(f"Number of corresponding entries: {len(rlvt_index)}")
+            else:
+                print("No corresponding entries found.\nList of tags currently \
+in your db:")
+                pprint(litoy.get_tags(litoy.df))
             raise SystemExit()
         else:
             query = query[0][0]
@@ -626,7 +631,7 @@ welcome!")
 
         if query in ["podium", "global", "global_tasks"]:
             log_("Showing podium")
-            show_podium(df)
+            show_podium(df, sizex, args)
             raise SystemExit()
 
         if query in ["quick", "quick_tasks"]:
