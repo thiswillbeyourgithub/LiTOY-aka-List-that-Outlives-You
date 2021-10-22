@@ -164,7 +164,7 @@ def show_stats(df, printing=True):
         table2.add_row(["K value:", round(df_nd.K.mean(), 1),
                        round(df_nd.K.std(), 2), round(df_nd.K.median())])
         table2.add_row(["Time spent reviewing:",
-                        round(df_nd.review_time.sum(), 1),
+                        round(df_nd.review_time.median(), 1),
                         round(df_nd.review_time.std(), 2),
                         round(median(df_nd.review_time), 2)])
 
