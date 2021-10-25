@@ -533,7 +533,6 @@ def get_meta_from_content(string, additional_args=None):
                     res = extract_txt(part)
 
     set_length = re.findall(r"set_length:((?:\d+[jhm])+)", string)
-    print(set_length)
     if set_length:
         new_length = format_length(set_length[0], reverse=True)
         log_(f"Setting length to {set_length[0]}", False)
