@@ -45,7 +45,7 @@ def DB_file_check(path):
             raise SystemExit()
 
 
-def importation(path):
+def importation(path, litoy):
     "Check if text file exists then import it into LiTOY"
     import_file = Path(path)
     if not import_file.exists():

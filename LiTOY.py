@@ -351,7 +351,7 @@ Press enter twice between lines to solve buggy display."
         raise SystemExit()
 
     if args['import_path'] is not None:
-        importation(args['import_path'])
+        importation(args['import_path'], litoy)
         log_("Done importing from file, exiting", False)
         raise SystemExit()
 
