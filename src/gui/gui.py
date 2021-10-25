@@ -4,6 +4,7 @@ import json
 from itertools import chain
 import sys
 from pathlib import Path
+import webbrowser
 
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout, QLabel,
                              QPushButton, QWidget, QHBoxLayout, QAction, QMenu,
@@ -594,12 +595,30 @@ class browse_w(QWidget):
         context_menu = QMenu(self)
         add_ent = context_menu.addAction("Add new entry")
         remove_ent = context_menu.addAction("Remove entry")
+        open_link = context_menu.addAction("Open media")
+
         action = context_menu.exec_(self.mapToGlobal(event.pos()))
         if action == add_ent:
             self.browse_add_entry()
 
         if action == remove_ent:
             self.browse_remove_entry()
+
+        if action == open_link:
+            select = self.table.selectionModel()
+            indexes = select.selectedIndexes()
+            entry_idx = []
+            for index in indexes:
+                displayed_row = int(index.row())
+                mod = self.table.model()
+                entry_idx.append(mod._df.index.tolist()[displayed_row])
+
+                metacontent = json.loads(self.df.loc[entry_idx[-1], "metacontent"])
+                self.litoy.gui_log(f"Browser: openning media of entry {entry_idx[-1]}")
+                if "url" in metacontent.keys():
+                    webbrowser.open(str(metacontent["url"]))
+                else:
+                    print(f"No link found for {entry_idx[-1]}")
 
     def browse_add_entry(self):
         litoy = self.litoy
