@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout, QLabel,
                              QProgressBar, QMessageBox, QTabWidget,
                              QGridLayout, QLineEdit, QCheckBox, QTableView,
                              QTextEdit, QCompleter, QInputDialog, QDialog)
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal, QObject
 from PyQt5.QtGui import QPalette, QFont, QPixmap, QColor
 
 from user_settings import (user_age, user_life_expected, shortcuts, n_session,
@@ -18,6 +18,10 @@ from user_settings import (user_age, user_life_expected, shortcuts, n_session,
 from src.gui.PandasModel import PandasModel
 from src.backend.backend import (pick_entries, get_meta_from_content,
                                  add_new_entry)
+
+
+class Communicate(QObject):
+    open_browser_to_select = pyqtSignal(int)
 
 
 class main_window(QMainWindow):
@@ -285,6 +289,9 @@ class main_menu(QWidget):
         self.setLayout(hbox)
         self.show()
 
+        self.c = Communicate()
+        self.c.open_browser_to_select.connect(lambda idx: self.launch_browse(select=idx))
+
     def launch_review(self):
         p = self.parent()
         p.setCentralWidget(review_w(self.litoy, p))
@@ -293,9 +300,9 @@ class main_menu(QWidget):
         p = self.parent()
         p.setCentralWidget(add_w(self.litoy, p))
 
-    def launch_browse(self):
+    def launch_browse(self, select=None):
         p = self.parent()
-        p.setCentralWidget(browse_w(self.litoy, p))
+        p.setCentralWidget(browse_w(self.litoy, p, select))
 
 
 class tab_widget(QTabWidget):
@@ -321,13 +328,18 @@ class tab_widget(QTabWidget):
                               for x in dfp.loc[:, "metacontent"]]
         dfp["tags"] = [", ".join(json.loads(x)) for x in dfp["tags"]]
 
+        def cl_lab(t, idx):
+            """ create a clickable QLabel """
+            return clickable_QLabel(t, idx,
+                                    whenClicked=self.open_browser)
+
         # podium
         cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
         to_show = dfp.sort_values(by="gELO", ascending=False)[0:10]
         grid = QGridLayout(self)
         for x, idx in enumerate(to_show.index):
             for y, col in enumerate(cols):
-                widget = QLabel(str(dfp.loc[idx, col]))
+                widget = cl_lab(str(dfp.loc[idx, col]), idx)
                 grid.addWidget(widget, x + 1, y)
         [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
          for y, s in enumerate(cols)]
@@ -339,7 +351,7 @@ class tab_widget(QTabWidget):
         grid = QGridLayout(self)
         for x, idx in enumerate(to_show.index):
             for y, col in enumerate(cols):
-                widget = QLabel(str(dfp.loc[idx, col]))
+                widget = cl_lab(str(dfp.loc[idx, col]), idx)
                 grid.addWidget(widget, x + 1, y)
         [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
          for y, s in enumerate(cols)]
@@ -351,12 +363,29 @@ class tab_widget(QTabWidget):
         grid = QGridLayout(self)
         for x, idx in enumerate(to_show.index):
             for y, col in enumerate(cols):
-                widget = QLabel(str(dfp.loc[idx, col]))
+                widget = cl_lab(str(dfp.loc[idx, col]), idx)
                 grid.addWidget(widget, x + 1, y)
         [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
          for y, s in enumerate(cols)]
         self.tab_quick.setLayout(grid)
         return True
+
+    def open_browser(self, event, idx):
+        # TODO: open browser to the right entry
+        # super().mm.launch_browse(select=idx)
+        self.c = Communicate()
+        self.c.open_browser_to_select.emit(idx)
+
+
+
+class clickable_QLabel(QLabel):
+    def __init__(self, t, idx, whenClicked):
+        super().__init__(t)
+        self.idx = idx
+        self._whenclicked = whenClicked
+
+    def mouseReleaseEvent(self, event):
+        self._whenclicked(event, self.idx)
 
 
 class add_w(QWidget):
@@ -495,10 +524,12 @@ you're lost.")
 
 
 class browse_w(QWidget):
-    def __init__(self, litoy, p):
+    def __init__(self, litoy, p, select):
         super().__init__()
         self.litoy = litoy
         self.df = litoy.df
+        if select is not None:
+            self.df = self.df.loc[select]
         self.litoy.gui_log("Opened browsing window.")
 
         self.vbox = QVBoxLayout()
