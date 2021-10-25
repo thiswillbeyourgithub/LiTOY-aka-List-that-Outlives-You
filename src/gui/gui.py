@@ -319,6 +319,7 @@ class tab_widget(QTabWidget):
                                if "title" in json.loads(x).keys()
                                else "")(x)
                               for x in dfp.loc[:, "metacontent"]]
+        dfp["tags"] = [", ".join(json.loads(x)) for x in dfp["tags"]]
 
         # podium
         cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
