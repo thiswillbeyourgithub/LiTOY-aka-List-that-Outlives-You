@@ -66,7 +66,7 @@ def side_by_side(rowname, a, b, space=2, col=""):
 
 
 def format_length(to_format, reverse=False):
-    "displays 120 minutes as 2h0m etc"
+    "displays 120 minutes as 2h0m, or the opposite"
     if reverse is False:
         minutes = to_format
         if minutes == "X":
@@ -74,6 +74,7 @@ def format_length(to_format, reverse=False):
         minutes = int(float(minutes))
         days = int(minutes//60//24)
         hours = int(minutes//60 - days*24)
+        minutes = minutes % 60
         length = ""
         if days != 0:
             length += str(days)+"d"
