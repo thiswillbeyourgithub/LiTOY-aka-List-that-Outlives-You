@@ -207,11 +207,12 @@ TODO and planned features:
 * gui: add: fix adding media
 * gui: browser: right click to open an edit window with all fields + also useful when reviewing
 * gui: browser: ctrl+f to focus on search field
-* gui: main menu: remove stretch on the side and add spacers instead
+* gui: main menu: remove stretch on the side and add spacers instead + alt tab to switch panel
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: reviewer: implement skipping and see if it works fine
 
 * use lazy import to speed up launch?
+* use regexp instead of string matching most of the time
 * add defaults value for argparse arguments
 * implement support for arbitrary additional fields
 * add --export-as to export as txt, csv, etc
