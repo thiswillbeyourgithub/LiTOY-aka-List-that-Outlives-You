@@ -204,12 +204,18 @@ TODO and planned features:
 * add a failsafe when there is no internet connectivity
 * when editing content, autocomplete flags and tags
 
+* gui: reviewer: make sure the implementation is sane
+* gui: reviewer: implement skipping
 * gui: add: fix adding media
 * gui: browser: right click to open an edit window with all fields + also useful when reviewing
-* gui: browser: ctrl+f to focus on search field
-* gui: main menu: remove stretch on the side and add spacers instead + alt tab to switch panel
+* gui: browser: ctrl+f to focus on search field 
+* gui: browser: right click to disable entry
+* gui: browser: change colour for starred / disabled entries
+* gui: main menu: remove stretch on the side and add spacers instead 
+* gui: main menu: alt tab to switch panel 
+* gui: main menu: color each tags 
+* gui: main menu: ability to open the browser by clicking on the panel
 * gui: settings: ask people what module to use to manage settings and settings panel
-* gui: reviewer: implement skipping and see if it works fine
 
 * use lazy import to speed up launch?
 * use regexp instead of string matching most of the time
