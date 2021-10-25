@@ -5,13 +5,20 @@ from itertools import chain
 import sys
 from pathlib import Path
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QVBoxLayout, QLabel, QPushButton, QWidget, QHBoxLayout, QAction, QMenu, QProgressBar, QMessageBox, QTabWidget, QGridLayout, QLineEdit, QCheckBox, QTableView, QTextEdit, QCompleter, QInputDialog, QDialog
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout, QLabel,
+                             QPushButton, QWidget, QHBoxLayout, QAction, QMenu,
+                             QProgressBar, QMessageBox, QTabWidget,
+                             QGridLayout, QLineEdit, QCheckBox, QTableView,
+                             QTextEdit, QCompleter, QInputDialog, QDialog)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QFont, QPixmap, QColor
 
-from user_settings import user_age, user_life_expected, shortcuts, n_session, n_to_review, questions, gui_font_size
-from .PandasModel import PandasModel
-from ..backend.backend import pick_entries, get_meta_from_content, add_new_entry
+from user_settings import (user_age, user_life_expected, shortcuts, n_session,
+                           n_to_review, questions, gui_font_size)
+from src.gui.PandasModel import PandasModel
+from src.backend.backend import (pick_entries, get_meta_from_content,
+                                 add_new_entry)
+
 
 class main_window(QMainWindow):
     def __init__(self, args, litoy):
@@ -32,11 +39,11 @@ class main_window(QMainWindow):
         menuBar = self.menuBar()
 
         back_to_mm = QAction("Main menu", self)
-        back_to_mm.triggered.connect(lambda : self.to_mainmenu(litoy))
+        back_to_mm.triggered.connect(lambda: self.to_mainmenu(litoy))
         back_to_mm.setShortcut("Ctrl+M")
 
         open_logs = QAction("Show logs", self)
-        open_logs.triggered.connect(lambda : self.show_logs(
+        open_logs.triggered.connect(lambda: self.show_logs(
             self.handler, self.current_font_size, litoy))
         open_logs.setShortcut("Ctrl+L")
 
@@ -76,7 +83,7 @@ class main_window(QMainWindow):
         for w in allW:
             try:
                 w.setFont(new_font)
-            except:
+            except Exception:
                 print(f"Failed to resize {w}")
 
     def keyPressEvent(self, event):
@@ -85,7 +92,6 @@ class main_window(QMainWindow):
             self.to_mainmenu(self.litoy)
         if event.text() == "b":
             self.mm.launch_browse()
-
 
     def open_settings(self, litoy):
         self.sett_window = settings_w(litoy)
@@ -98,6 +104,7 @@ class main_window(QMainWindow):
 
     def show_logs(self, handler, fontsize, litoy):
         self.logs_window = logs_w(handler, fontsize, litoy)
+
 
 class settings_w(QWidget):
     def __init__(self, litoy):
@@ -136,9 +143,10 @@ class settings_w(QWidget):
         pass
 
     def cancel_settings(self):
-        QMessageBox.question(self,
-                "Cancel", "Not saved.", QMessageBox.Ok, QMessageBox.Ok)
+        QMessageBox.question(self, "Cancel", "Not saved.",
+                             QMessageBox.Ok, QMessageBox.Ok)
         self.close()
+
 
 class logs_w(QWidget):
     def __init__(self, handler, fontsize, litoy):
@@ -159,10 +167,10 @@ class logs_w(QWidget):
         self.btn_full = QPushButton("Show full", self, checkable=True)
         self.btn_full.clicked.connect(self.show_full_logs)
         self.btn_fontp = QPushButton("Font +", self)
-        self.btn_fontp.clicked.connect(lambda : self.change_font_size(1))
+        self.btn_fontp.clicked.connect(lambda: self.change_font_size(1))
         self.btn_fontp.setShortcut("Ctrl++")
         self.btn_fontm = QPushButton("Font -", self)
-        self.btn_fontm.clicked.connect(lambda : self.change_font_size(-1))
+        self.btn_fontm.clicked.connect(lambda: self.change_font_size(-1))
         self.btn_fontm.setShortcut("Ctrl+-")
 
         vbox = QVBoxLayout()
@@ -196,15 +204,16 @@ class logs_w(QWidget):
         return True
 
     def change_font_size(self, incr):
-            allW = self.findChildren(QWidget)
-            self.current_font_size += incr
-            new_font = QFont()
-            new_font.setPointSize(self.current_font_size)
-            for w in allW:
-                try:
-                    w.setFont(new_font)
-                except:
-                    print(f"Failed to resize {w}")
+        allW = self.findChildren(QWidget)
+        self.current_font_size += incr
+        new_font = QFont()
+        new_font.setPointSize(self.current_font_size)
+        for w in allW:
+            try:
+                w.setFont(new_font)
+            except Exception:
+                print(f"Failed to resize {w}")
+
 
 class main_menu(QWidget):
     def __init__(self, litoy):
@@ -231,9 +240,9 @@ class main_menu(QWidget):
         title.setAlignment(Qt.AlignCenter)
 
         btn_review = QPushButton("Review")
-        btn_add    = QPushButton("Add")
+        btn_add = QPushButton("Add")
         btn_browse = QPushButton("browse")
-        btn_q      = QPushButton("Quit")
+        btn_q = QPushButton("Quit")
 
         btn_review.setAutoDefault(True)
         btn_review.setShortcut("R")
@@ -303,47 +312,50 @@ class tab_widget(QTabWidget):
         self.tab_init_ui(df)
 
     def tab_init_ui(self, df):
-      dfp = df.loc[:, ["content", "gELO", "iELO", "tELO",
-                       "tags", "disabled", "metacontent"]
-                   ][df["disabled"] == 0]
-      dfp["media_title"] = [(lambda x: json.loads(x)["title"]
-                             if "title" in json.loads(x).keys()
-                             else "")(x)
-                            for x in dfp.loc[:, "metacontent"]]
+        dfp = df.loc[:, ["content", "gELO", "iELO", "tELO",
+                         "tags", "disabled", "metacontent"]
+                     ][df["disabled"] == 0]
+        dfp["media_title"] = [(lambda x: json.loads(x)["title"]
+                               if "title" in json.loads(x).keys()
+                               else "")(x)
+                              for x in dfp.loc[:, "metacontent"]]
 
-      # podium
-      cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
-      to_show = dfp.sort_values(by="gELO", ascending=False)[0:10]
-      grid = QGridLayout(self)
-      for x, idx in enumerate(to_show.index):
-          for y, col in enumerate(cols):
-              widget = QLabel(str(dfp.loc[idx, col]))
-              grid.addWidget(widget, x+1, y)
-      [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y) for y, s in enumerate(cols)]
-      self.tab_podium.setLayout(grid)
+        # podium
+        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+        to_show = dfp.sort_values(by="gELO", ascending=False)[0:10]
+        grid = QGridLayout(self)
+        for x, idx in enumerate(to_show.index):
+            for y, col in enumerate(cols):
+                widget = QLabel(str(dfp.loc[idx, col]))
+                grid.addWidget(widget, x + 1, y)
+        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
+         for y, s in enumerate(cols)]
+        self.tab_podium.setLayout(grid)
 
-      # important
-      cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
-      to_show = dfp.sort_values(by="iELO", ascending=False)[0:10]
-      grid = QGridLayout(self)
-      for x, idx in enumerate(to_show.index):
-          for y, col in enumerate(cols):
-              widget = QLabel(str(dfp.loc[idx, col]))
-              grid.addWidget(widget, x+1, y)
-      [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y) for y, s in enumerate(cols)]
-      self.tab_imp.setLayout(grid)
+        # important
+        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+        to_show = dfp.sort_values(by="iELO", ascending=False)[0:10]
+        grid = QGridLayout(self)
+        for x, idx in enumerate(to_show.index):
+            for y, col in enumerate(cols):
+                widget = QLabel(str(dfp.loc[idx, col]))
+                grid.addWidget(widget, x + 1, y)
+        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
+         for y, s in enumerate(cols)]
+        self.tab_imp.setLayout(grid)
 
-      # quick
-      cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
-      to_show = dfp.sort_values(by="tELO", ascending=False)[0:10]
-      grid = QGridLayout(self)
-      for x, idx in enumerate(to_show.index):
-          for y, col in enumerate(cols):
-              widget = QLabel(str(dfp.loc[idx, col]))
-              grid.addWidget(widget, x+1, y)
-      [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y) for y, s in enumerate(cols)]
-      self.tab_quick.setLayout(grid)
-      return True
+        # quick
+        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+        to_show = dfp.sort_values(by="tELO", ascending=False)[0:10]
+        grid = QGridLayout(self)
+        for x, idx in enumerate(to_show.index):
+            for y, col in enumerate(cols):
+                widget = QLabel(str(dfp.loc[idx, col]))
+                grid.addWidget(widget, x + 1, y)
+        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
+         for y, s in enumerate(cols)]
+        self.tab_quick.setLayout(grid)
+        return True
 
 
 class add_w(QWidget):
@@ -353,7 +365,7 @@ class add_w(QWidget):
         self.litoy.gui_log("Opened adding window.")
 
         cur_tags = litoy.get_tags(litoy.df)
-        autocomplete_list = ["tags:"+tags for tags in cur_tags]
+        autocomplete_list = ["tags:" + tags for tags in cur_tags]
         compl = QCompleter(autocomplete_list, self)
         compl.setCompletionMode(QCompleter.InlineCompletion)
 
@@ -382,7 +394,8 @@ class add_w(QWidget):
                                                 query,
                                                 metacontent):
             newID = add_new_entry(self.litoy, query, metacontent)
-            msg = f"ID: {newID}\ncontent: {query}\nmetacontent: {metacontent}\n\n"
+            msg = f"ID: {newID}\ncontent: {query}\nmetacontent: \
+{metacontent}\n\n"
         else:
             msg = "Database already contains this entry, not added.\n\n"
         self.litoy.gui_log(msg)
@@ -430,7 +443,6 @@ you're lost.")
         self.show()
 
     def process_answer(self, ans):
-        #TODO
         self.n_review_done += 1
         if self.n_review_done == n_to_review:
             self.n_review_done = 0
@@ -470,7 +482,8 @@ you're lost.")
                     lab.setFont(self.large_font)
                     grid.addWidget(lab, x, 0)
                 else:
-                    widget = QLabel(str(self.litoy.df.reset_index().loc[idx, col]))
+                    widget = QLabel(str(self.litoy.df.reset_index().loc[idx,
+                                                                        col]))
                     widget.setWordWrap(True)
                     widget.setFont(self.large_font)
                     grid.addWidget(widget, x, y)
@@ -508,9 +521,11 @@ class browse_w(QWidget):
 
         self.table = QTableView(self)
         if self.allFields.isChecked() is False:
-            model = PandasModel(df=self.litoy.df.loc[:, self.litoy.df.columns], litoy=self.litoy)
+            model = PandasModel(df=self.litoy.df.loc[:, self.litoy.df.columns],
+                                litoy=self.litoy)
         else:
-            model = PandasModel(df=self.litoy.df.loc[:, ["content"]], litoy=self.litoy)
+            model = PandasModel(df=self.litoy.df.loc[:, ["content"]],
+                                litoy=self.litoy)
         self.table.setModel(model)
         self.table.resizeColumnsToContents()
 
@@ -526,13 +541,17 @@ class browse_w(QWidget):
         query = self.queryIn.text().lower()
         self.litoy.gui_log(f"Searched for {query}")
 
-        match = [x for x in df.index if query in str(df.loc[x, "content"]).lower()
+        match = [x
+                 for x in df.index
+                 if query in str(df.loc[x, "content"]).lower()
                  or query in str(df.loc[x, "metacontent"]).lower()]
         t = self.table
         if self.allFields.isChecked() is False:
-            model = PandasModel(df=df.loc[match, df.columns], litoy=self.litoy)
+            model = PandasModel(df=df.loc[match, df.columns],
+                                litoy=self.litoy)
         else:
-            model = PandasModel(df=df.loc[match, ["content"]], litoy=self.litoy)
+            model = PandasModel(df=df.loc[match, ["content"]],
+                                litoy=self.litoy)
         t.setModel(model)
 
         t.resizeColumnsToContents()
@@ -560,7 +579,7 @@ class browse_w(QWidget):
         dialog.setTextValue("")
         le = dialog.findChild(QLineEdit)
         cur_tags = litoy.get_tags(litoy.df)
-        autocomplete_list = ["tags:"+tags for tags in cur_tags]
+        autocomplete_list = ["tags:" + tags for tags in cur_tags]
         compl = QCompleter(autocomplete_list, self)
         compl.setCompletionMode(QCompleter.InlineCompletion)
         le.setCompleter(compl)
@@ -586,7 +605,8 @@ class browse_w(QWidget):
             msg = f"Database already contains entry '{entry}', not added.\n"
             title = "Error"
 
-        QMessageBox.question(self, title, msg, QMessageBox.Yes, QMessageBox.Yes)
+        QMessageBox.question(self, title, msg, QMessageBox.Yes,
+                             QMessageBox.Yes)
         self.litoy.gui_log(msg)
         self.df = self.litoy.df
         self.process_query()
@@ -606,8 +626,8 @@ class browse_w(QWidget):
         for entry_id in entry_idx:
             content = self.litoy.df.loc[entry_id, "content"]
             certain = QMessageBox.question(self.parent(), "Confirm removal",
-                        f"Are you sure you want to remove this entry?\n{content}",
-                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                                           f"Are you sure you want to remove this entry?\n{content}",
+                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if certain == QMessageBox.No:
                 self.litoy.gui_log(f"Entry with ID {entry_id} was NOT removed.", False)
             elif certain == QMessageBox.Yes:
@@ -620,6 +640,7 @@ class browse_w(QWidget):
                 self.df = self.litoy.df
                 self.process_query()
         return True
+
 
 def launch_gui(args, litoy):
     app = QApplication(sys.argv)
@@ -645,6 +666,7 @@ def launch_gui(args, litoy):
 
     win = main_window(args, litoy)
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     launch_gui(sys.argv)

@@ -5,7 +5,6 @@ from logging.handlers import RotatingFileHandler
 import sys
 import time
 from tqdm import tqdm
-sys.path.append("../../")
 
 def create_logger():
     """

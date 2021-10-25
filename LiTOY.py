@@ -1,67 +1,30 @@
 #!/usr/bin/env python3.9
-from user_settings import (disable_lifebar,
-                           useless_first_years,
-                           useless_last_years,
-                           user_age,
-                           user_life_expected,
-                           json_auto_save,
-                           n_session,
-                           n_to_review,
-                           average_word_length,
-                           wpm,
-                           default_dir,
-                           questions,
-                           shortcuts,
-                           K_values,
-                           default_score,
-                           global_weights,
-                           headers,
-                           col_red,
-                           col_blu,
-                           col_yel,
-                           col_gre,
-                           #col_cya,
-                           col_mgt_fg,
-                           col_blink,
-                           col_bold,
-                           col_uline,
-                           col_rst,
-                           spacer)
-
 from glob import glob
 import argparse
-import code
-import time
-import random
-from statistics import mean, stdev, median, StatisticsError
-import platform
-import requests
-import subprocess
-import sys
 import os
-import re
-import json
-import pandas as pd
+import signal
+
+import code
+import subprocess
+import threading
+
 from itertools import chain
 from pathlib import Path
+import json
+import pandas as pd
 from pprint import pprint
-from tqdm import tqdm
-from prettytable import PrettyTable
-import threading
-import webbrowser
-
-import pdb
-import signal
-from contextlib import suppress
 import prompt_toolkit
 from pygments.lexers import JavascriptLexer
 
-
-from src.backend.backend import DB_file_check, importation, import_media, move_flags_at_end, add_new_entry, pick_entries, shortcut_and_action, get_tags_from_content, get_meta_from_content
-from src.backend.media import extract_youtube, extract_local_video, extract_pdf_url, extract_pdf_local, extract_txt, extract_webpage
-from src.backend.scoring import expected_elo, update_elo, adjust_K, compute_global_score
-from src.backend.util import log_, debug_signal_handler, prompt_we, wrong_arguments_, format_length, json_periodic_save
-from src.cli.cli import side_by_side, format_length, show_podium, show_stats, print_2_entries
+from src.backend.backend import (DB_file_check, importation, import_media,
+                                 move_flags_at_end, add_new_entry,
+                                 pick_entries, shortcut_and_action,
+                                 get_tags_from_content,
+                                 get_meta_from_content)
+from src.backend.scoring import compute_global_score
+from src.backend.util import (log_, debug_signal_handler, prompt_we,
+                              wrong_arguments_, json_periodic_save)
+from src.cli.cli import show_podium, show_stats, print_2_entries
 from src.cli.get_terminal_size import get_terminal_size
 from src.gui.gui import launch_gui
 

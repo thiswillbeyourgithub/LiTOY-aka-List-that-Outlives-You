@@ -4,14 +4,13 @@ from youtube_dl.utils import DownloadError, ExtractorError
 from pathlib import Path
 import requests
 import pdftotext
-import sys
-sys.path.append("../..")
-from user_settings import average_word_length, headers, wpm
 import get_wayback_machine
 from bs4 import BeautifulSoup
 from moviepy.editor import VideoFileClip
 from tqdm import tqdm
-from .log import log_
+
+from user_settings import average_word_length, headers, wpm
+from src.backend.log import log_
 
 
 def extract_youtube(url):
@@ -33,14 +32,15 @@ extraction from {url} : {e}", False)
         if "uploader" in video.keys():
             res.update({"channel": video["uploader"]})
         try:
-            length = str(round(video['duration']/60, 1))
+            length = str(round(video['duration'] / 60, 1))
             res.update({"length": length})
-        except Exception as e:
-            log_("Youtube link looks like it's a playlist, using fallbackmethod:", False)
+        except Exception:
+            log_("Youtube link looks like it's a playlist, using \
+fallbackmethod:", False)
             length = 0
             for ent in video["entries"]:
                 length += ent["duration"]
-            length = str(round(length/60, 1))
+            length = str(round(length / 60, 1))
             res.update({"length": length})
     return res
 
@@ -60,13 +60,14 @@ def extract_local_video(link):
         return {"type": "local video not found",
                 "url": link}
     clip = VideoFileClip(link)
-    duration = round(clip.duration/60, 1)
+    duration = round(clip.duration / 60, 1)
     title = clip.filename.strip()
     dic = {"type": "local video",
            "title": title.replace("\n", ""),
            "length": duration,
            "url": link}
     return dic
+
 
 def extract_pdf_url(url):
     "extracts reading time from an online pdf"
@@ -92,8 +93,8 @@ def extract_pdf_local(path):
         return {"type": "pdf not found",
                 "url": path}
 
-    total_words = len(text_content)/average_word_length
-    estimatedReadingTime = str(round(total_words/wpm, 1))
+    total_words = len(text_content) / average_word_length
+    estimatedReadingTime = str(round(total_words / wpm, 1))
 
     title = path.split(sep="/")[-1].strip()
     res = {"type": "local pdf",
@@ -111,8 +112,8 @@ def extract_txt(path):
             lines = f.readlines()
         text_content = ' '.join(lines).replace("\n", " ")
 
-        total_words = len(text_content)/average_word_length
-        estimatedReadingTime = str(round(total_words/wpm, 1))
+        total_words = len(text_content) / average_word_length
+        estimatedReadingTime = str(round(total_words / wpm, 1))
 
         title = path.split(sep="/")[-1].strip()
         res = {"type": "text",
@@ -181,8 +182,8 @@ def extract_webpage(url, fallback_text_extractor=False):
     else:
         title = "No title found"
 
-    total_words = len(text_content)/average_word_length
-    estimatedReadingTime = str(round(total_words/wpm, 1))
+    total_words = len(text_content) / average_word_length
+    estimatedReadingTime = str(round(total_words / wpm, 1))
     title = title.replace("\n", "").replace("\\n", "").strip()
     res = {"title": title,
            "type": "webpage",

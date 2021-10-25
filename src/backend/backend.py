@@ -1,27 +1,32 @@
 #!/usr/bin/env python3.9
+
 import sys
+from pprint import pprint
 from pathlib import Path
 import time
 from tqdm import tqdm
-import re
 import pdb
 from contextlib import suppress
-from pprint import pprint
-sys.path.append("../../")
-sys.path.append("../")
-from .util import format_length, prompt_we
-from .media import extract_youtube, extract_pdf_url, extract_webpage, extract_local_video, extract_pdf_local, extract_txt
-from user_settings import shortcuts, n_to_review, default_score, K_values, col_red, col_rst, n_session, questions
-from ..cli.cli import print_2_entries
 import json
 import webbrowser
 import platform
 import subprocess
 import os
-from .scoring import compute_global_score, expected_elo, update_elo, adjust_K
+import re
 import prompt_toolkit
 from pygments.lexers import JavascriptLexer
-from .log import log_
+
+from src.backend.util import prompt_we
+from src.backend.media import (extract_youtube, extract_pdf_url,
+                               extract_webpage, extract_local_video,
+                               extract_pdf_local, extract_txt)
+from user_settings import (shortcuts, n_to_review, default_score, K_values,
+                           col_red, col_rst, n_session, questions)
+from src.cli.cli import print_2_entries
+from src.backend.scoring import (compute_global_score, expected_elo,
+                                 update_elo, adjust_K)
+from src.backend.log import log_
+
 
 def DB_file_check(path):
     "Check if the file and database already exists, if not create the file"
@@ -69,12 +74,13 @@ def importation(path, litoy):
 
 def import_media():
     """
-    import some media library, put aside because I want people to be able to 
+    import some media library, put aside because I want people to be able to
     install and use litoy even if they can't install those libraries (ex raspi)
     """
     if "get_wayback_machine" not in sys.modules:
         try:
-            global get_wayback_machine, pdftotext, requests, youtube_dl, ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
+            global get_wayback_machine, pdftotext, requests, youtube_dl, \
+                ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
             import get_wayback_machine
             import pdftotext
             import youtube_dl
@@ -83,7 +89,8 @@ def import_media():
             from moviepy.editor import VideoFileClip
         except Exception as e:
             print(col_red + f"Import failed: {e}\nThis means litoy might \
-crash when trying to load media. Use 'pip install -r requirements.txt' to fix this." + col_rst)
+crash when trying to load media. Use 'pip install -r requirements.txt' to \
+fix this." + col_rst)
 
 
 def move_flags_at_end(string):
@@ -91,7 +98,7 @@ def move_flags_at_end(string):
     used to turn 'do something tags:reading it's important' to
     'do something it's important tags:reading
     """
-    match = re.findall("tags:\w+", string)
+    match = re.findall(r"tags:\w+", string)
     match.extend(re.findall("set_length:[0-9jhm]+", string))
     if "" in match:
         match.remove("")
@@ -125,11 +132,10 @@ def add_new_entry(litoy, content, metacontent):
         metacontent.pop("wayback_used")
 
     try:
-        newID = max(df.index)+1
+        newID = max(df.index) + 1
     except ValueError:  # first card
         newID = 1
-    new_dic = {
-               "date": str(int(time.time())),
+    new_dic = {"date": str(int(time.time())),
                "content": content,
                "metacontent": json.dumps(metacontent),
                "tags": json.dumps(sorted(tags)),
@@ -161,10 +167,10 @@ def pick_entries(df):
     df = df.loc[df.disabled == 0].copy()
     df["pick_score"] = df.loc[:, "DiELO"].values + df.loc[:, "DtELO"]
     df.sort_values(by="pick_score", axis=0, ascending=False, inplace=True)
-    
+
     left_choice_id = df.iloc[0:10].sample(1).index[0]
 
-    df_h = df.iloc[0: int(len(df.index)/2), :]
+    df_h = df.iloc[0: int(len(df.index) / 2), :]
     right_choice_id = df_h.sample(min(n_to_review, len(df_h.index))).index
 
     picked_ids = [int(left_choice_id)]
@@ -174,7 +180,8 @@ def pick_entries(df):
     while picked_ids[0] in picked_ids[1:]:
         cnt += 1
         if cnt > 50:
-            log_("Seem to be stuck in an endless loop. Openning debugger", False)
+            log_("Seem to be stuck in an endless loop. Openning debugger",
+                 False)
             pdb.set_trace()
         log_("Picking entries one more time to avoid reviewing to itself",
              False)
@@ -182,7 +189,8 @@ def pick_entries(df):
     return picked_ids
 
 
-def shortcut_and_action(id_left, id_right, mode, progress, litoy, shortcut_auto_completer, available_shortcut):
+def shortcut_and_action(id_left, id_right, mode, progress, litoy,
+                        shortcut_auto_completer, available_shortcut):
     """
     makes the link between keypresses and actions
     shortcuts are stored at the top of the file
@@ -231,7 +239,7 @@ Quitting.", False)
             entry = df.loc[entry_id, :]
             print(f"Fields available for edition : {field_list}")
             chosenfield = prompt_we("What field do you want to edit? \
-(q to exit)\n>", completer = field_auto_completer)
+(q to exit)\n>", completer=field_auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
                 break
             if chosenfield == "metacontent" or chosenfield == "tags":
@@ -244,17 +252,17 @@ Quitting.", False)
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
             new_value = str(prompt_we("Enter the desired new value \
-for  field '" + chosenfield +"'\n>",
-                                       default=old_value,
-                                       **additional_args))
+for  field '" + chosenfield + "'\n>",
+                            default=old_value,
+                            **additional_args))
             if chosenfield == "content":
                 new_value = move_flags_at_end(new_value)
                 df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
                 df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
             df.loc[entry_id, chosenfield] = new_value
             litoy.save_to_file(df)
-            log_(f'Edited field "{chosenfield}":\n* {old_value}\nbecame:\n* {new_value}',
-                 False)
+            log_(f'Edited field "{chosenfield}":\n* {old_value}\nbecame:\n* \
+{new_value}', False)
             break
 
     action = ""
@@ -265,7 +273,7 @@ for  field '" + chosenfield +"'\n>",
         prompt_text = f"{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help)\n>"
 
-        keypress = prompt_we(prompt_text, completer = shortcut_auto_completer)
+        keypress = prompt_we(prompt_text, completer=shortcut_auto_completer)
 
         if keypress not in available_shortcut:
             log_(f"ERROR: keypress not found : {keypress}")
@@ -285,7 +293,8 @@ for  field '" + chosenfield +"'\n>",
                 keypress = 4
             if keypress == "t":
                 keypress = 5
-            keypress = round(int(keypress)/6*5, 2)  # resize value from 1-5 to 0-5
+            keypress = round(int(keypress) / 6 * 5, 2)
+            # resize value from 1-5 to 0-5
             date = time.time()
             assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
 
@@ -304,7 +313,7 @@ for  field '" + chosenfield +"'\n>",
             eloR = int(eR_old[elo_fld])
 
             eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR),
-                                         round(5-keypress, 2), eL_old.K)
+                                         round(5 - keypress, 2), eL_old.K)
             eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR),
                                          keypress, eR_old.K)
             log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R: \
@@ -336,13 +345,13 @@ for  field '" + chosenfield +"'\n>",
 
         if action == "show_all_fields":
             log_("Displaying the entries in full")
-            print("\n"*10)
+            print("\n" * 10)
             print_2_entries(int(id_left), int(id_right), mode, litoy, "all")
             continue
 
         if action == "show_few_fields":
             log_("Displaying only most important fields of entries")
-            print("\n"*10)
+            print("\n" * 10)
             print_2_entries(int(id_left), int(id_right), mode, litoy)
             continue
 
@@ -367,7 +376,7 @@ for  field '" + chosenfield +"'\n>",
                 except (KeyError, AttributeError) as e:
                     log_(f"url not found in entry {ent_id} : {e}")
             time.sleep(1.5)  # better display
-            print("\n"*10)
+            print("\n" * 10)
             print_2_entries(int(id_left),
                             int(id_right),
                             mode=mode,
@@ -382,8 +391,8 @@ for  field '" + chosenfield +"'\n>",
                 additional_args.update({"fallback_text_extractor": True})
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
-                df.loc[ent_id, "content"] = move_flags_at_end(
-                                        df.loc[ent_id, "content"])
+                df.loc[ent_id, "content"] = move_flags_at_end(df.loc[ent_id,
+                                                                     "content"])
                 new_meta = get_meta_from_content(df.loc[ent_id, :]["content"],
                                                  additional_args)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
@@ -391,7 +400,7 @@ for  field '" + chosenfield +"'\n>",
                 entry_left = df.loc[id_left, :]
                 entry_right = df.loc[id_right, :]
                 log_(f"New metacontent value for {ent_id} : {new_meta}")
-            print("\n"*10)
+            print("\n" * 10)
             print_2_entries(int(id_left),
                             int(id_right),
                             mode=mode,
@@ -460,7 +469,7 @@ def get_tags_from_content(string):
         if word.startswith("tags:"):
             temp = str(word[5:])
             # removes non letter from tags, usually ,
-            while not temp.replace("_", "").replace("-","").isalnum():
+            while not temp.replace("_", "").replace("-", "").isalnum():
                 temp = temp[:-1]
             result.append(temp)
     return list(set(result))
@@ -482,7 +491,7 @@ def get_meta_from_content(string, additional_args=None):
         last = time.time()
         if since < 2:
             log_(f"Sleeping for {2-since} seconds", False)
-            time.sleep(2-since)
+            time.sleep(2 - since)
 
     splitted = string.split(" ")
     res = {}
