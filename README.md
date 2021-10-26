@@ -206,10 +206,10 @@ TODO and planned features:
 * gui: reviewer: make sure the implementation is sane
 * gui: reviewer: implement skipping
 * gui: add: fix adding media
-* gui: browser: right click to open an edit window with all fields + also useful when reviewing
 * gui: browser: ctrl+f to focus on search field 
-* gui: browser: right click to disable entry
 * gui: browser: change colour for starred / disabled entries
+* gui: browser: right click to disable entry
+* gui: browser: right click to open an edit window with all fields, will also be useful when reviewing
 * gui: main menu: remove stretch on the side and add spacers instead 
 * gui: main menu: alt tab to switch panel 
 * gui: main menu: color each tags 
