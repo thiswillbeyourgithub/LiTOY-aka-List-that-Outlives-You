@@ -16,7 +16,7 @@ import re
 import prompt_toolkit
 from pygments.lexers import JavascriptLexer
 
-from src.backend.util import prompt_we
+from src.backend.util import prompt_we, format_length
 from src.backend.media import (extract_youtube, extract_pdf_url,
                                extract_webpage, extract_local_video,
                                extract_pdf_local, extract_txt)
