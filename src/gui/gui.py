@@ -414,6 +414,7 @@ class tab_widget(QTabWidget):
 class clickable_QLabel(QLabel):
     def __init__(self, t, idx, whenClicked):
         super().__init__(t)
+        self.setWordWrap(True)
         self.idx = idx
         self._whenclicked = whenClicked
 
