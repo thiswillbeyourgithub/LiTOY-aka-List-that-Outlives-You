@@ -10,9 +10,10 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout, QLabel,
                              QPushButton, QWidget, QHBoxLayout, QAction, QMenu,
                              QProgressBar, QMessageBox, QTabWidget,
                              QGridLayout, QLineEdit, QCheckBox, QTableView,
-                             QTextEdit, QCompleter, QInputDialog, QDialog)
+                             QTextEdit, QCompleter, QInputDialog, QDialog,
+                             QShortcut)
 from PyQt5.QtCore import Qt, pyqtSignal, QObject
-from PyQt5.QtGui import QPalette, QFont, QPixmap, QColor
+from PyQt5.QtGui import QPalette, QFont, QPixmap, QColor, QKeySequence
 
 from user_settings import (user_age, user_life_expected, shortcuts, n_session,
                            n_to_review, questions, gui_font_size)
@@ -46,6 +47,10 @@ class main_window(QMainWindow):
         back_to_mm = QAction("Main menu", self)
         back_to_mm.triggered.connect(lambda: self.to_mainmenu(litoy))
         back_to_mm.setShortcut("Ctrl+M")
+        back_to_mm_shortcut = QShortcut(Qt.Key_Escape, self)
+        back_to_mm_shortcut.activated.connect(lambda: self.to_mainmenu(litoy))
+        back_to_mm_shortcut2 = QShortcut(Qt.Key_Backspace, self)
+        back_to_mm_shortcut2.activated.connect(lambda: self.to_mainmenu(litoy))
 
         open_logs = QAction("Show logs", self)
         open_logs.triggered.connect(lambda: self.show_logs(
@@ -71,6 +76,8 @@ class main_window(QMainWindow):
         sett = QAction("Settings", self)
         sett.triggered.connect(lambda: self.open_settings(litoy))
         sett.setShortcut("Ctrl+?")
+        sett_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        sett_shortcut.activated.connect(lambda: self.open_settings(litoy))
 
         menuBar.addAction(back_to_mm)
         menuBar.addMenu(fontMenu)
@@ -90,13 +97,6 @@ class main_window(QMainWindow):
                 w.setFont(new_font)
             except Exception:
                 print(f"Failed to resize {w}")
-
-    def keyPressEvent(self, event):
-        "to handle multiple shortcuts for the same action"
-        if event.key() in [Qt.Key_Escape, Qt.Key_Backspace]:
-            self.to_mainmenu(self.litoy)
-        if event.text() == "b":
-            self.mm.launch_browse()
 
     def open_settings(self, litoy):
         self.sett_window = settings_w(litoy)
@@ -262,8 +262,12 @@ class main_menu(QWidget):
 
         btn_review.clicked.connect(self.launch_review)
         btn_add.clicked.connect(self.launch_add)
-        btn_browse.clicked.connect(self.launch_browse)
+        btn_browse.clicked.connect(lambda: self.launch_browse(select=None))
         btn_q.clicked.connect(QApplication.quit)
+
+        browser_shortcut = QShortcut("b", self)
+        browser_shortcut.activated.connect(lambda: self.launch_browse(select=None))
+
 
         self.tab_widget = tab_widget(self.litoy)
 
