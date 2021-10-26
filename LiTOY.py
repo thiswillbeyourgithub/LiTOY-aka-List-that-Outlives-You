@@ -7,6 +7,7 @@ import signal
 import code
 import subprocess
 import threading
+import platform
 
 from itertools import chain
 from pathlib import Path
@@ -16,6 +17,7 @@ from pprint import pprint
 import prompt_toolkit
 from pygments.lexers import JavascriptLexer
 
+from user_settings import shortcuts, default_dir, n_session, n_to_review
 from src.backend.backend import (DB_file_check, importation, import_media,
                                  move_flags_at_end, add_new_entry,
                                  pick_entries, shortcut_and_action,
