@@ -117,17 +117,20 @@ class settings_w(QWidget):
         self.initUI(litoy)
 
     def initUI(self, litoy):
-        litoy.gui_log("Opened settings window.")
-        sett_file = Path("./user_settings.py")
-        with open(sett_file) as lf:
-            content = lf.read()
+        self.litoy = litoy
+        self.litoy.gui_log("Opened settings window.")
+        self.sett_path = "./user_settings.py"
+
         self.editor = QTextEdit(self)
-        self.editor.setText(content)
+        self.editor.setText(Path(self.sett_path).read_text())
 
         self.btn_save = QPushButton("Save", self)
         self.btn_save.clicked.connect(self.save_settings)
         self.btn_cancel = QPushButton("Cancel", self)
         self.btn_cancel.clicked.connect(self.cancel_settings)
+        self.btn_reset = QPushButton("Reset default", self)
+        self.btn_reset.clicked.connect(self.reset_default_settings)
+        self.btn_cancel.setAutoDefault(True)
 
         large_font = QFont()
         large_font.setPointSize(gui_font_size)
@@ -139,17 +142,40 @@ class settings_w(QWidget):
         hbox.addStretch()
         hbox.addWidget(self.btn_save)
         hbox.addWidget(self.btn_cancel)
+        hbox.addWidget(self.btn_reset)
         hbox.setAlignment(Qt.AlignBottom)
         vbox.addLayout(hbox)
         self.setLayout(vbox)
         self.show()
 
     def save_settings(self):
-        pass
+        self.litoy.gui_log("Saving settings.")
+        new_sett = self.editor.toPlainText()
+        new_path = self.sett_path + ".temp"
+        Path(new_path).write_text(new_sett)
+        Path(self.sett_path).unlink()  # remove old file
+        Path(new_path).rename(self.sett_path[2:])  # rename temp file
+        QMessageBox.question(self, "Ok", "New settings will apply on next \
+start.", QMessageBox.Ok, QMessageBox.Ok)
+        self.close()
 
     def cancel_settings(self):
+        self.litoy.gui_log("Didn't save settings.")
         QMessageBox.question(self, "Cancel", "Not saved.",
                              QMessageBox.Ok, QMessageBox.Ok)
+        self.close()
+
+    def reset_default_settings(self):
+        self.litoy.gui_log("Resetting settings.")
+        to_replace = Path(self.sett_path)
+        default_file = Path("./src/backend/default_user_settings.py")
+        if not default_file.exists():
+            QMessageBox.question(self, "Ok", "No default settings file found!",
+                                 QMessageBox.Ok, QMessageBox.Ok)
+        else:
+            to_replace.write_text(default_file.read_text())
+            QMessageBox.question(self, "Ok", "Settings have been reset to the default \
+values.", QMessageBox.Ok, QMessageBox.Ok)
         self.close()
 
 
