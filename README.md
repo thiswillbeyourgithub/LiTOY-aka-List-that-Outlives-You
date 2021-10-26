@@ -201,8 +201,8 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* add a failsafe when there is no internet connectivity
-
+* add a failsafe when adding cards without internet connectivity
+* shortcut and LiTOY contain near duplicate implementation to edit entries, keep only one
 * gui: reviewer: make sure the implementation is sane
 * gui: reviewer: implement skipping
 * gui: add: fix adding media
