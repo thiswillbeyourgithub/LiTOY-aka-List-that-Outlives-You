@@ -202,7 +202,6 @@ Syntax and usage example:
 TODO and planned features:
 ======
 * add a failsafe when there is no internet connectivity
-* when editing content, autocomplete flags and tags
 
 * gui: reviewer: make sure the implementation is sane
 * gui: reviewer: implement skipping

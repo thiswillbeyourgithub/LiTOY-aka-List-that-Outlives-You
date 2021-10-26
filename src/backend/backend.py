@@ -233,6 +233,16 @@ Quitting.", False)
         "edit an entry during review"
         log_(f"Editing entry {entry_id}")
         df = litoy.df.copy()
+
+        # tags completion
+        cur_tags = litoy.get_tags(litoy.df)
+        autocomplete_list = ["tags:"+tags for tags in cur_tags] + ["set_length:"]
+        auto_complete = prompt_toolkit.completion.WordCompleter(autocomplete_list,
+                              match_middle=True,
+                              ignore_case=True,
+                              sentence=False)
+
+
         field_list = list(df.columns)
         field_auto_completer = prompt_toolkit.completion.WordCompleter(field_list, sentence=True)
         while True:
@@ -242,15 +252,24 @@ Quitting.", False)
 (q to exit)\n>", completer=field_auto_completer)
             if chosenfield == "q" or chosenfield == "quit":
                 break
-            if chosenfield == "metacontent" or chosenfield == "tags":
+            elif chosenfield == "metacontent":
                 additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
+            elif chosenfield == "content":
+                additional_args = {"completer": auto_complete}
+            elif chosenfield == "tags":
+                print(col_red + "You can't edit tags this way, you \
+have to enter them in the 'content' field." + col_rst)
+                time.sleep(1)
+                continue
             else:
                 additional_args = {}
+
             try:
                 old_value = str(entry[chosenfield])
             except KeyError:
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
+
             new_value = str(prompt_we("Enter the desired new value \
 for  field '" + chosenfield + "'\n>",
                             default=old_value,

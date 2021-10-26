@@ -17,7 +17,8 @@ from pprint import pprint
 import prompt_toolkit
 from pygments.lexers import JavascriptLexer
 
-from user_settings import shortcuts, default_dir, n_session, n_to_review
+from user_settings import (shortcuts, default_dir, n_session, n_to_review,
+                           col_rst, col_red)
 from src.backend.backend import (DB_file_check, importation, import_media,
                                  move_flags_at_end, add_new_entry,
                                  pick_entries, shortcut_and_action,
@@ -428,6 +429,16 @@ Text content of the entry?\n>"
     if args['edit_entries'] is not None:
         log_("Editing entries.")
         df = litoy.df.copy()
+
+        # tags completion
+        cur_tags = litoy.get_tags(litoy.df)
+        autocomplete_list = ["tags:"+tags for tags in cur_tags] + ["set_length:"]
+        auto_complete = prompt_toolkit.completion.WordCompleter(autocomplete_list,
+                              match_middle=True,
+                              ignore_case=True,
+                              sentence=False)
+
+
         field_list = list(df.columns)
         field_auto_completer = prompt_toolkit.completion.WordCompleter(field_list, sentence=True)
         id_list = args['edit_entries']
@@ -457,19 +468,27 @@ Text content of the entry?\n>"
 (q to exit)\n>", completer = field_auto_completer)
                     if chosenfield == "q" or chosenfield == "quit":
                         break
-                    if chosenfield == "metacontent" or chosenfield == "tags":
+                    elif chosenfield == "metacontent":
                         additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
+                    elif chosenfield == "content":
+                        additional_args = {"completer": auto_complete}
+                    elif chosenfield == "tags":
+                        print(col_red + "You can't edit tags this way, you \
+have to enter them in the 'content' field." + col_rst)
+                        time.sleep(1)
+                        continue
                     else:
                         additional_args = {}
+
                     try:
                         old_value = str(entry[chosenfield])
-                    except KeyError:
-                        log_("ERROR: Shortcut : edit : wrong field name", False)
+                    except KeyError as e:
+                        log_(f"ERROR: Shortcut : edit : wrong field name: {e}",
+                             False)
                         continue
                     new_value = str(prompt_we("Enter the desired new value \
-for field '" + chosenfield +"'\n>",
-                                               default=old_value,
-                                               **additional_args))
+for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
+
                     if chosenfield == "content":
                         new_value = move_flags_at_end(new_value)
                         df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
