@@ -333,7 +333,9 @@ class main_menu(QWidget):
 
     def launch_browse(self, select=None):
         p = self.parent()
-        p.setCentralWidget(browse_w(self.litoy, p, select))
+        p.setCentralWidget(browse_w(litoy=self.litoy,
+                                    p=p,
+                                    select=select))
 
 
 class tab_widget(QTabWidget):
@@ -555,12 +557,12 @@ you're lost.")
 
 
 class browse_w(QWidget):
-    def __init__(self, litoy, p, select):
+    def __init__(self, litoy, p, select=None):
         super().__init__()
         self.litoy = litoy
         self.df = litoy.df
         if select is not None:
-            self.df = self.df.loc[select]
+            self.df = self.df.loc[select, :]
         self.litoy.gui_log("Opened browsing window.")
 
         self.vbox = QVBoxLayout()
