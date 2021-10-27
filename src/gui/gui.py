@@ -21,6 +21,7 @@ from src.gui.PandasModel import PandasModel
 from src.backend.backend import (pick_entries, get_meta_from_content,
                                  add_new_entry)
 
+from src.cli.cli import print_2_entries
 
 # MISCELANEOUS
 ##############################################################################
@@ -539,6 +540,7 @@ class review_w(QWidget):
         self.userInput = QLineEdit(self)
         self.userInput.setToolTip("Enter your commands here, type \"help\" if \
 you're lost.")
+        self.userInput.returnPressed.connect(self.process_answer)
         available_shortcut = list(chain.from_iterable(shortcuts.values()))
         compl = QCompleter(available_shortcut, self)
         compl.setCompletionMode(QCompleter.InlineCompletion)
@@ -555,17 +557,21 @@ you're lost.")
         self.setLayout(self.vbox)
 
         self.display_next_entries()
-        self.show()
 
-    def process_answer(self, ans):
+    def process_answer(self):
+        ans = self.userInput.text()
+        self.userInput.setText("")
+        self.litoy.gui_log(f"Input: {ans}")
+
         self.n_review_done += 1
         if self.n_review_done == n_to_review:
             self.n_review_done = 0
             self.n_session_done += 1
             if self.n_session_done == n_session:
                 self.finished()
-            else:
-                self.picked_ids = pick_entries(self.litoy.df)
+                return
+            self.picked_ids = pick_entries(self.litoy.df)
+
         if self.mode == "time":
             self.mode = "importance"
         elif self.mode == "importance":
@@ -573,39 +579,48 @@ you're lost.")
         self.display_next_entries()
 
     def finished(self):
-        grid = QGridLayout(self)
-        grid.addWidget(QLabel("Finished!"), 0, 0)
-        self.entry_display.setLayout(grid)
+        self.p.to_mainmenu(self.litoy)
+        QMessageBox.question(self, "Finished", "Finished your reviews!",
+                QMessageBox.Ok, QMessageBox.Ok)
 
     def display_next_entries(self):
         grid = QGridLayout(self)
-        cols = ["ID", "tags", "starred", "content", "iELO", "tELO", "K"]
-        self.run = []
-        self.run.append(self.picked_ids[0])
+
+        self.current_disp = []
+        self.current_disp.append(self.picked_ids[0])
         if self.mode == "importance":
             self.question.setText(questions["importance"])
-            self.run.append(self.picked_ids[1])
+            self.current_disp.append(self.picked_ids[1])
         if self.mode == "time":
             self.question.setText(questions["time"])
             self.question.setText(questions["importance"])
-            self.run.append(self.picked_ids[2])
-        self.run
-        for y, idx in enumerate([0] + self.run):
+            self.current_disp.append(self.picked_ids[2])
+
+        self.litoy.gui_log(f"Printing entries {self.current_disp[0]} \
+{self.current_disp[1]}")
+        to_print = print_2_entries(self.current_disp[0], self.current_disp[1],
+                                   mode=self.mode, litoy=self.litoy,
+                                   all_fields=self.all_fields, cli=False)
+
+        cols = [x[0] for x in to_print]
+        for y, idx in enumerate([0] + self.current_disp):
             for x, col in enumerate(cols):
                 if y == 0:
                     lab = QLabel(f"<b>{col}</b>")
                     lab.setFont(self.large_font)
                     grid.addWidget(lab, x, 0)
                 else:
-                    widget = QLabel(str(self.litoy.df.reset_index().loc[idx,
-                                                                        col]))
+                    widget = QLabel(str(to_print[x][1][y - 1]))
                     widget.setWordWrap(True)
                     widget.setFont(self.large_font)
                     grid.addWidget(widget, x, y)
         grid.setColumnStretch(0, -1)
         grid.setColumnStretch(1, 1)
         grid.setColumnStretch(2, 1)
+        if self.n_review_done > 0:
+            QWidget().setLayout(self.entry_display.layout())
         self.entry_display.setLayout(grid)
+        self.show()
 
 
 class browse_w(QWidget):
