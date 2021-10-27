@@ -14,10 +14,25 @@ from user_settings import (useless_last_years, useless_first_years,
 from src.cli.get_terminal_size import get_terminal_size
 
 
-def print_2_entries(id_left, id_right, mode, litoy, all_fields="no"):
-    "Show the two entries to review side by side"
+def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
+    """
+    Show the two entries to review side by side
+    This function is actually part CLI but is highjacked by the GUI to
+    easily extract all the information to show to the user
+    """
     global sizex, sizey
     (sizex, sizey) = get_terminal_size()  # dynamic sizing
+
+    if cli is True:
+        global print, side_by_side
+    else:  # highjacking this function to get all the values to print
+        def print(string):
+            pass
+        storage = []
+        def side_by_side(key, val1, val2):
+            storage.append([key, [val1, val2]])
+
+
     print(col_blu + "#" * sizex + col_rst)
     print_memento_mori()
     print(col_blu + "#" * sizex + col_rst)
@@ -65,7 +80,7 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields="no"):
                 js[x][y] = "X"
             else:
                 js[x][y] == str(js[x][y])
-    if (js[0]["length"] + js[1]["length"]) != "XX":
+    if (str(js[0]["length"]) + str(js[1]["length"])) != "XX":
         side_by_side("Length",
                      format_length(js[0]["length"]),
                      format_length(js[1]["length"]))
@@ -80,6 +95,9 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields="no"):
         side_by_side("Media type", js[0]["type"], js[1]["type"])
 
     print(col_blu + "#" * sizex + col_rst)
+
+    if cli is False:
+        return storage
 
 
 def print_memento_mori():
