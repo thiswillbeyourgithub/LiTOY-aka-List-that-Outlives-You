@@ -205,9 +205,9 @@ TODO and planned features:
 ======
 * add a failsafe when adding cards without internet connectivity
 * shortcut and LiTOY contain near duplicate implementation to edit entries, keep only one
-* gui: reviewer: make sure the implementation is sane
-* gui: reviewer: implement skipping
-* gui: add: fix adding media
+* gui: reviewer: handle input
+* gui: reviewer: autofocus input field
+* gui: add: shortcut to add media
 * gui: browser: ctrl+f to focus on search field 
 * gui: browser: change colour for starred / disabled entries
 * gui: browser: right click to disable entry
@@ -217,6 +217,7 @@ TODO and planned features:
 * gui: main menu: color each tags 
 * gui: main menu: ability to open the browser by clicking on the panel
 * gui: settings: ask people what module to use to manage settings and settings panel
+* gui: settings: syntax highlighting
 
 * use lazy import to speed up launch?
 * use regexp instead of string matching most of the time
