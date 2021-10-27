@@ -185,7 +185,7 @@ def pick_entries(df):
             pdb.set_trace()
         log_("Picking entries one more time to avoid reviewing to itself",
              False)
-        picked_ids = pick_entries()
+        picked_ids = pick_entries(df)
     return picked_ids
 
 
