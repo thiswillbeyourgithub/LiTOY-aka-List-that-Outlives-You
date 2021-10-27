@@ -524,7 +524,7 @@ class review_w(QWidget):
         self.litoy.gui_log("Opened review window.")
 
         self.large_font = QFont()
-        self.large_font.setPointSize(18)
+        self.large_font.setPointSize(gui_font_size)
         self.n_review_done = 0
         self.n_session_done = 0
         self.mode = "importance"
