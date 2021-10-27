@@ -97,6 +97,8 @@ FAQ
 
 **What are the authorized valued for tags?** Only alphanumeric characters, `-` and `_`. Otherwise truncation will happen.
 
+**Can I use LiTOY if I only want to sort by importance without caring about time?** You can but it's a bit hacky. You have to remove the "time" section of the `questions` variable in `user_settings`. Then ignore every mention of time score and global score and just focus on importance score (iELO).
+
 **Can you give examples of how to use the python console?**
     * Here's an example showing how to rename a tag:
         * **make a backup first**

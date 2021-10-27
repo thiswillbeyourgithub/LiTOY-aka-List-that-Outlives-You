@@ -18,7 +18,7 @@ import prompt_toolkit
 from pygments.lexers import JavascriptLexer
 
 from user_settings import (shortcuts, default_dir, n_session, n_to_review,
-                           col_rst, col_red)
+                           col_rst, col_red, questions)
 from src.backend.backend import (DB_file_check, importation, import_media,
                                  move_flags_at_end, add_new_entry,
                                  pick_entries, shortcut_and_action,
@@ -527,7 +527,7 @@ to start using LiTOY!", False)
                     progress += 1
                     if state == "repick":
                         break
-                    for m in ["importance", "time"]:
+                    for m in questions.keys():
                         if state == "repick":
                             break
                         print("\n"*10)
