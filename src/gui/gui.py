@@ -22,8 +22,48 @@ from src.backend.backend import (pick_entries, get_meta_from_content,
                                  add_new_entry)
 
 
+# MISCELANEOUS
+##############################################################################
+
+
+def launch_gui(args, litoy):
+    """
+    used to launch the gui, called from LiTOY.py
+    """
+    app = QApplication(sys.argv)
+
+    if args['darkmode']:
+        # https://stackoverflow.com/questions/48256772/dark-theme-for-qt-widgets
+        app.setStyle("Fusion")
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        palette.setColor(QPalette.WindowText, Qt.white)
+        palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        palette.setColor(QPalette.ToolTipBase, Qt.black)
+        palette.setColor(QPalette.ToolTipText, Qt.white)
+        palette.setColor(QPalette.Text, Qt.white)
+        palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        palette.setColor(QPalette.ButtonText, Qt.white)
+        palette.setColor(QPalette.BrightText, Qt.red)
+        palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        palette.setColor(QPalette.HighlightedText, Qt.black)
+        app.setPalette(palette)
+
+    win = main_window(args, litoy)
+    sys.exit(app.exec_())
+
+
 class Communicate(QObject):
+    """
+    used for communication between classes
+    """
     open_browser_to_select = pyqtSignal(int)
+
+
+# MAIN WINDOW AND MAIN MENU
+##############################################################################
 
 
 class main_window(QMainWindow):
@@ -105,10 +145,197 @@ class main_window(QMainWindow):
     def to_mainmenu(self, litoy):
         self.mm = main_menu(litoy)
         self.setCentralWidget(self.mm)
+        self.change_font_size(0)
         self.show()
 
     def show_logs(self, handler, fontsize, litoy):
         self.logs_window = logs_w(handler, fontsize, litoy)
+
+
+class main_menu(QWidget):
+    """
+    central widget of the main window, with choice between review,
+    add, browse, etc
+    """
+    def __init__(self, litoy):
+        super().__init__()
+        self.initUI(litoy)
+
+    def initUI(self, litoy):
+        self.litoy = litoy
+        # widgets
+        self.pbar = QProgressBar(self)
+        self.pbar_age = 0
+        self.pbar.setStyleSheet("QProgressBar {\
+                                color:white;\
+                                background-color: black;\
+                                }\
+                                QProgressBar::chunk {\
+                                background:darkred;}")
+        self.pbar.setValue(user_age)
+        self.pbar.setMaximum(user_life_expected)
+        self.pbar.setFormat("Already at %p% of your life")
+
+        title = QLabel(self)
+        title.setPixmap(QPixmap("logo.png"))
+        title.setAlignment(Qt.AlignCenter)
+
+        btn_review = QPushButton("Review")
+        btn_add = QPushButton("Add")
+        btn_browse = QPushButton("browse")
+        btn_q = QPushButton("Quit")
+
+        btn_review.setAutoDefault(True)
+        btn_review.setShortcut("R")
+        btn_add.setShortcut("A")
+        btn_browse.setShortcut("S")
+        btn_q.setShortcut("Q")
+
+        btn_review.setToolTip("Start reviewing your entries")
+        btn_add.setToolTip("Add new entries to LiTOY")
+        btn_browse.setToolTip("browse entries")
+        btn_q.setToolTip("Quit")
+
+        btn_review.clicked.connect(self.launch_review)
+        btn_add.clicked.connect(self.launch_add)
+        btn_browse.clicked.connect(lambda: self.launch_browse(select=None))
+        btn_q.clicked.connect(QApplication.quit)
+
+        browser_shortcut = QShortcut("b", self)
+        browser_shortcut.activated.connect(lambda: self.launch_browse(select=None))
+
+
+        self.tab_podium_widget = tab_podium_widget(self.litoy)
+
+        # layout
+        vbox = QVBoxLayout()
+        vbox.addWidget(title)
+        vbox.addWidget(self.pbar)
+        vbox.addWidget(self.tab_podium_widget)
+        vbox.addStretch()
+        vbox.addWidget(btn_review)
+        vbox.addStretch()
+        vbox.addWidget(btn_add)
+        vbox.addStretch()
+        vbox.addWidget(btn_browse)
+        vbox.addStretch()
+        vbox.addWidget(btn_q)
+        vbox.addStretch()
+
+        hbox = QHBoxLayout()
+        hbox.addStretch()
+        hbox.addLayout(vbox)
+        hbox.addStretch()
+
+        self.setLayout(hbox)
+        self.show()
+
+        self.c = Communicate()
+        self.c.open_browser_to_select.connect(lambda idx: self.launch_browse(select=idx))
+
+    def launch_review(self):
+        p = self.parent()
+        p.setCentralWidget(review_w(self.litoy, p))
+
+    def launch_add(self):
+        p = self.parent()
+        p.setCentralWidget(add_w(self.litoy, p))
+
+    def launch_browse(self, select=None):
+        p = self.parent()
+        p.setCentralWidget(browse_w(litoy=self.litoy,
+                                    p=p,
+                                    select=select))
+
+
+class tab_podium_widget(QTabWidget):
+    """
+    used in the main menu to display the podium
+    """
+    def __init__(self, litoy):
+        super().__init__()
+        self.litoy = litoy
+        df = self.litoy.df
+        self.tab_podium = QWidget()
+        self.tab_imp = QWidget()
+        self.tab_quick = QWidget()
+        self.addTab(self.tab_podium, "Podium")
+        self.addTab(self.tab_imp, "Important")
+        self.addTab(self.tab_quick, "Quick")
+        self.tab_init_ui(df)
+
+    def tab_init_ui(self, df):
+        dfp = df.loc[:, ["content", "gELO", "iELO", "tELO",
+                         "tags", "disabled", "metacontent"]
+                     ][df["disabled"] == 0]
+        dfp["media_title"] = [(lambda x: json.loads(x)["title"]
+                               if "title" in json.loads(x).keys()
+                               else "")(x)
+                              for x in dfp.loc[:, "metacontent"]]
+        dfp["tags"] = [", ".join(json.loads(x)) for x in dfp["tags"]]
+
+        def cl_lab(t, idx):
+            """ create a clickable QLabel """
+            return clickable_QLabel(t, idx,
+                                    whenClicked=self.open_browser)
+
+        # podium
+        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+        to_show = dfp.sort_values(by="gELO", ascending=False)[0:10]
+        grid = QGridLayout(self)
+        for x, idx in enumerate(to_show.index):
+            for y, col in enumerate(cols):
+                widget = cl_lab(str(dfp.loc[idx, col]), idx)
+                grid.addWidget(widget, x + 1, y)
+        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
+         for y, s in enumerate(cols)]
+        self.tab_podium.setLayout(grid)
+
+        # important
+        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+        to_show = dfp.sort_values(by="iELO", ascending=False)[0:10]
+        grid = QGridLayout(self)
+        for x, idx in enumerate(to_show.index):
+            for y, col in enumerate(cols):
+                widget = cl_lab(str(dfp.loc[idx, col]), idx)
+                grid.addWidget(widget, x + 1, y)
+        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
+         for y, s in enumerate(cols)]
+        self.tab_imp.setLayout(grid)
+
+        # quick
+        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
+        to_show = dfp.sort_values(by="tELO", ascending=False)[0:10]
+        grid = QGridLayout(self)
+        for x, idx in enumerate(to_show.index):
+            for y, col in enumerate(cols):
+                widget = cl_lab(str(dfp.loc[idx, col]), idx)
+                grid.addWidget(widget, x + 1, y)
+        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
+         for y, s in enumerate(cols)]
+        self.tab_quick.setLayout(grid)
+        return True
+
+    def open_browser(self, event, idx):
+        # TODO: open browser to the right entry
+        # super().mm.launch_browse(select=idx)
+        self.c = Communicate()
+        self.c.open_browser_to_select.emit(idx)
+
+
+class clickable_QLabel(QLabel):
+    def __init__(self, t, idx, whenClicked):
+        super().__init__(t)
+        self.setWordWrap(True)
+        self.idx = idx
+        self._whenclicked = whenClicked
+
+    def mouseReleaseEvent(self, event):
+        self._whenclicked(event, self.idx)
+
+
+# WINDOWS
+##############################################################################
 
 
 class settings_w(QWidget):
@@ -244,182 +471,6 @@ class logs_w(QWidget):
                 w.setFont(new_font)
             except Exception:
                 print(f"Failed to resize {w}")
-
-
-class main_menu(QWidget):
-    def __init__(self, litoy):
-        super().__init__()
-        self.initUI(litoy)
-
-    def initUI(self, litoy):
-        self.litoy = litoy
-        # widgets
-        self.pbar = QProgressBar(self)
-        self.pbar_age = 0
-        self.pbar.setStyleSheet("QProgressBar {\
-                                color:white;\
-                                background-color: black;\
-                                }\
-                                QProgressBar::chunk {\
-                                background:darkred;}")
-        self.pbar.setValue(user_age)
-        self.pbar.setMaximum(user_life_expected)
-        self.pbar.setFormat("Already at %p% of your life")
-
-        title = QLabel(self)
-        title.setPixmap(QPixmap("logo.png"))
-        title.setAlignment(Qt.AlignCenter)
-
-        btn_review = QPushButton("Review")
-        btn_add = QPushButton("Add")
-        btn_browse = QPushButton("browse")
-        btn_q = QPushButton("Quit")
-
-        btn_review.setAutoDefault(True)
-        btn_review.setShortcut("R")
-        btn_add.setShortcut("A")
-        btn_browse.setShortcut("S")
-        btn_q.setShortcut("Q")
-
-        btn_review.setToolTip("Start reviewing your entries")
-        btn_add.setToolTip("Add new entries to LiTOY")
-        btn_browse.setToolTip("browse entries")
-        btn_q.setToolTip("Quit")
-
-        btn_review.clicked.connect(self.launch_review)
-        btn_add.clicked.connect(self.launch_add)
-        btn_browse.clicked.connect(lambda: self.launch_browse(select=None))
-        btn_q.clicked.connect(QApplication.quit)
-
-        browser_shortcut = QShortcut("b", self)
-        browser_shortcut.activated.connect(lambda: self.launch_browse(select=None))
-
-
-        self.tab_widget = tab_widget(self.litoy)
-
-        # layout
-        vbox = QVBoxLayout()
-        vbox.addWidget(title)
-        vbox.addWidget(self.pbar)
-        vbox.addWidget(self.tab_widget)
-        vbox.addStretch()
-        vbox.addWidget(btn_review)
-        vbox.addStretch()
-        vbox.addWidget(btn_add)
-        vbox.addStretch()
-        vbox.addWidget(btn_browse)
-        vbox.addStretch()
-        vbox.addWidget(btn_q)
-        vbox.addStretch()
-
-        hbox = QHBoxLayout()
-        hbox.addStretch()
-        hbox.addLayout(vbox)
-        hbox.addStretch()
-
-        self.setLayout(hbox)
-        self.show()
-
-        self.c = Communicate()
-        self.c.open_browser_to_select.connect(lambda idx: self.launch_browse(select=idx))
-
-    def launch_review(self):
-        p = self.parent()
-        p.setCentralWidget(review_w(self.litoy, p))
-
-    def launch_add(self):
-        p = self.parent()
-        p.setCentralWidget(add_w(self.litoy, p))
-
-    def launch_browse(self, select=None):
-        p = self.parent()
-        p.setCentralWidget(browse_w(litoy=self.litoy,
-                                    p=p,
-                                    select=select))
-
-
-class tab_widget(QTabWidget):
-    def __init__(self, litoy):
-        super().__init__()
-        self.litoy = litoy
-        df = self.litoy.df
-        self.tab_podium = QWidget()
-        self.tab_imp = QWidget()
-        self.tab_quick = QWidget()
-        self.addTab(self.tab_podium, "Podium")
-        self.addTab(self.tab_imp, "Important")
-        self.addTab(self.tab_quick, "Quick")
-        self.tab_init_ui(df)
-
-    def tab_init_ui(self, df):
-        dfp = df.loc[:, ["content", "gELO", "iELO", "tELO",
-                         "tags", "disabled", "metacontent"]
-                     ][df["disabled"] == 0]
-        dfp["media_title"] = [(lambda x: json.loads(x)["title"]
-                               if "title" in json.loads(x).keys()
-                               else "")(x)
-                              for x in dfp.loc[:, "metacontent"]]
-        dfp["tags"] = [", ".join(json.loads(x)) for x in dfp["tags"]]
-
-        def cl_lab(t, idx):
-            """ create a clickable QLabel """
-            return clickable_QLabel(t, idx,
-                                    whenClicked=self.open_browser)
-
-        # podium
-        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
-        to_show = dfp.sort_values(by="gELO", ascending=False)[0:10]
-        grid = QGridLayout(self)
-        for x, idx in enumerate(to_show.index):
-            for y, col in enumerate(cols):
-                widget = cl_lab(str(dfp.loc[idx, col]), idx)
-                grid.addWidget(widget, x + 1, y)
-        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
-         for y, s in enumerate(cols)]
-        self.tab_podium.setLayout(grid)
-
-        # important
-        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
-        to_show = dfp.sort_values(by="iELO", ascending=False)[0:10]
-        grid = QGridLayout(self)
-        for x, idx in enumerate(to_show.index):
-            for y, col in enumerate(cols):
-                widget = cl_lab(str(dfp.loc[idx, col]), idx)
-                grid.addWidget(widget, x + 1, y)
-        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
-         for y, s in enumerate(cols)]
-        self.tab_imp.setLayout(grid)
-
-        # quick
-        cols = ["content", "gELO", "iELO", "tELO", "tags", "media_title"]
-        to_show = dfp.sort_values(by="tELO", ascending=False)[0:10]
-        grid = QGridLayout(self)
-        for x, idx in enumerate(to_show.index):
-            for y, col in enumerate(cols):
-                widget = cl_lab(str(dfp.loc[idx, col]), idx)
-                grid.addWidget(widget, x + 1, y)
-        [grid.addWidget(QLabel(f"<b>{s}</b>"), 0, y)
-         for y, s in enumerate(cols)]
-        self.tab_quick.setLayout(grid)
-        return True
-
-    def open_browser(self, event, idx):
-        # TODO: open browser to the right entry
-        # super().mm.launch_browse(select=idx)
-        self.c = Communicate()
-        self.c.open_browser_to_select.emit(idx)
-
-
-
-class clickable_QLabel(QLabel):
-    def __init__(self, t, idx, whenClicked):
-        super().__init__(t)
-        self.setWordWrap(True)
-        self.idx = idx
-        self._whenclicked = whenClicked
-
-    def mouseReleaseEvent(self, event):
-        self._whenclicked(event, self.idx)
 
 
 class add_w(QWidget):
@@ -724,33 +775,3 @@ class browse_w(QWidget):
                 self.df = self.litoy.df
                 self.process_query()
         return True
-
-
-def launch_gui(args, litoy):
-    app = QApplication(sys.argv)
-
-    if args['darkmode']:
-        # https://stackoverflow.com/questions/48256772/dark-theme-for-qt-widgets
-        app.setStyle("Fusion")
-        palette = QPalette()
-        palette.setColor(QPalette.Window, QColor(53, 53, 53))
-        palette.setColor(QPalette.WindowText, Qt.white)
-        palette.setColor(QPalette.Base, QColor(25, 25, 25))
-        palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-        palette.setColor(QPalette.ToolTipBase, Qt.black)
-        palette.setColor(QPalette.ToolTipText, Qt.white)
-        palette.setColor(QPalette.Text, Qt.white)
-        palette.setColor(QPalette.Button, QColor(53, 53, 53))
-        palette.setColor(QPalette.ButtonText, Qt.white)
-        palette.setColor(QPalette.BrightText, Qt.red)
-        palette.setColor(QPalette.Link, QColor(42, 130, 218))
-        palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-        palette.setColor(QPalette.HighlightedText, Qt.black)
-        app.setPalette(palette)
-
-    win = main_window(args, litoy)
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    launch_gui(sys.argv)
