@@ -190,11 +190,17 @@ def pick_entries(df):
 
 
 def shortcut_and_action(id_left, id_right, mode, progress, litoy,
-                        shortcut_auto_completer, available_shortcut):
+                        shortcut_auto_completer, available_shortcut,
+                        cli=True):
     """
     makes the link between keypresses and actions
     shortcuts are stored at the top of the file
     """
+    if cli:
+        pass
+    else:
+        pass
+
     entry_left = litoy.df.loc[id_left, :]
     entry_right = litoy.df.loc[id_right, :]
     log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")

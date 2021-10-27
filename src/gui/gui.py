@@ -19,7 +19,7 @@ from user_settings import (user_age, user_life_expected, shortcuts, n_session,
                            n_to_review, questions, gui_font_size)
 from src.gui.PandasModel import PandasModel
 from src.backend.backend import (pick_entries, get_meta_from_content,
-                                 add_new_entry)
+                                 add_new_entry, shortcut_and_action)
 
 from src.cli.cli import print_2_entries
 
@@ -543,8 +543,8 @@ class review_w(QWidget):
         self.userInput.setToolTip("Enter your commands here, type \"help\" if \
 you're lost.")
         self.userInput.returnPressed.connect(self.process_answer)
-        available_shortcut = list(chain.from_iterable(shortcuts.values()))
-        compl = QCompleter(available_shortcut, self)
+        self.available_shortcut = list(chain.from_iterable(shortcuts.values()))
+        compl = QCompleter(self.available_shortcut, self)
         compl.setCompletionMode(QCompleter.InlineCompletion)
         self.userInput.setCompleter(compl)
 
@@ -564,6 +564,15 @@ you're lost.")
         ans = self.userInput.text()
         self.userInput.setText("")
         self.litoy.gui_log(f"Input: {ans}")
+
+        out = shortcut_and_action(id_left=self.run[0],
+                                  id_right=self.run[1],
+                                  mode=self.mode,
+                                  progress=None,
+                                  litoy=self.litoy,
+                                  shortcut_auto_completer=None
+                                  available_shortcut=None,
+                                  cli=False)
 
         self.n_review_done += 1
         if self.n_review_done == n_to_review:

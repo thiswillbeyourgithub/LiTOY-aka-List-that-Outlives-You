@@ -23,7 +23,7 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
     global sizex, sizey
     (sizex, sizey) = get_terminal_size()  # dynamic sizing
 
-    if cli is True:
+    if cli:
         global print, side_by_side
     else:  # highjacking this function to get all the values to print
         def print(string):
