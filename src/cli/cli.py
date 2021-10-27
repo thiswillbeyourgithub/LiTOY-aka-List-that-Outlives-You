@@ -14,6 +14,74 @@ from user_settings import (useless_last_years, useless_first_years,
 from src.cli.get_terminal_size import get_terminal_size
 
 
+def print_2_entries(id_left, id_right, mode, litoy, all_fields="no"):
+    "Show the two entries to review side by side"
+    global sizex, sizey
+    (sizex, sizey) = get_terminal_size()  # dynamic sizing
+    print(col_blu + "#" * sizex + col_rst)
+    print_memento_mori()
+    print(col_blu + "#" * sizex + col_rst)
+
+    entry_left = litoy.df.loc[id_left, :].copy()
+    entry_right = litoy.df.loc[id_right, :].copy()
+
+    if all_fields != "all":
+        side_by_side("ID", id_left, id_right)
+        print("." * sizex)
+
+        if "".join(entry_left.tags + entry_right.tags) != "":
+            tag_left = ', '.join(json.loads(entry_left.tags))
+            tag_right = ', '.join(json.loads(entry_right.tags))
+            side_by_side("Tags", tag_left, tag_right)
+            print("." * sizex)
+        if int(entry_left.starred) + int(entry_right.starred) != 0:
+            side_by_side("Starred", entry_left.starred, entry_right.starred,
+                         col=col_yel)
+            print("." * sizex)
+
+        side_by_side("Entry", entry_left.content, entry_right.content)
+        print("." * sizex)
+        if mode == "importance":
+            side_by_side("iELO", entry_left.iELO, entry_right.iELO)
+            print("." * sizex)
+        else:
+            side_by_side("tELO",
+                         entry_left.tELO, entry_right.tELO)
+            print("." * sizex)
+        side_by_side("K factor", entry_left.K, entry_right.K)
+
+    # print all fields, useful for debugging
+    if all_fields == "all":
+        for c in litoy.df.columns:
+            side_by_side(str(c), str(entry_left[c]), str(entry_right[c]))
+
+    # metadata :
+    js = []
+    js.append(json.loads(entry_left.metacontent))
+    js.append(json.loads(entry_right.metacontent))
+    for x in [0, 1]:
+        for y in ["length", "title", "url", "type", "channel"]:
+            if y not in js[x].keys():
+                js[x][y] = "X"
+            else:
+                js[x][y] == str(js[x][y])
+    if (js[0]["length"] + js[1]["length"]) != "XX":
+        side_by_side("Length",
+                     format_length(js[0]["length"]),
+                     format_length(js[1]["length"]))
+    if (js[0]["title"] + js[1]["title"]) != "XX":
+        side_by_side("Title", js[0]["title"], js[1]["title"])
+        print("." * sizex)
+    if (js[0]["url"] + js[1]["url"]) != "XX":
+        side_by_side("Location", js[0]["url"], js[1]["url"])
+    if (js[0]["channel"] + js[1]["channel"]) != "XX":
+        side_by_side("Channel", js[0]["channel"], js[1]["channel"])
+    if (js[0]["type"] + js[1]["type"]) != "XX":
+        side_by_side("Media type", js[0]["type"], js[1]["type"])
+
+    print(col_blu + "#" * sizex + col_rst)
+
+
 def print_memento_mori():
     """
     Print a reminder to the user that life is short and times
@@ -158,71 +226,3 @@ def show_stats(df, printing=True):
     except StatisticsError as e:
         log_(f"Not enough data points! {e}", False)
         raise SystemExit()
-
-
-def print_2_entries(id_left, id_right, mode, litoy, all_fields="no"):
-    "Show the two entries to review side by side"
-    global sizex, sizey
-    (sizex, sizey) = get_terminal_size()  # dynamic sizing
-    print(col_blu + "#" * sizex + col_rst)
-    print_memento_mori()
-    print(col_blu + "#" * sizex + col_rst)
-
-    entry_left = litoy.df.loc[id_left, :].copy()
-    entry_right = litoy.df.loc[id_right, :].copy()
-
-    if all_fields != "all":
-        side_by_side("ID", id_left, id_right)
-        print("." * sizex)
-
-        if "".join(entry_left.tags + entry_right.tags) != "":
-            tag_left = ', '.join(json.loads(entry_left.tags))
-            tag_right = ', '.join(json.loads(entry_right.tags))
-            side_by_side("Tags", tag_left, tag_right)
-            print("." * sizex)
-        if int(entry_left.starred) + int(entry_right.starred) != 0:
-            side_by_side("Starred", entry_left.starred, entry_right.starred,
-                         col=col_yel)
-            print("." * sizex)
-
-        side_by_side("Entry", entry_left.content, entry_right.content)
-        print("." * sizex)
-        if mode == "importance":
-            side_by_side("iELO", entry_left.iELO, entry_right.iELO)
-            print("." * sizex)
-        else:
-            side_by_side("tELO",
-                         entry_left.tELO, entry_right.tELO)
-            print("." * sizex)
-        side_by_side("K factor", entry_left.K, entry_right.K)
-
-    # print all fields, useful for debugging
-    if all_fields == "all":
-        for c in litoy.df.columns:
-            side_by_side(str(c), str(entry_left[c]), str(entry_right[c]))
-
-    # metadata :
-    js = []
-    js.append(json.loads(entry_left.metacontent))
-    js.append(json.loads(entry_right.metacontent))
-    for x in [0, 1]:
-        for y in ["length", "title", "url", "type", "channel"]:
-            if y not in js[x].keys():
-                js[x][y] = "X"
-            else:
-                js[x][y] == str(js[x][y])
-    if (js[0]["length"] + js[1]["length"]) != "XX":
-        side_by_side("Length",
-                     format_length(js[0]["length"]),
-                     format_length(js[1]["length"]))
-    if (js[0]["title"] + js[1]["title"]) != "XX":
-        side_by_side("Title", js[0]["title"], js[1]["title"])
-        print("." * sizex)
-    if (js[0]["url"] + js[1]["url"]) != "XX":
-        side_by_side("Location", js[0]["url"], js[1]["url"])
-    if (js[0]["channel"] + js[1]["channel"]) != "XX":
-        side_by_side("Channel", js[0]["channel"], js[1]["channel"])
-    if (js[0]["type"] + js[1]["type"]) != "XX":
-        side_by_side("Media type", js[0]["type"], js[1]["type"])
-
-    print(col_blu + "#" * sizex + col_rst)
