@@ -238,7 +238,7 @@ Quitting.", False)
     def edit(entry_id):
         "edit an entry during review"
         log_(f"Editing entry {entry_id}")
-        df = litoy.df.copy()
+        df = litoy.df
 
         # tags completion
         cur_tags = litoy.get_tags(litoy.df)
@@ -440,11 +440,11 @@ for  field '" + chosenfield + "'\n>",
             continue
 
         if action == "edit_left":
-            edit(id_left)
+            litoy = edit(id_left)
             print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
             continue
         if action == "edit_right":
-            edit(id_right)
+            litoy = edit(id_right)
             print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
             continue
         if action == "star_left":
