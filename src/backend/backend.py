@@ -270,11 +270,11 @@ have to enter them in the 'content' field." + col_rst)
             else:
                 additional_args = {}
 
-            try:
-                old_value = str(entry[chosenfield])
-            except KeyError:
+            if str(chosenfield) not in entry.keys():
                 log_("ERROR: Shortcut : edit : wrong field name", False)
                 continue
+
+            old_value = str(entry[chosenfield])
 
             new_value = str(prompt_we("Enter the desired new value \
 for  field '" + chosenfield + "'\n>",
