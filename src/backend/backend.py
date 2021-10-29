@@ -289,6 +289,7 @@ for  field '" + chosenfield + "'\n>",
             log_(f'Edited field "{chosenfield}":\n* {old_value}\nbecame:\n* \
 {new_value}', False)
             break
+        return litoy
 
     action = ""
     while True:
