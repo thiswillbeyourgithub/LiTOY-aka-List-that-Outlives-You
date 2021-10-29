@@ -520,32 +520,36 @@ def get_meta_from_content(string, additional_args=None):
 
     splitted = string.split(" ")
     res = {}
-    for word in splitted:
-        if word == "type:video":  # this forces to analyse as a video
-            for word in splitted:
-                if word.startswith("http") or word.startswith("www."):
-                    log_(f"Extracting info from video {word}")
-                    res = extract_youtube(word)
-
-        elif word == "type:local_video":  # fetch local video files
-            for part in string.split("\""):
-                if "/" in part:
-                    log_(f"Extracting info from local video {part}")
-                    res = extract_local_video(part)
-
-        elif word.startswith("http") or word.startswith("www."):
-            if "ytb" in word or "youtube" in word:
+    if "type:video" in string:  # this forces to analyse as a video
+        for w in splitted:
+            if word.startswith("http") or word.startswith("www."):
                 log_(f"Extracting info from video {word}")
                 res = extract_youtube(word)
+                
 
-            elif word.endswith(".pdf"):
-                log_(f"Extracting pdf from {word}")
-                res = extract_pdf_url(word)
+    elif "type:local_video" in string:  # fetch local video files
+        for part in string.split("\""):
+            if "/" in part:
+                log_(f"Extracting info from local video {part}")
+                res = extract_local_video(part)
 
-            # if here then is probably just an html
-            # and should be treated as text
-            log_(f"Extracting text from webpage {word}")
-            res = extract_webpage(word, **additional_args)
+    else:
+        for word in splitted:
+            if word.startswith("http") or word.startswith("www."):
+                if "ytb" in word or "youtube" in word:
+                    log_(f"Extracting info from video {word}")
+                    res = extract_youtube(word)
+                    break
+
+                elif word.endswith(".pdf"):
+                    log_(f"Extracting pdf from {word}")
+                    res = extract_pdf_url(word)
+                    break
+
+                else:
+                    log_(f"Extracting text from webpage {word}")
+                    res = extract_webpage(word, **additional_args)
+                    break
 
     if res == {}:
         if "/" in string:  # might be a link to a file
@@ -557,14 +561,17 @@ def get_meta_from_content(string, additional_args=None):
                     if "/" in part:
                         log_(f"Extracting info from local video {part}")
                         res = extract_local_video(part)
+                        break
 
                 elif ".pdf" in part:
                     log_(f"Extracting pdf from {part}")
                     res = extract_pdf_local(part)
+                    break
 
                 elif ".md" in part or ".txt" in part:
                     log_(f"Extracting text data from {part}")
                     res = extract_txt(part)
+                    break
 
     set_length = re.findall(r"set_length:((?:\d+[jhm])+)", string)
     if set_length:
