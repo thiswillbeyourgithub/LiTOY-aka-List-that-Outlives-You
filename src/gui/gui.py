@@ -570,7 +570,7 @@ you're lost.")
                                   mode=self.mode,
                                   progress=None,
                                   litoy=self.litoy,
-                                  shortcut_auto_completer=None
+                                  shortcut_auto_completer=None,
                                   available_shortcut=None,
                                   cli=False)
 
