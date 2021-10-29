@@ -203,8 +203,9 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* add a failsafe when adding cards without internet connectivity
-* shortcut and LiTOY contain near duplicate implementation to edit entries, keep only one
+* move actions of shortcut_and_action to a separate file, use it when editing an entry in cli, then also from gui
+* swtich to json and remove -x argument
+* gui: reviewer: figure out why there is a warning about setting a layout over another layout
 * gui: reviewer: handle input
 * gui: reviewer: autofocus input field
 * gui: add: shortcut to add media
@@ -219,6 +220,7 @@ TODO and planned features:
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: settings: syntax highlighting
 
+* add a failsafe when adding cards without internet connectivity
 * use lazy import to speed up launch?
 * use regexp instead of string matching most of the time
 * add defaults value for argparse arguments
