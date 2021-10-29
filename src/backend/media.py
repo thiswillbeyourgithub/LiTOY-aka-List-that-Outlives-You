@@ -76,6 +76,7 @@ def extract_pdf_url(url):
     temp_dic = extract_pdf_local("./.temporary.pdf")
     temp_dic["type"] = "online pdf"
     temp_dic["url"] = url
+    del temp_dic["title"]  # can't yet scrap pdf title reliably
     Path("./.temporary.pdf").unlink()
     return temp_dic
 
