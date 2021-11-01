@@ -201,10 +201,6 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
     else:
         pass
 
-    entry_left = litoy.df.loc[id_left, :]
-    entry_right = litoy.df.loc[id_right, :]
-    log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
-
     def fetch_action(user_input):
         "deduce action from user keypress"
         found = ""
@@ -289,10 +285,14 @@ for  field '" + chosenfield + "'\n>",
             log_(f'Edited field "{chosenfield}":\n* {old_value}\nbecame:\n* \
 {new_value}', False)
             break
-        return litoy
 
     action = ""
     while True:
+
+        entry_left = litoy.df.loc[id_left, :]
+        entry_right = litoy.df.loc[id_right, :]
+        log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
+
         start_time = time.time()
         action = ""
         log_(f"Asking question, mode : {mode}")
@@ -441,11 +441,11 @@ for  field '" + chosenfield + "'\n>",
             continue
 
         if action == "edit_left":
-            litoy = edit(id_left)
+            edit(id_left)
             print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
             continue
         if action == "edit_right":
-            litoy = edit(id_right)
+            edit(id_right)
             print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
             continue
         if action == "star_left":
