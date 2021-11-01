@@ -124,7 +124,7 @@ class LiTOYClass:
                 log_(f"Content is the same as entry with ID {i}: '\
 {content}'", False)
                 return True
-            if newm == metacontent and newm != {}:
+            if newm == metacontent and "url" in metacontent:
                 log_(f"Metacontent is the same as entry with ID {i}: new\
 content was '{newc}'", False)
                 return True
