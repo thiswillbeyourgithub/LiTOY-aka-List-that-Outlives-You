@@ -29,19 +29,27 @@ extraction from {url} : {e}", False)
         res = {"type": "video",
                "title": title.replace("\n", ""),
                "url": url}
-        if "uploader" in video.keys():
-            res.update({"channel": video["uploader"]})
-        try:
+
+        if "duration" in video.keys():
             length = str(round(video['duration'] / 60, 1))
             res.update({"length": length})
-        except Exception:
-            log_("Youtube link looks like it's a playlist, using \
-fallbackmethod:", False)
+            res.update({"channel": video["uploader"]})
+        else:
+            log_("Youtube playlist detected.:", False)
+            res["type"] = "video (youtube playlist)"
+            if "playlist" not in res["title"].lower():
+                res["title"] += " - Playlist"
             length = 0
+            channels = []
             for ent in video["entries"]:
                 length += ent["duration"]
-            length = str(round(length / 60, 1))
-            res.update({"length": length})
+                channels.append(ent["uploader"])
+            res["length"] = str(round(length / 60, 1))
+            if len(list(set(channels))) == 1:
+                res["channel"] = channels[0]
+            else:
+                if "channel" in res.keys():
+                    del res["channel"]
     return res
 
 
