@@ -214,9 +214,9 @@ def show_stats(df, printing=True):
                        round(df_nvirg.gELO.std(), 2),
                        round(median(df_nvirg.gELO), 2)])
 
-        pooled = list(df_nd.DiELO + df_nd.DtELO)
-        table2.add_row(["Delta scores:", round(mean(pooled), 1),
-                       round(stdev(pooled), 2), round(median(pooled), 2)])
+        all_delta_elos = list(df_nd.DiELO + df_nd.DtELO)
+        table2.add_row(["Delta scores:", round(mean(all_delta_elos), 1),
+                       round(stdev(all_delta_elos), 2), round(median(all_delta_elos), 2)])
         table2.add_row(["K value:", round(df_nd.K.mean(), 1),
                        round(df_nd.K.std(), 2), round(df_nd.K.median())])
         table2.add_row(["Time spent reviewing:",
@@ -225,15 +225,15 @@ def show_stats(df, printing=True):
                         round(median(df_nd.review_time), 2)])
 
         completion_score = round(mean([
-                                       mean(pooled),
-                                       median(pooled)
+                                       mean(all_delta_elos),
+                                       median(all_delta_elos)
                                      ]
-                                      ) / len(df_nd.index), 4)
+                                      ) / len(df_nd.index), 3)
         if printing is True:
             print(table)
             print("")
             print(table2)
-            print(f"Progress score: {round(completion_score, 3):>20}")
+            print(f"Progress score: {completion_score:>20}")
             print("(lower is better)")
         else:
             table.border = False
