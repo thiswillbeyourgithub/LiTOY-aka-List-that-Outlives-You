@@ -459,45 +459,43 @@ Text content of the entry?\n>"
 
             log_("Entry to edit:", False)
             log_(str(entry), False)
-            ans = prompt_we("Do you confirm that you want to edit this entry? (y/n)\n>")
-            if ans in ["y", "yes", ""]:
-                log_(f"Editing entry {entry_id}")
-                while True:
-                    print(f"Fields available for edition : {field_list}")
-                    chosenfield = prompt_we("What field do you want to edit? \
+            log_(f"Editing entry {entry_id}")
+            while True:
+                print(f"Fields available for edition : {field_list}")
+                chosenfield = prompt_we("What field do you want to edit? \
 (q to exit)\n>", completer = field_auto_completer)
-                    if chosenfield == "q" or chosenfield == "quit":
-                        break
-                    elif chosenfield == "metacontent":
-                        additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
-                    elif chosenfield == "content":
-                        additional_args = {"completer": auto_complete}
-                    elif chosenfield == "tags":
-                        print(col_red + "You can't edit tags this way, you \
+                if chosenfield == "q" or chosenfield == "quit":
+                    break
+                elif chosenfield == "metacontent":
+                    additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
+                elif chosenfield == "content":
+                    additional_args = {"completer": auto_complete}
+                elif chosenfield == "tags":
+                    print(col_red + "You can't edit tags this way, you \
 have to enter them in the 'content' field." + col_rst)
-                        time.sleep(1)
-                        continue
-                    else:
-                        additional_args = {}
+                    time.sleep(1)
+                    continue
+                else:
+                    additional_args = {}
 
-                    try:
-                        old_value = str(entry[chosenfield])
-                    except KeyError as e:
-                        log_(f"ERROR: Shortcut : edit : wrong field name: {e}",
-                             False)
-                        continue
-                    new_value = str(prompt_we("Enter the desired new value \
+                try:
+                    old_value = str(entry[chosenfield])
+                except KeyError as e:
+                    log_(f"ERROR: Shortcut : edit : wrong field name: {e}",
+                         False)
+                    continue
+                new_value = str(prompt_we("Enter the desired new value \
 for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
 
-                    if chosenfield == "content":
-                        new_value = move_flags_at_end(new_value)
-                        df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
-                        df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
-                    df.loc[entry_id, chosenfield] = new_value
-                    litoy.save_to_file(df)
-                    log_(f'Edited entry with ID {entry_id}, field "{chosenfield}", {old_value} => {new_value}',
-                         False)
-                    break
+                if chosenfield == "content":
+                    new_value = move_flags_at_end(new_value)
+                    df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
+                    df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
+                df.loc[entry_id, chosenfield] = new_value
+                litoy.save_to_file(df)
+                log_(f'Edited entry with ID {entry_id}, field "{chosenfield}", {old_value} => {new_value}',
+                     False)
+                break
             else:
                 log_(f"Entry with ID {entry_id} was NOT edited.", False)
         raise SystemExit()
