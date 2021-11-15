@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt, QDir, QItemSelectionModel, QAbstractTableModel, QMo
 from PyQt5.QtWidgets import (QMainWindow, QTableView, QApplication, QToolBar, QLineEdit, QComboBox, QDialog,
                                                             QAction, QMenu, QFileDialog, QAbstractItemView, QMessageBox)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QCursor, QIcon, QKeySequence, QTextDocument, QTextCursor
+from pprint import pprint as pp
 
 class PandasModel(QAbstractTableModel):
     def __init__(self, df=pd.DataFrame(), litoy=None, parent=None, logging=False):

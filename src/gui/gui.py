@@ -5,6 +5,7 @@ from itertools import chain
 import sys
 from pathlib import Path
 import webbrowser
+from pprint import pprint as pp
 
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout, QLabel,
                              QPushButton, QWidget, QHBoxLayout, QAction, QMenu,
@@ -672,12 +673,29 @@ class browse_w(QWidget):
         self.table.setModel(model)
         self.table.resizeColumnsToContents()
 
+        #self.color_rows(self.litoy.df)
+
         self.vbox.addWidget(self.table)
 
         self.setLayout(self.vbox)
         self.show()
         self.queryIn.setFocus()
         self.queryIn.setFocusPolicy(Qt.StrongFocus)
+
+#    def color_rows(self, df):
+#        dis = df[df["disabled"]==1].index.tolist()
+#        table = self.table
+#        model = table.model()
+#        pp(dir(model.index()))
+#        #pp(dir(table))
+#        for row in range(model.rowCount(self.table.rootIndex())):
+#            if row in dis:
+#                pass
+#                #model.itemData(row, 0).setBackground(QColor(1,1,250))
+#                #print(dir(model.index(row, 0).row())) #.setBackground(QColor(1,1,1))
+#                #raise SystemExit()
+#                #child_index = self.table.index(row, 0, self.table.rootIndex()) # for column 0
+#            #self.table.index(row, 0).setBackground(QColor(1,1,1))
 
     def process_query(self):
         df = self.df
