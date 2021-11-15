@@ -8,6 +8,7 @@ import get_wayback_machine
 from bs4 import BeautifulSoup
 from moviepy.editor import VideoFileClip
 from tqdm import tqdm
+from newspaper import Article
 
 from user_settings import average_word_length, headers, wpm
 from src.backend.log import log_
@@ -163,18 +164,18 @@ def extract_webpage(url, fallback_text_extractor=False):
                    "used_wayback_machine": "wayback url not found"}
             return res
         res = requests.get(url, headers=headers)
-    html_page = res.content
-    soup = BeautifulSoup(html_page, 'html.parser')
 
-    # the smallest text find is usually the best
-    if fallback_text_extractor is False:
-        text_content = " ".join(
-                        " ".join(
-                            [x.text.replace("\n", " ")
-                             for x in soup.find_all('p')]
-                            ).split())
+    if fallback_method is False:
+        article = Article(url)
+        article.download()
+        article.parse()
+        title = article.title
+        text_content = " ".join(article.text.replace("\n", " ").split())
     else:
-        log_("Using fallback text extractor")
+        log_("Using fallback extractor")
+        # extracting divs and p elements and keeping the the smallest text
+        html_page = res.content
+        soup = BeautifulSoup(html_page, 'html.parser')
         parsed_text_trial = []
         parsed_text_trial.append(' '.join([x.text.replace("\n", " ")
                                            for x in soup.find_all("div")]))
@@ -185,11 +186,11 @@ def extract_webpage(url, fallback_text_extractor=False):
         parsed_text_trial.sort(key=lambda x: len(x))
         text_content = parsed_text_trial[0]
 
-    titles = soup.find_all('title')
-    if len(titles) != 0:
-        title = soup.find_all('title')[0].get_text()
-    else:
-        title = "No title found"
+        titles = soup.find_all('title')
+        if len(titles) != 0:
+            title = soup.find_all('title')[0].get_text()
+        else:
+            title = "No title found"
 
     total_words = len(text_content) / average_word_length
     estimatedReadingTime = str(round(total_words / wpm, 1))
