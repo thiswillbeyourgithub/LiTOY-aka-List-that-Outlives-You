@@ -210,15 +210,17 @@ TODO and planned features:
 * gui: reviewer: autofocus input field
 * gui: add: shortcut to add media
 * gui: browser: ctrl+f to focus on search field 
-* gui: browser: change colour for starred / disabled entries
+* gui: browser: change colour for starred / disabled entries (https://doc.qt.io/qtforpython/overviews/model-view-programming.html)
 * gui: browser: right click to disable entry
 * gui: browser: right click to open an edit window with all fields, will also be useful when reviewing
+* gui: main menu: display progress score somewhere
 * gui: main menu: remove stretch on the side and add spacers instead 
 * gui: main menu: alt tab to switch panel 
 * gui: main menu: color each tags 
 * gui: main menu: ability to open the browser by clicking on the panel
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: settings: syntax highlighting
+* implement set:deadline flag, just like a tag but it has its own separate tab in the main window
 
 * add a failsafe when adding cards without internet connectivity
 * use lazy import to speed up launch?
