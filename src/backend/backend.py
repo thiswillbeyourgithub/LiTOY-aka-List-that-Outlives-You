@@ -409,12 +409,12 @@ for  field '" + chosenfield + "'\n>",
                             litoy=litoy)
             continue
 
-        if action == "reload_media" or action == "reload_media_fallback_text_extractor":
+        if action == "reload_media" or action == "reload_media_fallback_method":
             log_("Reloading media")
             litoy.import_thread.join()
             additional_args = {}
-            if action == "reload_media_fallback_text_extractor":
-                additional_args.update({"fallback_text_extractor": True})
+            if action == "reload_media_fallback_method":
+                additional_args.update({"fallback_method": True})
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
                 df.loc[ent_id, "content"] = move_flags_at_end(df.loc[ent_id,

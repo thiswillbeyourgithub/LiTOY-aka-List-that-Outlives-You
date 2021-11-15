@@ -139,7 +139,7 @@ def extract_txt(path):
         return res
 
 
-def extract_webpage(url, fallback_text_extractor=False):
+def extract_webpage(url, fallback_method=False):
     """
     extracts reading time from a webpage, output is a tupple containing
     estimation of the reading time ; title of the page ; if the wayback
