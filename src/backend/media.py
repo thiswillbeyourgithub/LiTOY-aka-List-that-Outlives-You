@@ -141,7 +141,7 @@ def extract_txt(path):
 
 def extract_webpage(url, fallback_method=False):
     """
-    extracts reading time from a webpage, output is a tupple containing
+    extracts reading time from a webpage, output is a dictionnary containing
     estimation of the reading time ; title of the page ; if the wayback
     machine was used
     """
