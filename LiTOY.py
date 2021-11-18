@@ -607,6 +607,8 @@ in your db:")
         else:
             query = query[0][0]
 
+        df["tags"] = [", ".join(json.loads(x)) for x in df.loc[:, "tags"]]
+
         if query == "stats":
             log_("Showing statistics")
             show_stats(df)
