@@ -12,10 +12,10 @@ json_auto_save = True
 
 # number of session of review, each session is composed of n_to_review reviews
 # so total number of reviews is n_session*n_to_review
-n_session = 4
+n_session = 3
 
 # number of entries to pick for review at each launch (default=5):
-n_to_review = 2
+n_to_review = 8
 
 # for reading time estimation:
 wpm = 200
