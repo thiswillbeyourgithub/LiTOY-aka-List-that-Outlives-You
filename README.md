@@ -203,8 +203,12 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* always ask to enter set length if not found, and automagically answer the time question if both exist
 * move actions of shortcut_and_action to a separate file, use it when editing an entry in cli, then also from gui
-* swtich to json and remove -x argument
+* move "show" arguments to the cli section
+* switch to json and remove -x argument
+* -S search function should automatically ask if you want to edit or search again
+* gui: use qstackedwidget to handle the main window
 * gui: reviewer: figure out why there is a warning about setting a layout over another layout
 * gui: reviewer: handle input
 * gui: reviewer: autofocus input field
@@ -226,7 +230,7 @@ TODO and planned features:
 * use lazy import to speed up launch?
 * use regexp instead of string matching most of the time
 * add defaults value for argparse arguments
-* implement support for arbitrary additional fields
+* investigate support for arbitrary additional fields
 * add --export-as to export as txt, csv, etc
 * code a way to open links without doing reviews
 * implement a two letter shortcut code to answer importance and time at the same time
