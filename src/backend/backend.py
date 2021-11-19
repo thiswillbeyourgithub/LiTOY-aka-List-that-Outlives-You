@@ -299,6 +299,33 @@ for  field '" + chosenfield + "'\n>",
         prompt_text = f"{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help)\n>"
 
+        meta_left = json.loads(entry_left["metacontent"])
+        if "length" not in meta_left.keys():
+            log_("Asking user to complete length.")
+            input_length = prompt_we("No length specified for left entry.\n\
+Enter the amount of time you expect it will take:")
+            if input_length == "q":
+                raise SystemExit()
+            formatted = format_length(input_length, reverse=True)
+
+            meta_left["length"] = formatted
+            litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
+            litoy.save_to_file(litoy.df)
+            entry_left = litoy.df.loc[id_left, :]
+        meta_right = json.loads(entry_right["metacontent"])
+        if "length" not in meta_right.keys():
+            log_("Asking user to complete length.")
+            input_length = prompt_we("No length specified for right entry.\n\
+Enter the amount of time you expect it will take:")
+            if input_length == "q":
+                raise SystemExit()
+            formatted = format_length(input_length, reverse=True)
+
+            meta_right["length"] = formatted
+            litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
+            litoy.save_to_file(litoy.df)
+            entry_right = litoy.df.loc[id_right, :]
+
         keypress = prompt_we(prompt_text, completer=shortcut_auto_completer)
 
         if keypress not in available_shortcut:
