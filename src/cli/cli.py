@@ -119,9 +119,9 @@ def print_memento_mori():
                 print(f"{next(col_rdm)}{string}", end="")
                 print(col_rst, end="\n")
         print("Your life (" + col_red + str(int((seg2) / (seg2 + seg3) * 100)) +
-              "%" + col_rst + ") : " + col_red + "x" * int(seg1 * resize) +
+              "%" + col_rst + ") : " + col_yel + "x" * int(seg1 * resize) +
               col_red + "X" * (int(seg2 * resize)) + col_gre +
-              "-" * (int(seg3 * resize)) + col_yel + "_" * int(seg4 * resize) +
+              "-" * (int(seg3 * resize)) + col_yel + "x" * int(seg4 * resize) +
               col_rst)
 
 
