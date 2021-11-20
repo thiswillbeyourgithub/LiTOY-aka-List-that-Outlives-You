@@ -452,7 +452,8 @@ Text content of the entry?\n>"
             if ans in ["y", "yes"]:
                 df = df.drop(entry_id)
                 litoy.save_to_file(df)
-                log_(f"Entry with ID {entry_id} was removed.", False)
+                log_(f"Entry with ID {entry_id} was removed. \
+Content was {entry['content']}", False)
             else:
                 log_(f"Entry with ID {entry_id} was NOT removed.", False)
         raise SystemExit()
