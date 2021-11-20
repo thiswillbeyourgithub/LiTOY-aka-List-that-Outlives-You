@@ -167,11 +167,15 @@ def extract_webpage(url, fallback_method=False):
 
     if fallback_method is False:
         article = Article(url)
-        article.download()
-        article.parse()
-        title = article.title
-        text_content = " ".join(article.text.replace("\n", " ").split())
-    else:
+        try:
+            article.download()
+            article.parse()
+            title = article.title
+            text_content = " ".join(article.text.replace("\n", " ").split())
+        except Exception as e:
+            log_(f"Error: {e}") 
+            fallback_method = True
+    if fallback_method:
         log_("Using fallback extractor")
         # extracting divs and p elements and keeping the the smallest text
         html_page = res.content
