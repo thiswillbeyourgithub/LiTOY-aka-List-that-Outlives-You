@@ -56,13 +56,9 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
 
         side_by_side("Entry", entry_left.content, entry_right.content)
         print("." * sizex)
-        if mode == "importance":
-            side_by_side("iELO", entry_left.iELO, entry_right.iELO)
-            print("." * sizex)
-        else:
-            side_by_side("tELO",
-                         entry_left.tELO, entry_right.tELO)
-            print("." * sizex)
+        side_by_side("iELO", entry_left.iELO, entry_right.iELO)
+        side_by_side("tELO", entry_left.tELO, entry_right.tELO)
+        print("." * sizex)
         side_by_side("K factor", entry_left.K, entry_right.K)
 
     # print all fields, useful for debugging
