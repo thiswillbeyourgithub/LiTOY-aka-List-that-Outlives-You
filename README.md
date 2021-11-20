@@ -203,10 +203,11 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* always ask to enter set length if not found, and automagically answer the time question if both exist
+* automagically answer the time question if both already have time questions exist
 * move actions of shortcut_and_action to a separate file, use it when editing an entry in cli, then also from gui
-* move "show" arguments to the cli section
+* move "show" arguments to cli.py
 * switch to json and remove -x argument
+
 * gui: use qstackedwidget to handle the main window
 * gui: reviewer: figure out why there is a warning about setting a layout over another layout
 * gui: reviewer: handle input
@@ -223,10 +224,10 @@ TODO and planned features:
 * gui: main menu: ability to open the browser by clicking on the panel
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: settings: syntax highlighting
-* implement set:deadline flag, just like a tag but it has its own separate tab in the main window
 
 * add a failsafe when adding cards without internet connectivity
-* use regexp instead of string matching most of the time
+* use regexp instead to find the correct media
+* create a video to show how it works
 * add defaults value for argparse arguments
 * investigate support for arbitrary additional fields
 * add --export-as to export as txt, csv, etc
