@@ -98,8 +98,9 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
 
 def print_memento_mori():
     """
-    Print a reminder to the user that life is short and times
-    is always passing by faster as time goes on
+    show a reminder that life is short and times is always passing by faster
+    as time goes on.
+    1 out of 100 times it will display additional warnings
     """
     if disable_lifebar is False:
         seg1 = useless_first_years
