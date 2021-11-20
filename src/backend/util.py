@@ -78,7 +78,7 @@ def format_length(to_format, machine_readable=False):
             length += str(minutes) + "min"
         return length
     else:
-        to_format = to_format.replace("min", "m")
+        to_format = to_format.replace("min", "m").lower()
         length = 0
         days = re.findall(r"\d+[jd]", to_format)
         hours = re.findall(r"\d+h", to_format)
