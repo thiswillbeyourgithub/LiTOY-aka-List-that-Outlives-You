@@ -226,7 +226,6 @@ TODO and planned features:
 * implement set:deadline flag, just like a tag but it has its own separate tab in the main window
 
 * add a failsafe when adding cards without internet connectivity
-* use lazy import to speed up launch?
 * use regexp instead of string matching most of the time
 * add defaults value for argparse arguments
 * investigate support for arbitrary additional fields

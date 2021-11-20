@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.9
+import pyforest
 from glob import glob
 import argparse
 import os
@@ -20,7 +21,7 @@ from pygments.lexers import JavascriptLexer
 
 from user_settings import (shortcuts, default_dir, n_session, n_to_review,
                            col_rst, col_red, questions)
-from src.backend.backend import (DB_file_check, importation, import_media,
+from src.backend.backend import (DB_file_check, importation,
                                  move_flags_at_end, add_new_entry,
                                  pick_entries, shortcut_and_action,
                                  get_tags_from_content,
@@ -264,11 +265,6 @@ if __name__ == "__main__":
     else:
         litoy = LiTOYClass(args['db'])
 
-    if args['import_path'] is not None or args["add_entries"] is not None or args["review_mode"] is True:
-        # asynchronous loading
-        litoy.import_thread = threading.Thread(target=import_media)
-        litoy.import_thread.start()
-
     if args['verbose'] is True:
         pprint(args)
 
@@ -350,7 +346,6 @@ Put local links between \"\" quotation signs!\n\
 Use <TAB> to autocomplete paths or tags\n\
 Text content of the entry?\n>"
         second_prompt = "\nEnter content of the next entry:  (n/no/q/'' to exit, <TAB> to autocomplete)\n>"
-        litoy.import_thread.join()
         while True:
             new_content = prompt_we(input_prompt,
                                   completer=auto_complete,

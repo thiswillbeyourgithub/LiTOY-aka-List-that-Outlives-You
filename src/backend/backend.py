@@ -61,7 +61,6 @@ def importation(path, litoy):
         lines = f.readlines()
     lines = [li for li in lines if not str(li).startswith("#") and
              str(li) != "" and str(li) != "\n"]
-    litoy.import_thread.join()
     for line in tqdm(lines, desc="Processing line by line", unit="line",
                      ascii=False, dynamic_ncols=True, mininterval=0):
         line = line.strip()
@@ -70,27 +69,6 @@ def importation(path, litoy):
         if not litoy.entry_duplicate_check(litoy.df, line, metacontent):
             line = move_flags_at_end(line)
             add_new_entry(litoy, line, metacontent)
-
-
-def import_media():
-    """
-    import some media library, put aside because I want people to be able to
-    install and use litoy even if they can't install those libraries (ex raspi)
-    """
-    if "get_wayback_machine" not in sys.modules:
-        try:
-            global get_wayback_machine, pdftotext, requests, youtube_dl, \
-                ExtractorError, DownloadError, BeautifulSoup, VideoFileClip
-            import get_wayback_machine
-            import pdftotext
-            import youtube_dl
-            from youtube_dl.utils import ExtractorError, DownloadError
-            from bs4 import BeautifulSoup
-            from moviepy.editor import VideoFileClip
-        except Exception as e:
-            print(col_red + f"Import failed: {e}\nThis means litoy might \
-crash when trying to load media. Use 'pip install -r requirements.txt' to \
-fix this." + col_rst)
 
 
 def move_flags_at_end(string):
@@ -438,7 +416,6 @@ Enter the amount of time you expect it will take:")
 
         if action == "reload_media" or action == "reload_media_fallback_method":
             log_("Reloading media")
-            litoy.import_thread.join()
             additional_args = {}
             if action == "reload_media_fallback_method":
                 additional_args.update({"fallback_method": True})
