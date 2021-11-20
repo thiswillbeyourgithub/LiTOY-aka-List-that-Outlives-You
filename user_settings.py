@@ -1,7 +1,7 @@
 # lifebar arguments :
 disable_lifebar     = False
 useless_first_years = 15
-useless_last_years  = 20
+useless_last_years  = 25
 user_age            = 24
 user_life_expected  = 90
 
