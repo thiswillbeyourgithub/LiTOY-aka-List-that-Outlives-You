@@ -380,21 +380,51 @@ Text content of the entry?\n>"
         log_("Searching entries")
         query = args['search_query'][0]
         df = litoy.df
-        query = query.lower()
-        match = [x for x in df.index if query in str(df.loc[x, "content"]).lower()
-                or query in str(df.loc[x, "metacontent"]).lower()]
-        if len(match) == 0:
-            log_("No matching entries found.", False)
-            raise SystemExit()
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', None)
-        pd.set_option('display.max_colwidth', None)
-        if args["verbose"] is False:
-            print(df.loc[match, "content"])
-        else:
-            print(df.loc[match, :])
-        raise SystemExit()
+        while True:
+            query = query.lower()
+            match = [x for x in df.index
+                    if query in str(df.loc[x, "content"]).lower()
+                    or query in str(df.loc[x, "metacontent"]).lower()]
+            if len(match) == 0:
+                log_("No matching entries found.", False)
+                query = prompt_we("New search query > ")
+                continue
+
+            pd.set_option('display.max_rows', None)
+            pd.set_option('display.max_columns', None)
+            pd.set_option('display.width', None)
+            pd.set_option('display.max_colwidth', None)
+            if args["verbose"] is False:
+                print(df.loc[match, "content"])
+            else:
+                print(df.loc[match, :])
+            pd.reset_option('display.max_rows')
+            pd.reset_option('display.max_columns')
+            pd.reset_option('display.width')
+            pd.reset_option('display.max_colwidth')
+
+            complete_list = ["quit", "exit", "search_again"]
+            complete_list += [f'{x}: {df.loc[x, "content"]}' for x in match]
+            auto_completer = prompt_toolkit.completion.WordCompleter(complete_list,
+                                                                    match_middle=True,
+                                                                    ignore_case=True,
+                                                                    sentence=True)
+            ans = prompt_we("Which entry do you want to edit?\n",
+                            completer = auto_completer)
+            if ans in ["q", "quit", "exit"]:
+                raise SystemExit()
+            elif ans == "search_again":
+                query = prompt_we("New search query > ")
+                continue
+            else:  # either a new query or a match
+                test = ans.split(":")[0]
+                if test in [str(x) for x in match]:
+                    args["edit_entries"] = [ans.split(":")[0]]
+                    break
+                else:
+                    query = ans
+                    continue
+
 
     if args['remove_entries'] is not None:
         log_("Removing entries.")

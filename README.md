@@ -207,7 +207,6 @@ TODO and planned features:
 * move actions of shortcut_and_action to a separate file, use it when editing an entry in cli, then also from gui
 * move "show" arguments to the cli section
 * switch to json and remove -x argument
-* -S search function should automatically ask if you want to edit or search again
 * gui: use qstackedwidget to handle the main window
 * gui: reviewer: figure out why there is a warning about setting a layout over another layout
 * gui: reviewer: handle input
