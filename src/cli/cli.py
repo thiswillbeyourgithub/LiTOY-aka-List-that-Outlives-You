@@ -48,18 +48,15 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
             tag_left = ', '.join(json.loads(entry_left.tags))
             tag_right = ', '.join(json.loads(entry_right.tags))
             side_by_side("Tags", tag_left, tag_right)
-            print("." * sizex)
         if int(entry_left.starred) + int(entry_right.starred) != 0:
             side_by_side("Starred", entry_left.starred, entry_right.starred,
                          col=col_yel)
-            print("." * sizex)
 
-        side_by_side("Entry", entry_left.content, entry_right.content)
-        print("." * sizex)
         side_by_side("iELO", entry_left.iELO, entry_right.iELO)
         side_by_side("tELO", entry_left.tELO, entry_right.tELO)
-        print("." * sizex)
         side_by_side("K factor", entry_left.K, entry_right.K)
+        print("." * sizex)
+        side_by_side("Entry", entry_left.content, entry_right.content)
 
     # print all fields, useful for debugging
     if all_fields == "all":
@@ -76,12 +73,13 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
                 js[x][y] = "X"
             else:
                 js[x][y] == str(js[x][y])
+    print("." * sizex)
+    if (js[0]["title"] + js[1]["title"]) != "XX":
+        side_by_side("Title", js[0]["title"], js[1]["title"])
     if (str(js[0]["length"]) + str(js[1]["length"])) != "XX":
         side_by_side("Length",
                      format_length(js[0]["length"]),
                      format_length(js[1]["length"]))
-    if (js[0]["title"] + js[1]["title"]) != "XX":
-        side_by_side("Title", js[0]["title"], js[1]["title"])
         print("." * sizex)
     if (js[0]["url"] + js[1]["url"]) != "XX":
         side_by_side("Location", js[0]["url"], js[1]["url"])
