@@ -175,7 +175,8 @@ parser.add_argument("--import_from_file", "-i",
                     required=False,
                     help="path of a text file containing entries to import")
 parser.add_argument("--add_entries", "-a",
-                    action="store_true",
+                    action="extend",
+                    nargs="*",
                     dest='add_entries',
                     required=False,
                     help="open prompt to add entries to litoy. Local filepaths \
@@ -318,8 +319,12 @@ Press enter twice between lines to solve buggy display."
         log_("Done importing from file, exiting", False)
         raise SystemExit()
 
-    if args["add_entries"] is True:
+    if args["add_entries"] is not None:
         log_("Adding entries.")
+        if args["add_entries"] not in [[], [None]]:
+            default_prompt = args["add_entries"][0]
+        else:
+            default_prompt = ""
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags] + ["set_length:"]
 
@@ -348,12 +353,13 @@ Text content of the entry?\n>"
         second_prompt = "\nEnter content of the next entry:  (n/no/q/'' to exit, <TAB> to autocomplete)\n>"
         while True:
             new_content = prompt_we(input_prompt,
-                                  completer=auto_complete,
-                                  complete_while_typing=False,
-                                  complete_in_thread=True)
+                                    default=default_prompt,
+                                    completer=auto_complete,
+                                    complete_while_typing=False,
+                                    complete_in_thread=True)
             new_content = new_content.replace("tags:tags:", "tags:")
             new_content = move_flags_at_end(new_content)
-            
+
             if new_content in ["n", "no", "q", "quit", ""]:
                 log_("Exiting without adding more entries.", False)
                 raise SystemExit()
@@ -364,12 +370,15 @@ Text content of the entry?\n>"
                                                metacontent):
                 newID = add_new_entry(litoy, new_content, metacontent)
                 print(f"New entry has ID {newID}")
-                input_prompt = second_prompt
-                pass
+                if default_prompt in args["add_entries"]:
+                    ind = args["add_entries"].index(default_prompt) + 1
+                    if len(args["add_entries"]) >= ind + 1:
+                        default_prompt = args["add_entries"][ind]
+                    else:
+                        default_prompt = ""
             else:
                 print("Database already contains this entry, not added.")
-                input_prompt = second_prompt
-                continue
+            input_prompt = second_prompt
 
     if args['search_query'] is not None:
         log_("Searching entries")

@@ -152,8 +152,8 @@ Syntax and usage example:
 -------------------------
 *I recommend python 3.8 instead of 3.9 because some users using pyenv can run into weird issues with pandas.* Note that example of the python console can be found in the FAQ above.
 
-`python3.8 LiTOY.py --db database.xlsx --add`
-    * Add new entries
+`python3.8 LiTOY.py --db database.xlsx --add "read Nietzsche" "read Sartre"`
+    * Start the adding prompt with two new entries, use tab to autocomplete tags and other stuff
 
 `python3.8 LiTOY.py --db database.xlsx --edit_entries ID ID ID`
     * Edit entries with corresponding IDs
@@ -178,7 +178,8 @@ Syntax and usage example:
           --db PATH             path to the litoy database
           --import_from_file [PATH], -i [PATH]
                                 path of a text file containing entries to import
-          --add_entries, -a     open prompt to add entries to litoy. Local filepaths have to be between quotation
+          --add_entries [ADD_ENTRIES ...], -a [ADD_ENTRIES ...]
+                                open prompt to add entries to litoy. Local filepaths have to be between quotation
                                 " marks. Autocompletion for filepaths can be configured in the settings.
           --remove_entries ID [ID ...], -R ID [ID ...]
                                 removes entries according to their ID. 'last' can be used as placeholder for the
