@@ -558,9 +558,9 @@ to start using LiTOY!", False)
                 log_(f"Picked the following entries : {picked_ids}")
                 disp_flds = "no"
                 for (progress, i) in enumerate(picked_ids[1:]):
-                    progress += 1
                     if state == "repick":
                         break
+                    progress += 1
                     for m in questions.keys():
                         if state == "repick":
                             break
