@@ -204,7 +204,6 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* automagically answer the time question if both already have time questions exist
 * move actions of shortcut_and_action to a separate file, use it when editing an entry in cli, then also from gui
 * move "show" arguments to cli.py
 * switch to json and remove -x argument

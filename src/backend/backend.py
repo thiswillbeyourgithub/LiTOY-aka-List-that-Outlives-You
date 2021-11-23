@@ -304,7 +304,26 @@ Enter the amount of time you expect it will take:")
             litoy.save_to_file(litoy.df)
             entry_right = litoy.df.loc[id_right, :]
 
-        keypress = prompt_we(prompt_text, completer=shortcut_auto_completer)
+        def_time_ans = ""
+        if mode == "time":
+            # auto answers time questions
+            left_length = float(json.loads(entry_left["metacontent"])["length"])
+            right_length = float(json.loads(entry_right["metacontent"])["length"])
+            ratio = left_length / right_length
+            if ratio > 2:
+                def_time_ans = "1"
+            elif ratio > 1.5:
+                def_time_ans = "2"
+            elif ratio > 0.65:
+                def_time_ans = "3"
+            elif ratio > 0.5:
+                def_time_ans = "4"
+            else:
+                def_time_ans = "5"
+
+        keypress = prompt_we(prompt_text,
+                             completer=shortcut_auto_completer,
+                             default=def_time_ans)
 
         if keypress not in available_shortcut:
             log_(f"ERROR: keypress not found : {keypress}")
