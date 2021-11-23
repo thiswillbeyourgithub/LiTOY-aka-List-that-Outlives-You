@@ -79,6 +79,13 @@ def format_length(to_format, to_machine_readable=False):
         return length
     else:
         to_format = to_format.replace("min", "m").lower()
+        while True:
+            match = re.match(r"(\d+[jd])?(\d+h)?(\d+m)?", to_format)
+            if match.group() == "" or to_format == "":
+                to_format = prompt_we("Invalid timestamp? Enter again:\n>",
+                                      default=to_format)
+            else:
+                break
         length = 0
         days = re.findall(r"\d+[jd]", to_format)
         hours = re.findall(r"\d+h", to_format)
@@ -89,6 +96,9 @@ def format_length(to_format, to_machine_readable=False):
             length += 60 * int(hours[0][:-1])
         if minutes:
             length += int(minutes[0][:-1])
+        if length == 0:
+            print("Invalid time stamp!")
+            breakpoint()
         return str(length)
 
 
