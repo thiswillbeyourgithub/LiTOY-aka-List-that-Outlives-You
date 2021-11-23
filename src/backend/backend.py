@@ -284,7 +284,7 @@ for  field '" + chosenfield + "'\n>",
 Enter the amount of time you expect it will take:")
             if input_length == "q":
                 raise SystemExit()
-            formatted = format_length(input_length, machine_readable=True)
+            formatted = format_length(input_length, to_machine_readable=True)
 
             meta_left["length"] = formatted
             litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
@@ -297,7 +297,7 @@ Enter the amount of time you expect it will take:")
 Enter the amount of time you expect it will take:")
             if input_length == "q":
                 raise SystemExit()
-            formatted = format_length(input_length, machine_readable=True)
+            formatted = format_length(input_length, to_machine_readable=True)
 
             meta_right["length"] = formatted
             litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
@@ -580,7 +580,7 @@ def get_meta_from_content(string, additional_args=None):
 
     set_length = re.findall(r"set_length:((?:\d+[jhm])+)", string)
     if set_length:
-        new_length = format_length(set_length[0], machine_readable=True)
+        new_length = format_length(set_length[0], to_machine_readable=True)
         log_(f"Setting length to {set_length[0]}", False)
         res.update({"length": new_length})
 

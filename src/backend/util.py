@@ -55,13 +55,13 @@ def json_periodic_save(litoy):
         litoy.df.to_json(jfile, compression="bz2", index=True)
 
 
-def format_length(to_format, machine_readable=False):
+def format_length(to_format, to_machine_readable=False):
     """
     displays 120 minutes as 2h0m, or the opposite
-    machine_readable=False means 120m => 2h0m
-    machine_readable=True means 2h0m => 12m
+    to_machine_readable=False means 120 => 2h0m
+    to_machine_readable=True means 2h0m => 120
     """
-    if machine_readable is False:
+    if to_machine_readable is False:
         minutes = to_format
         if minutes == "X":
             return "X"
