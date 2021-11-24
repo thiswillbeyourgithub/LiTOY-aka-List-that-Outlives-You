@@ -281,10 +281,9 @@ for  field '" + chosenfield + "'\n>",
         if "length" not in meta_left.keys():
             log_("Asking user to complete length.")
             input_length = prompt_we("No length specified for left entry.\n\
-Enter the amount of time you expect it will take:")
-            if input_length == "q":
-                raise SystemExit()
-            formatted = format_length(input_length, to_machine_readable=True)
+Enter the amount of time you expect it will take: (q)\n>")
+            if input_length != "q":
+                formatted = format_length(input_length, to_machine_readable=True)
 
             meta_left["length"] = formatted
             litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
@@ -294,10 +293,9 @@ Enter the amount of time you expect it will take:")
         if "length" not in meta_right.keys():
             log_("Asking user to complete length.")
             input_length = prompt_we("No length specified for right entry.\n\
-Enter the amount of time you expect it will take:")
-            if input_length == "q":
-                raise SystemExit()
-            formatted = format_length(input_length, to_machine_readable=True)
+Enter the amount of time you expect it will take: (q)\n>")
+            if input_length != "q":
+                formatted = format_length(input_length, to_machine_readable=True)
 
             meta_right["length"] = formatted
             litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
