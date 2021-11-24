@@ -280,44 +280,53 @@ for  field '" + chosenfield + "'\n>",
         meta_left = json.loads(entry_left["metacontent"])
         if "length" not in meta_left.keys():
             log_("Asking user to complete length.")
-            input_length = prompt_we("No length specified for left entry.\n\
-Enter the amount of time you expect it will take: (q)\n>")
-            if input_length != "q":
+            input_length = prompt_we("No length specified for left entry. \
+How many minutes does it take? (q)\n>")
+            if input_length not in ["q", "quit", "exit"]:
                 formatted = format_length(input_length, to_machine_readable=True)
-
-            meta_left["length"] = formatted
-            litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
-            litoy.save_to_file(litoy.df)
-            entry_left = litoy.df.loc[id_left, :]
+                meta_left["length"] = formatted
+                litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
+                litoy.save_to_file(litoy.df)
+                entry_left = litoy.df.loc[id_left, :]
         meta_right = json.loads(entry_right["metacontent"])
         if "length" not in meta_right.keys():
             log_("Asking user to complete length.")
-            input_length = prompt_we("No length specified for right entry.\n\
-Enter the amount of time you expect it will take: (q)\n>")
-            if input_length != "q":
+            input_length = prompt_we("No length specified for right entry. \
+How many minutes does it take? (q)\n>")
+            if input_length not in ["q", "quit", "exit"]:
                 formatted = format_length(input_length, to_machine_readable=True)
-
-            meta_right["length"] = formatted
-            litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
-            litoy.save_to_file(litoy.df)
-            entry_right = litoy.df.loc[id_right, :]
+                meta_right["length"] = formatted
+                litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
+                litoy.save_to_file(litoy.df)
+                entry_right = litoy.df.loc[id_right, :]
 
         def_time_ans = ""
-        if mode == "time":
+        if mode == "time" and \
+        "length" in json.loads(entry_left["metacontent"]) and \
+        "length" in json.loads(entry_right["metacontent"]):
             # auto answers time questions
             left_length = float(json.loads(entry_left["metacontent"])["length"])
             right_length = float(json.loads(entry_right["metacontent"])["length"])
             ratio = left_length / right_length
-            if ratio > 2:
+            ratio2 = (left_length - right_length) / (left_length + right_length)
+            if ratio >= 2:
                 def_time_ans = "1"
-            elif ratio > 1.5:
+            if ratio > 1.5:
                 def_time_ans = "2"
-            elif ratio > 0.65:
+            if ratio > 0.65:
                 def_time_ans = "3"
-            elif ratio > 0.5:
+            if ratio > 0.5:
                 def_time_ans = "4"
-            else:
+            if ratio <= 0.5:
                 def_time_ans = "5"
+
+            if ratio2 > 0.4:
+                def_time_ans = "5"
+            if ratio2 < -0.4:
+                def_time_ans = "1"
+
+            if abs(ratio2) < 0.1:
+                def_time_ans = "3"
 
         keypress = prompt_we(prompt_text,
                              completer=shortcut_auto_completer,
