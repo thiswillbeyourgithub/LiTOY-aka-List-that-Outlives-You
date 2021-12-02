@@ -89,10 +89,6 @@ class LiTOYClass:
         self.log_ = log_
         self.gui_log = lambda x, y=False: self.log_(f"GUI: {x}", y)
 
-    def _reload_df(self):
-        "used to reload the df from the file"
-        self.df = pd.read_excel(self.path).set_index("ID").sort_index()
-
     def save_to_file(self, df):
         "used to save the dataframe to an excel file"
         Excelwriter = pd.ExcelWriter(f"{args['db']}.temp.xlsx",
@@ -105,7 +101,7 @@ class LiTOYClass:
         to_remove = Path(args['db'])
         to_remove.unlink()
         to_rename.rename(args['db'])
-        self._reload_df()
+        self.df = df
 
     def create_database(self):
         "used to create the excel database"
