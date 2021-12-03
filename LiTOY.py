@@ -95,12 +95,8 @@ class LiTOYClass:
                                      engine="xlsxwriter")
         df.to_excel(Excelwriter, sheet_name="LiTOY", index=True)
         Excelwriter.save()
-
-        # this way, interruption of LiTOY are less likely to corrupt the db
-        to_rename = Path(f"{args['db']}.temp.xlsx")
-        to_remove = Path(args['db'])
-        to_remove.unlink()
-        to_rename.rename(args['db'])
+        Path(args['db']).unlink()
+        Path(f"{args['db']}.temp.xlsx").rename(args['db'])
         self.df = df
 
     def create_database(self):
