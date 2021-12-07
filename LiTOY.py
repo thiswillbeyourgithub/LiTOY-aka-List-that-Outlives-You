@@ -85,18 +85,15 @@ class LiTOYClass:
             self.create_database()
         else:
             self.path = db_path
-            self.df = pd.read_excel(db_path).set_index("ID").sort_index()
+            self.df = pd.read_json(db_path).sort_index()
         self.log_ = log_
         self.gui_log = lambda x, y=False: self.log_(f"GUI: {x}", y)
 
     def save_to_file(self, df):
-        "used to save the dataframe to an excel file"
-        Excelwriter = pd.ExcelWriter(f"{args['db']}.temp.xlsx",
-                                     engine="xlsxwriter")
-        df.to_excel(Excelwriter, sheet_name="LiTOY", index=True)
-        Excelwriter.save()
+        "used to save the dataframe to a json file"
+        df.to_json(f"{args['db']}.temp.json")
         Path(args['db']).unlink()
-        Path(f"{args['db']}.temp.xlsx").rename(args['db'])
+        Path(f"{args['db']}.temp.json").rename(args['db'])
         self.df = df
 
     def create_database(self):
@@ -211,12 +208,11 @@ parser.add_argument("--search_content", "-S",
                     type=str,
                     required=False,
                     help="show entries that match the content")
-parser.add_argument("--external", "-x",
-                    dest='external_open',
+parser.add_argument("--convert_to_excel", 
+                    dest='convert_to_excel',
                     required=False,
                     action="store_true",
-                    help="ask default external app to open the database. As \
-the extension is .xlsx, libreoffice is usually preferred")
+                    help="convert json database to excel spreadsheet")
 parser.add_argument("--python", "-P",
                     dest='python',
                     required=False,
@@ -244,9 +240,9 @@ if __name__ == "__main__":
     if args['db'] is None:
         wrong_arguments_(args)
     args['db'] = args['db'][0]
-    if not args['db'].endswith(".xlsx"):
-        log_(f"ERROR: Not a valid xlsx filename : {args['db']}\n\
-                Please add '.xlsx' at the end of the filename")
+    if not args['db'].endswith(".json"):
+        log_(f"ERROR: Not a valid json filename : {args['db']}\n\
+                Please add '.json' at the end of the filename")
         wrong_arguments_(args)
 
     if (args['import_path'] is None and args['db'] is None) or (args['review_mode'] is True and args['import_path'] is not None):
@@ -585,18 +581,13 @@ to start using LiTOY!", False)
         log_("Finished all reviewing session. Quitting.", False)
         raise SystemExit()
 
-    if args["external_open"] is True:
-        log_("Openning external app", False)
-        path = args['db']
-        if platform.system() == "Linux":
-            if platform.system() == "Windows":
-                print("Not implemented on windows, contributions are \
-welcome!")
-            elif platform.system() == "Darwin":
-                subprocess.Popen(["open", path])
-            else:
-                subprocess.Popen(["xdg-open", path],
-                                 stdout=open(os.devnull, 'wb'))
+    if args["convert_to_excel"] is True:
+        log_("Converting to excel spreadsheet format", False)
+        Excelwriter = pd.ExcelWriter(f"{str(args['db']).replace('.json', '')}_converted.xlsx",
+                                     engine="xlsxwriter")
+        litoy.df.to_excel(Excelwriter, sheet_name="LiTOY", index=True)
+        Excelwriter.save()
+        log_(f"Finished converting file to excel: {args['db']}_converted.xlsx", False)
         raise SystemExit()
 
     if args["show"] is not None:

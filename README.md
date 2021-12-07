@@ -54,8 +54,6 @@ FAQ
 
 **What do you call a review and a session?** A review is one single pairwise comparison. Several reviews in a row without changing the reference entry (i.e. the left one) is called a session.
 
-**Why store the db as an excel file?** Because if you run libreoffice you can quickly have a gui to edit the database, whereas handling sqlite or other formats is not as user friendly. There is an option to save the database in json regularly to avoid data loss though. An additional benefit is that the database can easily be indexed in desktop search engine softwares like [Recoll](https://www.lesbonscomptes.com/recoll/).
-
 **How can I undo a review or edit?** It is not really possible for now. But you can access the logs and see what you did wrong. Hopefully this can help you repair damage. Rollback features might be added sometime in the future. If you have any issue feel free to open one, especially if you think your action was not recorded in the log.
 
 **What are answer level number?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 5 means you favor the right one. 3 is obviously the middle ground but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
@@ -65,7 +63,7 @@ FAQ
 **Is there a way to ask litoy to fetch metadata for a video that is not on youtube?** Yes, just add somewhere `type:video` in the entry. you can also use `type:local_video` for local files using `ffmpeg`. Don't forget to use quotation marks (`"`) for local files and use `<TAB>` for path autocompletion.
 
 **Do you care to explain all the different fields in the database?** 
-* `ID` used for the pandas index as well as the line number in excel. This should in theory never change for a given entry (even if you edit the content of the entry).
+* `ID` used for the pandas index. This should in theory never change for a given entry (even if you edit the content of the entry).
 * `date` date in unix time in second of the creation of this entry
 * `content` the text content of the entry
 * `metacontent` all relevant metadata that LiTOY extracted from `content`, for example url, video duration, time to read a pdf, etc
@@ -87,7 +85,7 @@ FAQ
 
 **What is the difference between the entry on the left and on the right?** LiTOY actually picks `n_to_review+1` entries : one is the reference entry on the left and all the others appear on the right. This way it is easier for the mind (i.e. less cognitive fatigue) to do several reviews in a row.
 
-**Can I open the database using libreoffice?** Yes, it's why I chose this format. But close LiTOY first and don't forget to save your changes in libreoffice. Note that the whole database is saves as a json file at each startup too (in the `logs` directory).
+**Can I open the database using libreoffice?** Yes, just use the `convert_to_excel` argument to convert the json database as .xlsx. You can then open the file using any spreadsheet app. 
 
 **What do you call a review?** It's just a pairwise comparison between two entries. I chose this name because I use [Anki](https://apps.ankiweb.net/) **a lot**.
 
@@ -146,22 +144,22 @@ Getting started:
 * install the dependencies using `pip3.8 install -r requirements.txt`
 * show the help `python3.8 ./LiTOY.py --help`
 * before entering `review mode`, your database will need to contain at least 10 entries. To add them, either use `--import-from-file FILE` or `--add`
-*I recommend setting an alias in your shell, mine is `alias litoy = 'cd /litoy/folder && python3.8 ./LiTOY.py --db personnal_database.xlsx'` hence, I just have to type `litoy -a` to add new entries
+*I recommend setting an alias in your shell, mine is `alias litoy = 'cd /litoy/folder && python3.8 ./LiTOY.py --db personnal_database.json'` hence, I just have to type `litoy -a` to add new entries
 
 Syntax and usage example:
 -------------------------
 *I recommend python 3.8 instead of 3.9 because some users using pyenv can run into weird issues with pandas.* Note that example of the python console can be found in the FAQ above.
 
-`python3.8 LiTOY.py --db database.xlsx --add "read Nietzsche" "read Sartre"`
+`python3.8 LiTOY.py --db database.json --add "read Nietzsche" "read Sartre"`
     * Start the adding prompt with two new entries, use tab to autocomplete tags and other stuff
 
-`python3.8 LiTOY.py --db database.xlsx --edit_entries ID ID ID`
+`python3.8 LiTOY.py --db database.json --edit_entries ID ID ID`
     * Edit entries with corresponding IDs
 
-`python3.8 LiTOY.py --db database.xlsx --review
+`python3.8 LiTOY.py --db database.json --review
     * Begin `n_session` sessions where LiTOY automatically picks `n_to_review` entries and review them (it's actually twice the amount of reviews that you have to do because you have 2 questions each time).
 
-`python3.8 LiTOY.py --db database.xlsx --import-from-file file.txt`
+`python3.8 LiTOY.py --db database.json --import-from-file file.txt`
     * Automatically import from the file. Each line becomes an entry. Except if it is already part of the database. Lines beginning with `#` are ignored. Metadata will be automatically retrieved so be patient.
     * To see example of the syntax for the import file, read [this file](./example_new_entry.txt)
 
@@ -194,8 +192,7 @@ Syntax and usage example:
                                 combined yet.
           --search_content STRING, -S STRING
                                 show entries that match the content
-          --external, -x        ask default external app to open the database. As the extension is .xlsx,
-                                libreoffice is usually preferred
+          --convert_to_excel    convert json database to excel spreadsheet
           --python, -P          launches a python console, useful to access the pandas dataframe
           --verbose, -v         prints debug logs during runtime
 ```
@@ -206,7 +203,6 @@ TODO and planned features:
 ======
 * move actions of shortcut_and_action to a separate file, use it when editing an entry in cli, then also from gui
 * move "show" arguments to cli.py
-* switch to json and remove -x argument
 
 * gui: use qstackedwidget to handle the main window
 * gui: reviewer: figure out why there is a warning about setting a layout over another layout
