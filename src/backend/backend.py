@@ -1,30 +1,19 @@
 #!/usr/bin/env python3.9
 
-import sys
-from pprint import pprint
 from pathlib import Path
 import time
 from tqdm import tqdm
 import pdb
 from contextlib import suppress
 import json
-import webbrowser
-import platform
-import subprocess
-import os
 import re
-import prompt_toolkit
-from pygments.lexers import JavascriptLexer
 
-from src.backend.util import prompt_we, format_length
+from src.backend.util import format_length
 from src.backend.media import (extract_youtube, extract_pdf_url,
                                extract_webpage, extract_local_video,
                                extract_pdf_local, extract_txt)
-from user_settings import (shortcuts, n_to_review, default_score, K_values,
-                           col_red, col_rst, n_session, questions)
-from src.cli.cli import print_2_entries
-from src.backend.scoring import (compute_global_score, expected_elo,
-                                 update_elo, adjust_K)
+from user_settings import (shortcuts, n_to_review, default_score, K_values)
+from src.backend.scoring import (compute_global_score)
 from src.backend.log import log_
 
 
@@ -167,358 +156,37 @@ def pick_entries(df):
     return picked_ids
 
 
-def shortcut_and_action(id_left, id_right, mode, progress, litoy,
-                        shortcut_auto_completer, available_shortcut,
-                        cli=True):
-    """
-    makes the link between keypresses and actions
-    shortcuts are stored at the top of the file
-    """
-    if cli:
-        pass
-    else:
-        pass
-
-    def fetch_action(user_input):
-        "deduce action from user keypress"
-        found = ""
-        for action, keypress in shortcuts.items():
-            if str(user_input) in keypress:
-                if found != "":
-                    log_("ERROR: Several corresponding shortcuts found! \
+def fetch_action(user_input):
+    "find action from user input"
+    found = ""
+    for action, keypress in shortcuts.items():
+        if str(user_input) in keypress:
+            if found != "":
+                log_("ERROR: Several corresponding shortcuts found! \
 Quitting.", False)
-                    raise SystemExit()
-                found = action
-        if action == "":
-            log_(f"ERROR: No {str(user_input)} shortcut found", False)
-            action = "show_help"
-        return found
-
-    def star(entry_id):
-        "stars an entry_id during review"
-        df = litoy.df.copy()
-        df.loc[entry_id, "starred"] = 1
-        litoy.save_to_file(df)
-        log_(f"Starred entry_id {entry_id}", False)
-
-    def disable(entry_id):
-        "disables an entry during review"
-        df = litoy.df.copy()
-        assert str(df.loc[entry_id, "disabled"]) == "0"
-        df.loc[entry_id, "disabled"] = 1
-        litoy.save_to_file(df)
-        log_(f"Disabled entry {entry_id}", False)
-
-    def edit(entry_id):
-        "edit an entry during review"
-        log_(f"Editing entry {entry_id}")
-        df = litoy.df
-
-        # tags completion
-        cur_tags = litoy.get_tags(litoy.df)
-        autocomplete_list = ["tags:"+tags for tags in cur_tags] + ["set_length:"]
-        auto_complete = prompt_toolkit.completion.WordCompleter(autocomplete_list,
-                              match_middle=True,
-                              ignore_case=True,
-                              sentence=False)
+                raise SystemExit()
+            found = action
+    if action == "":
+        log_(f"ERROR: No {str(user_input)} shortcut found", False)
+        action = "show_help"
+    return found
 
 
-        field_list = list(df.columns)
-        field_auto_completer = prompt_toolkit.completion.WordCompleter(field_list, sentence=True)
-        while True:
-            entry = df.loc[entry_id, :]
-            print(f"Fields available for edition : {field_list}")
-            chosenfield = prompt_we("What field do you want to edit? \
-(q to exit)\n>", completer=field_auto_completer)
-            if chosenfield == "q" or chosenfield == "quit":
-                break
-            elif chosenfield == "metacontent":
-                additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
-            elif chosenfield == "content":
-                additional_args = {"completer": auto_complete}
-            elif chosenfield == "tags":
-                print(col_red + "You can't edit tags this way, you \
-have to enter them in the 'content' field." + col_rst)
-                time.sleep(1)
-                continue
-            else:
-                additional_args = {}
+def action_star(entry_id, litoy):
+    "stars an entry_id during review"
+    df = litoy.df.copy()
+    df.loc[entry_id, "starred"] = 1
+    litoy.save_to_file(df)
+    log_(f"Starred entry_id {entry_id}", False)
 
-            if str(chosenfield) not in entry.keys():
-                log_("ERROR: Shortcut : edit : wrong field name", False)
-                continue
 
-            old_value = str(entry[chosenfield])
-
-            new_value = str(prompt_we("Enter the desired new value \
-for  field '" + chosenfield + "'\n>",
-                            default=old_value,
-                            **additional_args))
-            if chosenfield == "content":
-                new_value = move_flags_at_end(new_value)
-                df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
-                df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
-            df.loc[entry_id, chosenfield] = new_value
-            litoy.save_to_file(df)
-            log_(f'Edited field "{chosenfield}":\n* {old_value}\nbecame:\n* \
-{new_value}', False)
-            break
-
-    action = ""
-    while True:
-
-        entry_left = litoy.df.loc[id_left, :]
-        entry_right = litoy.df.loc[id_right, :]
-        log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
-
-        start_time = time.time()
-        action = ""
-        log_(f"Asking question, mode : {mode}")
-        prompt_text = f"{progress}/{n_to_review*n_session} {questions[mode]} \
-(h or ? for help)\n>"
-
-        meta_left = json.loads(entry_left["metacontent"])
-        if "length" not in meta_left.keys():
-            log_("Asking user to complete length.")
-            input_length = prompt_we("No length specified for left entry. \
-How many minutes does it take? (q)\n>")
-            if input_length not in ["q", "quit", "exit"]:
-                assert "set_length:" not in litoy.df.loc[id_left, "content"]
-                formatted = format_length(input_length, to_machine_readable=True)
-                meta_left["length"] = formatted
-                litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
-                litoy.df.loc[id_left, "content"] += f" set_length:{formatted}"
-                litoy.save_to_file(litoy.df)
-                entry_left = litoy.df.loc[id_left, :]
-        meta_right = json.loads(entry_right["metacontent"])
-        if "length" not in meta_right.keys():
-            log_("Asking user to complete length.")
-            input_length = prompt_we("No length specified for right entry. \
-How many minutes does it take? (q)\n>")
-            if input_length not in ["q", "quit", "exit"]:
-                assert "set_length:" not in litoy.df.loc[id_right, "content"]
-                formatted = format_length(input_length, to_machine_readable=True)
-                meta_right["length"] = formatted
-                litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
-                litoy.df.loc[id_right, "content"] += f" set_length:{formatted}"
-                litoy.save_to_file(litoy.df)
-                entry_right = litoy.df.loc[id_right, :]
-
-        def_time_ans = ""
-        if mode == "time" and \
-        "length" in json.loads(entry_left["metacontent"]) and \
-        "length" in json.loads(entry_right["metacontent"]):
-            # auto answers time questions
-            left_length = float(json.loads(entry_left["metacontent"])["length"])
-            right_length = float(json.loads(entry_right["metacontent"])["length"])
-            ratio = left_length / right_length
-            ratio2 = (left_length - right_length) / (left_length + right_length)
-            if ratio >= 2:
-                def_time_ans = "1"
-            if ratio > 1.5:
-                def_time_ans = "2"
-            if ratio > 0.65:
-                def_time_ans = "3"
-            if ratio > 0.5:
-                def_time_ans = "4"
-            if ratio <= 0.5:
-                def_time_ans = "5"
-
-            if ratio2 > 0.4:
-                def_time_ans = "5"
-            if ratio2 < -0.4:
-                def_time_ans = "1"
-
-            if abs(ratio2) < 0.1:
-                def_time_ans = "3"
-
-        keypress = prompt_we(prompt_text,
-                             completer=shortcut_auto_completer,
-                             default=def_time_ans)
-
-        if keypress not in available_shortcut:
-            log_(f"ERROR: keypress not found : {keypress}")
-            action = "show_help"
-        else:
-            action = str(fetch_action(keypress))
-            log_(f"Shortcut found : Action={action}")
-
-        if action == "answer_level":  # where the actual review takes place
-            if keypress == "a":
-                keypress = 1
-            if keypress == "z":
-                keypress = 2
-            if keypress == "e":
-                keypress = 3
-            if keypress == "r":
-                keypress = 4
-            if keypress == "t":
-                keypress = 5
-            keypress = round(int(keypress) / 6 * 5, 2)
-            # resize value from 1-5 to 0-5
-            date = time.time()
-            assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
-
-            eL_old = entry_left
-            eR_old = entry_right
-            eL_new = eL_old.copy()
-            eR_new = eR_old.copy()
-
-            if mode == "importance":
-                elo_fld = "iELO"
-                Delo_fld = "DiELO"
-            else:
-                elo_fld = "tELO"
-                Delo_fld = "DtELO"
-            eloL = int(eL_old[elo_fld])
-            eloR = int(eR_old[elo_fld])
-
-            eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR),
-                                         round(5 - keypress, 2), eL_old.K)
-            eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR),
-                                         keypress, eR_old.K)
-            log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R: \
-{eloR}=>{eR_new[elo_fld]}")
-
-            eL_new["K"] = adjust_K(eL_old.K)
-            eR_new["K"] = adjust_K(eR_old.K)
-            eL_new[Delo_fld] = abs(eL_new[elo_fld] - eL_old[elo_fld])
-            eR_new[Delo_fld] = abs(eR_new[elo_fld] - eR_old[elo_fld])
-            eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO, 1)
-            eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO, 1)
-            eL_new["review_time"] = round(eL_new["review_time"] + min(date
-                                          - start_time, 30), 3)
-            eR_new["review_time"] = round(eR_new["review_time"] + min(date
-                                          - start_time, 30), 3)
-            eL_new["n_review"] += 1
-            eR_new["n_review"] += 1
-
-            df = litoy.df.copy()
-            df.loc[id_left, :] = eL_new
-            df.loc[id_right, :] = eR_new
-            litoy.save_to_file(df)
-            log_(f"Done reviewing {id_left} and {id_right}")
-            break
-
-        if action == "skip_review":
-            log_("Skipped review", False)
-            break
-
-        if action == "show_all_fields":
-            log_("Displaying the entries in full")
-            print("\n" * 10)
-            print_2_entries(int(id_left), int(id_right), mode, litoy, "all")
-            continue
-
-        if action == "show_few_fields":
-            log_("Displaying only most important fields of entries")
-            print("\n" * 10)
-            print_2_entries(int(id_left), int(id_right), mode, litoy)
-            continue
-
-        if action == "open_media":
-            log_("Openning media")
-            for ent_id in [id_left, id_right]:
-                ent = litoy.df.loc[ent_id, :]
-                try:
-                    path = str(json.loads(ent.metacontent)["url"])
-                    if "http" in path:
-                        webbrowser.open(path)
-                    else:
-                        if platform.system() == "Linux":
-                            subprocess.Popen(["xdg-open", path],
-                                             stdout=open(os.devnull, 'wb'))
-                        elif platform.system() == "Windows":
-                            os.startfile(path)
-                        elif platform.system() == "Darwin":
-                            subprocess.Popen(["open", path])
-                        else:
-                            log_("Platform system not found.", False)
-                except (KeyError, AttributeError) as e:
-                    log_(f"url not found in entry {ent_id} : {e}")
-            time.sleep(1.5)  # better display
-            print("\n" * 10)
-            print_2_entries(int(id_left),
-                            int(id_right),
-                            mode=mode,
-                            litoy=litoy)
-            continue
-
-        if action == "reload_media" or action == "reload_media_fallback_method":
-            log_("Reloading media")
-            additional_args = {}
-            if action == "reload_media_fallback_method":
-                additional_args.update({"fallback_method": True})
-            for ent_id in [id_left, id_right]:
-                df = litoy.df.copy()
-                df.loc[ent_id, "content"] = move_flags_at_end(df.loc[ent_id,
-                                                                     "content"])
-                new_meta = get_meta_from_content(df.loc[ent_id, :]["content"],
-                                                 additional_args)
-                df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
-                litoy.save_to_file(df)
-                entry_left = df.loc[id_left, :]
-                entry_right = df.loc[id_right, :]
-                log_(f"New metacontent value for {ent_id} : {new_meta}")
-            print("\n" * 10)
-            print_2_entries(int(id_left),
-                            int(id_right),
-                            mode=mode,
-                            litoy=litoy)
-            continue
-
-        if action == "open debugger":
-            log_("Openning debugger", False)
-            print("To open a python console within the debugger, type in \
-'interact'. You can load the database as a pandas DataFrame using df=litoy.df")
-            pdb.set_trace()
-            continue
-
-        if action == "edit_left":
-            edit(id_left)
-            print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
-            continue
-        if action == "edit_right":
-            edit(id_right)
-            print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
-            continue
-        if action == "star_left":
-            star(id_left)
-            continue
-        if action == "star_right":
-            star(id_right)
-            continue
-        if action == "disable_left":
-            disable(id_left)
-            return action
-        if action == "disable_both":
-            disable(id_right)
-            disable(id_left)
-            return action
-        if action == "disable_right":
-            disable(id_right)
-            return action
-
-        if action == "undo":
-            print("Undo function is not yet implemented, \
-  manually correct the database using libreoffice calc after looking at \
-  the logs. Or take a look at the saved json files")
-            input("(press enter to resume reviewing session)")
-            continue
-
-        if action == "show_help":
-            log_("Printing help :", False)
-            pprint(shortcuts)
-            continue
-
-        if action == "repick":
-            log_("Repicking entries", False)
-            return "repick"
-
-        if action == "quit":
-            log_("Shortcut : quitting")
-            print("Quitting.")
-            raise SystemExit()
+def action_disable(entry_id, litoy):
+    "disables an entry during review"
+    df = litoy.df.copy()
+    assert str(df.loc[entry_id, "disabled"]) == "0"
+    df.loc[entry_id, "disabled"] = 1
+    litoy.save_to_file(df)
+    log_(f"Disabled entry {entry_id}", False)
 
 
 def get_tags_from_content(string):

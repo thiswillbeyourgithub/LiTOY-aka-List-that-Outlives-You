@@ -5,7 +5,6 @@ from itertools import chain
 import sys
 from pathlib import Path
 import webbrowser
-from pprint import pprint as pp
 
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QVBoxLayout, QLabel,
                              QPushButton, QWidget, QHBoxLayout, QAction, QMenu,
@@ -20,7 +19,7 @@ from user_settings import (user_age, user_life_expected, shortcuts, n_session,
                            n_to_review, questions, gui_font_size)
 from src.gui.PandasModel import PandasModel
 from src.backend.backend import (pick_entries, get_meta_from_content,
-                                 add_new_entry, shortcut_and_action)
+                                 add_new_entry)
 
 from src.cli.cli import print_2_entries
 
@@ -572,8 +571,7 @@ you're lost.")
                                   progress=None,
                                   litoy=self.litoy,
                                   shortcut_auto_completer=None,
-                                  available_shortcut=None,
-                                  cli=False)
+                                  available_shortcut=None)
 
         self.n_review_done += 1
         if self.n_review_done == n_to_review:

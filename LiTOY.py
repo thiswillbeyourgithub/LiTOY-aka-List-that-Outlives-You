@@ -23,14 +23,15 @@ from user_settings import (shortcuts, default_dir, n_session, n_to_review,
                            col_rst, col_red, questions)
 from src.backend.backend import (DB_file_check, importation,
                                  move_flags_at_end, add_new_entry,
-                                 pick_entries, shortcut_and_action,
+                                 pick_entries,
                                  get_tags_from_content,
                                  get_meta_from_content)
 from src.backend.scoring import compute_global_score
 from src.backend.util import (log_, debug_signal_handler, prompt_we,
                               wrong_arguments_, json_periodic_save)
 from src.cli.cli import (print_2_entries, print_podium, print_stats,
-        print_specific_entries)
+                         print_specific_entries, action_edit_entry,
+                         shortcut_and_action)
 
 from src.cli.get_terminal_size import get_terminal_size
 from src.gui.gui import launch_gui
@@ -464,7 +465,6 @@ Content was {entry['content']}", False)
                               ignore_case=True,
                               sentence=False)
 
-
         field_list = list(df.columns)
         field_auto_completer = prompt_toolkit.completion.WordCompleter(field_list, sentence=True)
         id_list = args['edit_entries']
@@ -482,48 +482,8 @@ Content was {entry['content']}", False)
             except ValueError as e:
                 print(f"ID {entry_id}: {e}")
                 wrong_arguments_(args)
-
-            log_("Entry to edit:", False)
-            log_(str(entry), False)
-            log_(f"Editing entry {entry_id}")
-            while True:
-                print(f"Fields available for edition : {field_list}")
-                chosenfield = prompt_we("What field do you want to edit? \
-(q to exit)\n>", completer = field_auto_completer)
-                if chosenfield == "q" or chosenfield == "quit":
-                    break
-                elif chosenfield == "metacontent":
-                    additional_args = {"lexer": prompt_toolkit.lexers.PygmentsLexer(JavascriptLexer)}
-                elif chosenfield == "content":
-                    additional_args = {"completer": auto_complete}
-                elif chosenfield == "tags":
-                    print(col_red + "You can't edit tags this way, you \
-have to enter them in the 'content' field." + col_rst)
-                    time.sleep(1)
-                    continue
-                else:
-                    additional_args = {}
-
-                try:
-                    old_value = str(entry[chosenfield])
-                except KeyError as e:
-                    log_(f"ERROR: Shortcut : edit : wrong field name: {e}",
-                         False)
-                    continue
-                new_value = str(prompt_we("Enter the desired new value \
-for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
-
-                if chosenfield == "content":
-                    new_value = move_flags_at_end(new_value)
-                    df.loc[entry_id, "metacontent"] = json.dumps(get_meta_from_content(new_value))
-                    df.loc[entry_id, "tags"] = json.dumps(sorted(get_tags_from_content(new_value)))
-                df.loc[entry_id, chosenfield] = new_value
-                litoy.save_to_file(df)
-                log_(f'Edited entry with ID {entry_id}, field "{chosenfield}", {old_value} => {new_value}',
-                     False)
-                break
-            else:
-                log_(f"Entry with ID {entry_id} was NOT edited.", False)
+                raise SystemExit()
+            action_edit_entry(entry_id, litoy, field_list, field_auto_completer, auto_complete)
         raise SystemExit()
 
     if args['review_mode'] is True:
