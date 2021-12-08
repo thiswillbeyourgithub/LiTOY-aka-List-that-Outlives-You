@@ -283,9 +283,11 @@ for  field '" + chosenfield + "'\n>",
             input_length = prompt_we("No length specified for left entry. \
 How many minutes does it take? (q)\n>")
             if input_length not in ["q", "quit", "exit"]:
+                assert "set_length:" not in litoy.df.loc[id_left, "content"]
                 formatted = format_length(input_length, to_machine_readable=True)
                 meta_left["length"] = formatted
                 litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
+                litoy.df.loc[id_left, "content"] += f" set_length:{formatted}"
                 litoy.save_to_file(litoy.df)
                 entry_left = litoy.df.loc[id_left, :]
         meta_right = json.loads(entry_right["metacontent"])
@@ -294,9 +296,11 @@ How many minutes does it take? (q)\n>")
             input_length = prompt_we("No length specified for right entry. \
 How many minutes does it take? (q)\n>")
             if input_length not in ["q", "quit", "exit"]:
+                assert "set_length:" not in litoy.df.loc[id_right, "content"]
                 formatted = format_length(input_length, to_machine_readable=True)
                 meta_right["length"] = formatted
                 litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
+                litoy.df.loc[id_right, "content"] += f" set_length:{formatted}"
                 litoy.save_to_file(litoy.df)
                 entry_right = litoy.df.loc[id_right, :]
 
