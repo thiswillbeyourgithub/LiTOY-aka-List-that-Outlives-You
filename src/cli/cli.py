@@ -239,3 +239,65 @@ def show_stats(df, printing=True):
     except StatisticsError as e:
         log_(f"Not enough data points! {e}", False)
         raise SystemExit()
+
+
+def show_specific_entries(query, args, df):
+    """
+    shows the user the entries among the following choice:
+    quickest, most important, disabled,  starred, disabled
+    """
+    if query in ["quick", "quick_tasks"]:
+        log_("Showing quick entries", False)
+        if args["verbose"] is True:  # print all fields
+            pprint(df.sort_values(by="tELO", ascending=False)[0:10])
+        else:
+            df = df.loc[df["disabled"] == 0]
+            pprint(df.loc[:,
+                           ["media_title", "content",
+                            "tELO", "tags"]
+                           ].sort_values(by="tELO", ascending=False)[0:10])
+
+    elif query in ["important", "important_tasks"]:
+        log_("Showing important entries", False)
+        if args["verbose"] is True:  # print all fields
+            pprint(df.sort_values(by="iELO", ascending=False)[0:10])
+        else:
+            df = df.loc[df["disabled"] == 0]
+            pprint(df.loc[:,
+                           ["media_title", "content",
+                            "iELO", "tags"]
+                           ].sort_values(by="iELO", ascending=False)[0:10])
+
+    elif query in ["starred", "starred_tasks"]:
+        log_("Showing starred entries", False)
+        df = df.loc[df.starred == 1].sort_values(by="gELO", ascending=False)[0:10]
+        if len(df.index) == 0:
+            log_("No starred entries.", False)
+            raise SystemExit()
+
+        if args["verbose"] is True:  # print all fields
+            pprint(df)
+        else:
+            pprint(df.loc[:,
+                           ["media_title", "content",
+                            "gELO", "tags"]
+                           ].sort_values(by="gELO", ascending=False)[0:10])
+
+    elif query in ["disabled", "disabled_tasks"]:
+        log_("Showing disabled entries", False)
+        df = df.loc[df.disabled == 1].sort_values(by="gELO", ascending=False)[0:10]
+        if len(df.index) == 0:
+            log_("No disabled entries.", False)
+            raise SystemExit()
+
+        if args["verbose"] is True:  # print all fields
+            pprint(df)
+        else:
+            pprint(df.loc[:,
+                           ["media_title", "content",
+                            "gELO", "tags"]
+                           ].sort_values(by="gELO", ascending=False)[0:10])
+    pd.reset_option('display.max_rows')
+    pd.reset_option('display.max_columns')
+    pd.reset_option('display.width')
+    pd.reset_option('display.max_colwidth')

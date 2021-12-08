@@ -29,7 +29,9 @@ from src.backend.backend import (DB_file_check, importation,
 from src.backend.scoring import compute_global_score
 from src.backend.util import (log_, debug_signal_handler, prompt_we,
                               wrong_arguments_, json_periodic_save)
-from src.cli.cli import show_podium, show_stats, print_2_entries
+from src.cli.cli import (print_2_entries, show_podium, show_stats,
+        show_specific_entries)
+
 from src.cli.get_terminal_size import get_terminal_size
 from src.gui.gui import launch_gui
 
@@ -593,6 +595,13 @@ to start using LiTOY!", False)
     if args["show"] is not None:
         query = args["show"]
 
+        if query == "logs":
+            log_("Showing logs")
+            log_file = "logs/rotating_log"
+            with open(log_file) as lf:
+                print(lf.read())
+            raise SystemExit()
+
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', sizex)
@@ -637,68 +646,9 @@ in your db:")
             show_podium(df, sizex, args)
             raise SystemExit()
 
-        if query in ["quick", "quick_tasks"]:
-            log_("Showing quick entries", False)
-            if args["verbose"] is True:  # print all fields
-                pprint(df.sort_values(by="tELO", ascending=False)[0:10])
-            else:
-                df = df.loc[df["disabled"] == 0]
-                pprint(df.loc[:,
-                               ["media_title", "content",
-                                "tELO", "tags"]
-                               ].sort_values(by="tELO", ascending=False)[0:10])
-            raise SystemExit()
-
-        if query in ["important", "important_tasks"]:
-            log_("Showing important entries", False)
-            if args["verbose"] is True:  # print all fields
-                pprint(df.sort_values(by="iELO", ascending=False)[0:10])
-            else:
-                df = df.loc[df["disabled"] == 0]
-                pprint(df.loc[:,
-                               ["media_title", "content",
-                                "iELO", "tags"]
-                               ].sort_values(by="iELO", ascending=False)[0:10])
-            raise SystemExit()
-
-        if query in ["starred", "starred_tasks"]:
-            log_("Showing starred entries", False)
-            df = df.loc[df.starred == 1].sort_values(by="gELO", ascending=False)[0:10]
-            if len(df.index) == 0:
-                log_("No starred entries.", False)
-                raise SystemExit()
-
-            if args["verbose"] is True:  # print all fields
-                pprint(df)
-            else:
-                pprint(df.loc[:,
-                               ["media_title", "content",
-                                "gELO", "tags"]
-                               ].sort_values(by="gELO", ascending=False)[0:10])
-            raise SystemExit()
-
-        if query in ["disabled", "disabled_tasks"]:
-            log_("Showing disabled entries", False)
-            df = df.loc[df.disabled == 1].sort_values(by="gELO", ascending=False)[0:10]
-            if len(df.index) == 0:
-                log_("No disabled entries.", False)
-                raise SystemExit()
-
-            if args["verbose"] is True:  # print all fields
-                pprint(df)
-            else:
-                pprint(df.loc[:,
-                               ["media_title", "content",
-                                "gELO", "tags"]
-                               ].sort_values(by="gELO", ascending=False)[0:10])
-            raise SystemExit()
-
-        if query == "logs":
-            log_("Showing logs")
-            log_file = "logs/rotating_log"
-            with open(log_file) as lf:
-                print(lf.read())
-            raise SystemExit()
+        else:
+            show_specific_entries(query, args, litoy.df)
+        raise SystemExit()
 
     log_("ERROR: Reached last line of code, insufficient arguments?", False)
     wrong_arguments_(args)
