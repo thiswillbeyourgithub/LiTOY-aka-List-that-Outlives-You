@@ -29,8 +29,8 @@ from src.backend.backend import (DB_file_check, importation,
 from src.backend.scoring import compute_global_score
 from src.backend.util import (log_, debug_signal_handler, prompt_we,
                               wrong_arguments_, json_periodic_save)
-from src.cli.cli import (print_2_entries, show_podium, show_stats,
-        show_specific_entries)
+from src.cli.cli import (print_2_entries, print_podium, print_stats,
+        print_specific_entries)
 
 from src.cli.get_terminal_size import get_terminal_size
 from src.gui.gui import launch_gui
@@ -528,7 +528,7 @@ for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
 
     if args['review_mode'] is True:
         log_("Entering review mode.")
-        show_stats(litoy.df, printing=False)
+        print_stats(litoy.df, printing=False)
         n = len(litoy.df.index)
         if n < 10:
             log_(f"ERROR: you only have {n} entries in your database, add 10 \
@@ -638,16 +638,16 @@ in your db:")
 
         if query == "stats":
             log_("Showing statistics")
-            show_stats(df)
+            print_stats(df)
             raise SystemExit()
 
         if query in ["podium", "global", "global_tasks"]:
             log_("Showing podium")
-            show_podium(df, sizex, args)
+            print_podium(df, sizex, args)
             raise SystemExit()
 
         else:
-            show_specific_entries(query, args, litoy.df)
+            print_specific_entries(query, args, litoy.df)
         raise SystemExit()
 
     log_("ERROR: Reached last line of code, insufficient arguments?", False)

@@ -147,7 +147,7 @@ def side_by_side(rowname, a, b, space=2, col=""):
         b = b[col_width:]
 
 
-def show_podium(df, sizex, args):
+def print_podium(df, sizex, args):
     "Show the highest ranked things to do in LiTOY "
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
@@ -169,7 +169,7 @@ def show_podium(df, sizex, args):
                        ].sort_values(by="gELO", ascending=False)[0:10])
 
 
-def show_stats(df, printing=True):
+def print_stats(df, printing=True):
     """
     shows statistics on the litoy database, but is also used to write at each
     launch the state of the database for later analysis
@@ -241,7 +241,7 @@ def show_stats(df, printing=True):
         raise SystemExit()
 
 
-def show_specific_entries(query, args, df):
+def print_specific_entries(query, args, df):
     """
     shows the user the entries among the following choice:
     quickest, most important, disabled,  starred, disabled
