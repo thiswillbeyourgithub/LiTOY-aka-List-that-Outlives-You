@@ -224,7 +224,7 @@ def get_meta_from_content(string, additional_args=None):
     splitted = string.split(" ")
     res = {}
     if "type:video" in string:  # this forces to analyse as a video
-        for w in splitted:
+        for word in splitted:
             if word.startswith("http") or word.startswith("www."):
                 log_(f"Extracting info from video {word}")
                 res = extract_youtube(word)
