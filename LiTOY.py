@@ -83,8 +83,7 @@ class LiTOYClass:
     "Class that interacts with the database using panda etc"
     def __init__(self, db_path):
         if db_path is None:
-            db_path = args['db']
-            self.path = db_path
+            self.path = args['db']
             self.create_database()
         else:
             self.path = db_path
