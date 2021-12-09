@@ -104,7 +104,12 @@ class LiTOYClass:
                 "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
                 "review_time", "n_review", "K", "disabled"]
         df = pd.DataFrame(columns=cols).set_index("ID")
-        self.save_to_file(df)
+        if Path(args['db']).exists() or Path(f"{args['db']}.temp.json").exists():
+            log_(f"ERROR: cannot create database : \
+it already exist: {args['db']}", False)
+            raise SystemExit()
+        else:
+            self.save_to_file(df)
 
     def entry_duplicate_check(self, df, newc, newm):
         "checks if an entry already exists before adding it"
