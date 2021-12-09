@@ -99,7 +99,7 @@ class LiTOYClass:
         self.df = df
 
     def create_database(self):
-        "used to create the excel database"
+        "used to create the json database"
         cols = ["ID", "date", "content", "metacontent", "tags",
                 "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
                 "review_time", "n_review", "K", "disabled"]
