@@ -13,7 +13,8 @@ from src.backend.media import (extract_youtube, extract_pdf_url,
                                extract_webpage, extract_local_video,
                                extract_pdf_local, extract_txt)
 from user_settings import (shortcuts, n_to_review, default_score, K_values)
-from src.backend.scoring import (compute_global_score)
+from src.backend.scoring import (compute_global_score, expected_elo,
+                                 update_elo, adjust_K)
 from src.backend.log import log_
 
 
@@ -267,3 +268,58 @@ def get_meta_from_content(string, additional_args=None):
         log_(f"No metadata were extracted for {string}")
 
     return res
+
+
+def process_review_answer(keypress, entry_left, entry_right, mode,
+                          start_time, litoy):
+    """
+    after a comparison has been made, compute new values and store them etc
+    """
+    id_left = entry_left.name
+    id_right = entry_right.name
+    mapping = {"a": 1, "z": 2, "e": 3, "r": 4, "t": 5}
+    if keypress in mapping:
+        keypress = mapping[keypress]
+    keypress = round(int(keypress) / 6 * 5, 2)  # resize value from 1-5 to 0-5
+    date = time.time()
+    assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
+
+    eL_old = entry_left
+    eR_old = entry_right
+    eL_new = eL_old.copy()
+    eR_new = eR_old.copy()
+
+    if mode == "importance":
+        elo_fld = "iELO"
+        Delo_fld = "DiELO"
+    else:
+        elo_fld = "tELO"
+        Delo_fld = "DtELO"
+    eloL = int(eL_old[elo_fld])
+    eloR = int(eR_old[elo_fld])
+
+    eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR),
+                                 round(5 - keypress, 2), eL_old.K)
+    eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR),
+                                 keypress, eR_old.K)
+    log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R: \
+{eloR}=>{eR_new[elo_fld]}")
+
+    eL_new["K"] = adjust_K(eL_old.K)
+    eR_new["K"] = adjust_K(eR_old.K)
+    eL_new[Delo_fld] = abs(eL_new[elo_fld] - eL_old[elo_fld])
+    eR_new[Delo_fld] = abs(eR_new[elo_fld] - eR_old[elo_fld])
+    eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO, 1)
+    eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO, 1)
+    eL_new["review_time"] = round(eL_new["review_time"] + min(date
+                                  - start_time, 30), 3)
+    eR_new["review_time"] = round(eR_new["review_time"] + min(date
+                                  - start_time, 30), 3)
+    eL_new["n_review"] += 1
+    eR_new["n_review"] += 1
+
+    litoy.df.loc[id_left, :] = eL_new
+    litoy.df.loc[id_right, :] = eR_new
+    litoy.save_to_file(litoy.df)
+
+    log_(f"Done reviewing {id_left} and {id_right}")

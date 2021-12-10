@@ -19,7 +19,8 @@ from src.backend.backend import (get_meta_from_content,
                                  move_flags_at_end,
                                  fetch_action,
                                  action_disable,
-                                 action_star)
+                                 action_star,
+                                 process_review_answer)
 from src.backend.util import format_length, prompt_we
 from src.backend.log import log_
 from user_settings import (shortcuts, n_to_review, n_session, questions,
@@ -28,8 +29,6 @@ from user_settings import (shortcuts, n_to_review, n_session, questions,
                            col_red, col_gre, col_yel, col_rst, col_mgt_fg,
                            col_blink, col_bold, col_uline, spacer, col_blu)
 from src.cli.get_terminal_size import get_terminal_size
-from src.backend.scoring import (compute_global_score, expected_elo,
-                                 update_elo, adjust_K)
 
 
 def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
@@ -385,7 +384,6 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
     """
     makes the link between actions and their effect
     """
-
     action = ""
     while True:
         entry_left = litoy.df.loc[id_left, :]
@@ -464,61 +462,9 @@ How many minutes does it take? (q)\n>")
             action = str(fetch_action(keypress))
             log_(f"Shortcut found : Action={action}")
 
-        if action == "answer_level":  # where the actual review takes place
-            if keypress == "a":
-                keypress = 1
-            if keypress == "z":
-                keypress = 2
-            if keypress == "e":
-                keypress = 3
-            if keypress == "r":
-                keypress = 4
-            if keypress == "t":
-                keypress = 5
-            keypress = round(int(keypress) / 6 * 5, 2)
-            # resize value from 1-5 to 0-5
-            date = time.time()
-            assert entry_left["disabled"] == 0 and entry_right["disabled"] == 0
-
-            eL_old = entry_left
-            eR_old = entry_right
-            eL_new = eL_old.copy()
-            eR_new = eR_old.copy()
-
-            if mode == "importance":
-                elo_fld = "iELO"
-                Delo_fld = "DiELO"
-            else:
-                elo_fld = "tELO"
-                Delo_fld = "DtELO"
-            eloL = int(eL_old[elo_fld])
-            eloR = int(eR_old[elo_fld])
-
-            eL_new[elo_fld] = update_elo(eloL, expected_elo(eloL, eloR),
-                                         round(5 - keypress, 2), eL_old.K)
-            eR_new[elo_fld] = update_elo(eloR, expected_elo(eloL, eloR),
-                                         keypress, eR_old.K)
-            log_(f"Elo: L: {eloL}=>{eL_new[elo_fld]} R: \
-{eloR}=>{eR_new[elo_fld]}")
-
-            eL_new["K"] = adjust_K(eL_old.K)
-            eR_new["K"] = adjust_K(eR_old.K)
-            eL_new[Delo_fld] = abs(eL_new[elo_fld] - eL_old[elo_fld])
-            eR_new[Delo_fld] = abs(eR_new[elo_fld] - eR_old[elo_fld])
-            eL_new["gELO"] = compute_global_score(eL_new.iELO, eL_new.tELO, 1)
-            eR_new["gELO"] = compute_global_score(eR_new.iELO, eR_new.tELO, 1)
-            eL_new["review_time"] = round(eL_new["review_time"] + min(date
-                                          - start_time, 30), 3)
-            eR_new["review_time"] = round(eR_new["review_time"] + min(date
-                                          - start_time, 30), 3)
-            eL_new["n_review"] += 1
-            eR_new["n_review"] += 1
-
-            df = litoy.df.copy()
-            df.loc[id_left, :] = eL_new
-            df.loc[id_right, :] = eR_new
-            litoy.save_to_file(df)
-            log_(f"Done reviewing {id_left} and {id_right}")
+        if action == "answer_level":
+            process_review_answer(keypress, entry_left, entry_right, mode,
+                                  start_time, litoy)
             break
 
         if action == "skip_review":
