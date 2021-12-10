@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.9
+import time
 import youtube_dl
 from youtube_dl.utils import DownloadError, ExtractorError
 from pathlib import Path
@@ -80,7 +81,7 @@ def extract_local_video(link):
 
 def extract_pdf_url(url):
     "extracts reading time from an online pdf"
-    downloaded = requests.get(url, headers=headers)
+    downloaded = requests.get(url, headers=headers, timeout=5)
     open("./.temporary.pdf", "wb").write(downloaded.content)
     temp_dic = extract_pdf_local("./.temporary.pdf")
     temp_dic["type"] = "online pdf"
@@ -147,13 +148,22 @@ def extract_webpage(url, fallback_method=False):
     """
     try:
         wayback_used = 0
-        res = requests.get(url, headers=headers)
-    except requests.exceptions.ConnectionError:
-        # if url is dead : use wayback machine
-        tqdm.write(f"Using the wayback machine for {url}")
+        res = requests.get(url, headers=headers, timeout=5)
+    except requests.exceptions.ConnectTimeout as e:  # if timed out
+        log_("Connection timed out, retrying once in 5 seconds...", False)
+        time.sleep(5)
+        try:
+            res = requests.get(url, headers=headers, timeout=10)
+        except requests.exceptions.ConnectTimeout as e:
+            log_(f"Connection timed out again, skipping url: {url}", False)
+            res = {"title": "connection timed out",
+                   "url": url}
+            return res
+    except requests.exceptions.ConnectionError: # if url is dead use wayback machine
+        log_(f"Using the wayback machine for {url}", False)
         wayback_used = 1
         wb = get_wayback_machine.get(url)
-        try:  # if url was never saved
+        try:
             url = wb.links['last memento']['url']
         except (requests.exceptions.ConnectionError, AttributeError) as e:
             log_(f"ERROR: url could not be found even using wayback machine : \
