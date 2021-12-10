@@ -202,32 +202,31 @@ Syntax and usage example:
 TODO and planned features:
 ======
 * cut shortcut_and_action into smaller function
+* implement an undo function : simple : just save the dictionary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
+* check defaults value for argparse arguments
+* use regexp instead to find the correct media
+* ability to open media when editing in cli
 
 * gui: use qstackedwidget to handle the main window
+* gui: add: shortcut to add media
 * gui: reviewer: figure out why there is a warning about setting a layout over another layout
 * gui: reviewer: handle input
 * gui: reviewer: autofocus input field
-* gui: add: shortcut to add media
-* gui: browser: ctrl+f to focus on search field 
 * gui: browser: change colour for starred / disabled entries (https://doc.qt.io/qtforpython/overviews/model-view-programming.html)
 * gui: browser: right click to disable entry
 * gui: browser: right click to open an edit window with all fields, will also be useful when reviewing
+* gui: browser: ctrl+f to focus on search field 
+* gui: main menu: alt tab to switch panel 
 * gui: main menu: display progress score somewhere
 * gui: main menu: remove stretch on the side and add spacers instead 
-* gui: main menu: alt tab to switch panel 
 * gui: main menu: color each tags 
 * gui: main menu: ability to open the browser by clicking on the panel
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: settings: syntax highlighting
 
-* use regexp instead to find the correct media
 * create a video to show how it works
-* add defaults value for argparse arguments
 * investigate support for arbitrary additional fields
-* add --export-as to export as txt, csv, etc
-* code a way to open links without doing reviews
 * implement a two letter shortcut code to answer importance and time at the same time
-* implement an undo function : simple : just save the dictionnary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
 * use static type hints
 * create a desktop file to make it easily executable on linux
 * make it into a pip package on PyPI
