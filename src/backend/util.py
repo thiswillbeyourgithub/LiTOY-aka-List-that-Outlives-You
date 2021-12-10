@@ -80,6 +80,9 @@ def format_length(to_format, to_machine_readable=False):
     else:
         to_format = to_format.replace("min", "m").lower()
         while True:
+            if to_format in ["q", "quit", "exit", "skip"]:
+                log_("Invalid timestamp format, quitting.", False)
+                raise SystemExit()
             match = re.match(r"(\d+[jd])?(\d+h)?(\d+m)?", to_format)
             if match.group() == "" or to_format == "":
                 to_format = prompt_we("Invalid timestamp? Enter again:\n>",
