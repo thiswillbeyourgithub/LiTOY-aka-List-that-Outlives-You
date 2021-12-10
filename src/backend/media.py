@@ -184,6 +184,7 @@ def extract_webpage(url, simple_method=True):
             wb = get_wayback_machine.get(url)
             try:
                 url = wb.links['last memento']['url']
+                req = requests.get(url, headers=headers, timeout=5)
             except (requests.exceptions.ConnectionError, AttributeError) as e:
                 log_(f"ERROR: url could not be found even using wayback machine : \
 {url} : {e}", False)
@@ -191,7 +192,11 @@ def extract_webpage(url, simple_method=True):
                        "url": url,
                        "used_wayback_machine": "wayback url not found"}
                 return res
-            req = requests.get(url, headers=headers)
+            except requests.exceptions.ConnectTimeout as e:
+                log_(f"Connection timed out on wayback machine, skipping url: {url}", False)
+                res = {"type": "connection timed out",
+                       "url": url}
+                return res
 
         # extracting divs and p elements and keeping the the smallest text
         html_page = req.content
