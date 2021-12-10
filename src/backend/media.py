@@ -81,7 +81,14 @@ def extract_local_video(link):
 
 def extract_pdf_url(url):
     "extracts reading time from an online pdf"
-    downloaded = requests.get(url, headers=headers, timeout=5)
+    try:
+        downloaded = requests.get(url, headers=headers, timeout=5)
+    except requests.exceptions.ConnectTimeout as e:
+        log_(f"Connection timed out, skipping url: {url}", False)
+        temp_dic = {}
+        temp_dic["type"] = "connection timed out"
+        temp_dic["url"] = url
+        return temp_dic
     open("./.temporary.pdf", "wb").write(downloaded.content)
     temp_dic = extract_pdf_local("./.temporary.pdf")
     temp_dic["type"] = "online pdf"
