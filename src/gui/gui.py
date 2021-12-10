@@ -270,7 +270,7 @@ class tab_podium_widget(QTabWidget):
                          "tags", "disabled", "metacontent"]
                      ][df["disabled"] == 0]
         dfp["media_title"] = [(lambda x: json.loads(x)["title"]
-                               if "title" in json.loads(x).keys()
+                               if "title" in json.loads(x)
                                else "")(x)
                               for x in dfp.loc[:, "metacontent"]]
         dfp["tags"] = [", ".join(json.loads(x)) for x in dfp["tags"]]
@@ -741,7 +741,7 @@ class browse_w(QWidget):
 
                 metacontent = json.loads(self.df.loc[entry_idx[-1], "metacontent"])
                 self.litoy.gui_log(f"Browser: openning media of entry {entry_idx[-1]}")
-                if "url" in metacontent.keys():
+                if "url" in metacontent:
                     webbrowser.open(str(metacontent["url"]))
                 else:
                     print(f"No link found for {entry_idx[-1]}")

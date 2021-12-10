@@ -32,7 +32,7 @@ extraction from {url} : {e}", False)
                "title": title.replace("\n", ""),
                "url": url}
 
-        if "duration" in video.keys():
+        if "duration" in video:
             length = str(round(video['duration'] / 60, 1))
             res.update({"length": length})
             res.update({"channel": video["uploader"]})
@@ -50,7 +50,7 @@ extraction from {url} : {e}", False)
             if len(list(set(channels))) == 1:
                 res["channel"] = channels[0]
             else:
-                if "channel" in res.keys():
+                if "channel" in res:
                     del res["channel"]
     return res
 

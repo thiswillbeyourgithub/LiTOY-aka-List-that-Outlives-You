@@ -519,7 +519,7 @@ to start using LiTOY!", False)
                     if state == "repick":
                         break
                     progress += 1
-                    for m in questions.keys():
+                    for m in questions:
                         if state == "repick":
                             break
                         print("\n"*10)
@@ -579,7 +579,7 @@ to start using LiTOY!", False)
             log_("Empty db, add more entries before calling 'show'", False)
             raise SystemExit()
         df["media_title"] = [(lambda x: json.loads(x)["title"]
-                               if "title" in json.loads(x).keys()
+                               if "title" in json.loads(x)
                                else "")(x)
                               for x in df.loc[:, "metacontent"]]
         if len(query[0]) != 1 and query[0][0] == "by_tags":

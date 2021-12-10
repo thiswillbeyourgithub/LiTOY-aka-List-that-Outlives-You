@@ -86,7 +86,7 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
     js.append(json.loads(entry_right.metacontent))
     for x in [0, 1]:
         for y in ["length", "title", "url", "type", "channel"]:
-            if y not in js[x].keys():
+            if y not in js[x]:
                 js[x][y] = "X"
             else:
                 js[x][y] == str(js[x][y])
@@ -177,7 +177,7 @@ def print_podium(df, sizex, args):
                          "tags", "disabled", "metacontent"]
                      ][df["disabled"] == 0]
         dfp["media_title"] = [(lambda x: json.loads(x)["title"]
-                               if "title" in json.loads(x).keys()
+                               if "title" in json.loads(x)
                                else "")(x)
                               for x in dfp.loc[:, "metacontent"]]
         pprint(dfp.loc[:,
