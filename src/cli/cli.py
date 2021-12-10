@@ -320,7 +320,7 @@ def print_specific_entries(query, args, df):
     pd.reset_option('display.max_colwidth')
 
 
-def action_edit_entry(entry_id, litoy, field_list=None, field_auto_completer=None, auto_complete=None):
+def action_edit_entry(entry_id, litoy, field_list=None, field_auto_completer=None, auto_complete=None, shortcut_action_args=None):
     """
     edit entries via prompring user
     """
@@ -377,6 +377,23 @@ for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
         break
     else:
         log_(f"Entry with ID {entry_id} was NOT edited.", False)
+    if shortcut_action_args:
+        print_2_entries(**shortcut_action_args, litoy=litoy)
+
+def ask_user_length_cli(entry_id, meta, litoy):
+    """
+    in cli, if no length is found in the metacontent: ask the user
+    """
+    log_(f"Asking user to complete length for ID {entry_id}")
+    input_length = prompt_we("No length specified for left entry. \
+How many minutes does it take? (q)\n>")
+    if input_length not in ["q", "quit", "exit"]:
+        assert "set_length:" not in litoy.df.loc[entry_id, "content"]
+        formatted = format_length(input_length, to_machine_readable=True)
+        meta["length"] = formatted
+        litoy.df.loc[entry_id, "metacontent"] = json.dumps(meta)
+        litoy.df.loc[entry_id, "content"] += f" set_length:{formatted}"
+        litoy.save_to_file(litoy.df)
 
 
 def shortcut_and_action(id_left, id_right, mode, progress, litoy,
@@ -398,30 +415,12 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
 
         meta_left = json.loads(entry_left["metacontent"])
         if "length" not in meta_left.keys():
-            log_("Asking user to complete length.")
-            input_length = prompt_we("No length specified for left entry. \
-How many minutes does it take? (q)\n>")
-            if input_length not in ["q", "quit", "exit"]:
-                assert "set_length:" not in litoy.df.loc[id_left, "content"]
-                formatted = format_length(input_length, to_machine_readable=True)
-                meta_left["length"] = formatted
-                litoy.df.loc[id_left, "metacontent"] = json.dumps(meta_left)
-                litoy.df.loc[id_left, "content"] += f" set_length:{formatted}"
-                litoy.save_to_file(litoy.df)
-                entry_left = litoy.df.loc[id_left, :]
+            ask_user_length_cli(id_left, meta_left, litoy)
+            entry_left = litoy.df.loc[id_left, :]
         meta_right = json.loads(entry_right["metacontent"])
         if "length" not in meta_right.keys():
-            log_("Asking user to complete length.")
-            input_length = prompt_we("No length specified for right entry. \
-How many minutes does it take? (q)\n>")
-            if input_length not in ["q", "quit", "exit"]:
-                assert "set_length:" not in litoy.df.loc[id_right, "content"]
-                formatted = format_length(input_length, to_machine_readable=True)
-                meta_right["length"] = formatted
-                litoy.df.loc[id_right, "metacontent"] = json.dumps(meta_right)
-                litoy.df.loc[id_right, "content"] += f" set_length:{formatted}"
-                litoy.save_to_file(litoy.df)
-                entry_right = litoy.df.loc[id_right, :]
+            ask_user_length_cli(id_right, meta_right, litoy)
+            entry_right = litoy.df.loc[id_right, :]
 
         def_time_ans = ""
         if mode == "time" and \
@@ -542,12 +541,16 @@ How many minutes does it take? (q)\n>")
             continue
 
         if action == "edit_left":
-            action_edit_entry(id_left, litoy)
-            print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
+            action_edit_entry(id_left, litoy=litoy, shortcut_action_args={
+                                                    "id_left": id_left,
+                                                    "id_right": id_right,
+                                                    "mode": mode})
             continue
         if action == "edit_right":
-            action_edit_entry(id_right, litoy)
-            print_2_entries(id_left, id_right, mode=mode, litoy=litoy)
+            action_edit_entry(id_right, litoy=litoy, shortcut_action_args={
+                                                    "id_left": id_left,
+                                                    "id_right": id_right,
+                                                    "mode": mode})
             continue
         if action == "star_left":
             action_star(id_left, litoy)
