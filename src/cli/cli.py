@@ -569,7 +569,7 @@ How many minutes does it take? (q)\n>")
             log_("Reloading media")
             additional_args = {}
             if action == "reload_media_fallback_method":
-                additional_args.update({"fallback_method": True})
+                additional_args.update({"simple_method": False})
             for ent_id in [id_left, id_right]:
                 df = litoy.df.copy()
                 df.loc[ent_id, "content"] = move_flags_at_end(df.loc[ent_id,

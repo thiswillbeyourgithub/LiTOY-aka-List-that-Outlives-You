@@ -140,14 +140,14 @@ def extract_txt(path):
         return res
 
 
-def extract_webpage(url, fallback_method=False):
+def extract_webpage(url, simple_method=True):
     """
     extracts reading time from a webpage, output is a dictionnary containing
     estimation of the reading time ; title of the page ; if the wayback
     machine was used
     """
     wayback_used = 0
-    if fallback_method is False:
+    if simple_method:
         article = Article(url)
         try:
             article.download()
@@ -156,9 +156,9 @@ def extract_webpage(url, fallback_method=False):
             text_content = " ".join(article.text.replace("\n", " ").split())
         except Exception as e:
             log_(f"Error: {e}")
-            fallback_method = True
-    if fallback_method:
-        log_("Using fallback extractor")
+            simple_method = False
+    if simple_method is False:
+        log_("Using fallack extractor")
         try:
             req = requests.get(url, headers=headers, timeout=5)
         except requests.exceptions.ConnectTimeout as e:  # if timed out
