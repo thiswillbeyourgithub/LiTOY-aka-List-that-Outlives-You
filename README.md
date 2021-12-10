@@ -220,7 +220,6 @@ TODO and planned features:
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: settings: syntax highlighting
 
-* add a failsafe when adding cards without internet connectivity
 * use regexp instead to find the correct media
 * create a video to show how it works
 * add defaults value for argparse arguments
