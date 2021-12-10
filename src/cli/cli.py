@@ -459,30 +459,28 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
             action = "show_help"
         else:
             action = str(fetch_action(keypress))
-            log_(f"Shortcut found : Action={action}")
+            log_(f"Shortcut found : {action}")
 
         if action == "answer_level":
             process_review_answer(keypress, entry_left, entry_right, mode,
                                   start_time, litoy)
             break
 
-        if action == "skip_review":
+        elif action == "skip_review":
             log_("Skipped review", False)
             break
 
-        if action == "show_all_fields":
+        elif action == "show_all_fields":
             log_("Displaying the entries in full")
             print("\n" * 10)
             print_2_entries(int(id_left), int(id_right), mode, litoy, "all")
-            continue
 
-        if action == "show_few_fields":
+        elif action == "show_few_fields":
             log_("Displaying only most important fields of entries")
             print("\n" * 10)
             print_2_entries(int(id_left), int(id_right), mode, litoy)
-            continue
 
-        if action == "open_media":
+        elif action == "open_media":
             log_("Openning media")
             for ent_id in [id_left, id_right]:
                 ent = litoy.df.loc[ent_id, :]
@@ -508,9 +506,8 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
                             int(id_right),
                             mode=mode,
                             litoy=litoy)
-            continue
 
-        if action == "reload_media" or action == "reload_media_fallback_method":
+        elif "reload_media" in action:
             log_("Reloading media")
             additional_args = {}
             if action == "reload_media_fallback_method":
@@ -531,61 +528,57 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
                             int(id_right),
                             mode=mode,
                             litoy=litoy)
-            continue
 
-        if action == "open debugger":
+        elif action == "open debugger":
             log_("Openning debugger", False)
             print("To open a python console within the debugger, type in \
 'interact'. You can load the database as a pandas DataFrame using df=litoy.df")
             pdb.set_trace()
-            continue
 
-        if action == "edit_left":
-            action_edit_entry(id_left, litoy=litoy, shortcut_action_args={
-                                                    "id_left": id_left,
-                                                    "id_right": id_right,
-                                                    "mode": mode})
-            continue
-        if action == "edit_right":
-            action_edit_entry(id_right, litoy=litoy, shortcut_action_args={
-                                                    "id_left": id_left,
-                                                    "id_right": id_right,
-                                                    "mode": mode})
-            continue
-        if action == "star_left":
-            action_star(id_left, litoy)
-            continue
-        if action == "star_right":
-            action_star(id_right, litoy)
-            continue
-        if action == "disable_left":
-            action_disable(id_left, litoy)
-            return action
-        if action == "disable_both":
-            action_disable(id_right, litoy)
-            action_disable(id_left, litoy)
-            return action
-        if action == "disable_right":
-            action_disable(id_right, litoy)
+        elif action.startswith("edit_"):
+            if action.endswith("_left"):
+                action_edit_entry(id_left,
+                                  litoy=litoy,
+                                  shortcut_action_args={"id_left": id_left,
+                                                        "id_right": id_right,
+                                                        "mode": mode})
+            elif action.endswith("_right"):
+                action_edit_entry(id_right, litoy=litoy, shortcut_action_args={
+                                                        "id_left": id_left,
+                                                        "id_right": id_right,
+                                                        "mode": mode})
+
+        elif action.startswith("star_"):
+            if action.endswith("_left"):
+                action_star(id_left, litoy)
+            elif action.endswith("_right"):
+                action_star(id_right, litoy)
+
+        elif action.startswith("disable_"):
+            if action.endswith("_left"):
+                action_disable(id_left, litoy)
+            elif action.endswith("_right"):
+                action_disable(id_left, litoy)
+            elif action.endswith("_both"):
+                action_disable(id_right, litoy)
+                action_disable(id_left, litoy)
             return action
 
-        if action == "undo":
+        elif action == "undo":
             print("Undo function is not yet implemented, \
   manually correct the database using libreoffice calc after looking at \
   the logs. Or take a look at the saved json files")
             input("(press enter to resume reviewing session)")
-            continue
 
-        if action == "show_help":
+        elif action == "show_help":
             log_("Printing help :", False)
             pprint(shortcuts)
-            continue
 
-        if action == "repick":
+        elif action == "repick":
             log_("Repicking entries", False)
             return "repick"
 
-        if action == "quit":
+        elif action == "quit":
             log_("Shortcut : quitting")
             print("Quitting.")
             raise SystemExit()
