@@ -153,7 +153,10 @@ Quitting.", False)
 def action_star(entry_id, litoy):
     "stars an entry_id during review"
     df = litoy.df.copy()
-    df.loc[entry_id, "starred"] = 1
+    if df.loc[entry_id, "starred"] == 0:
+        df.loc[entry_id, "starred"] = 1
+    else:
+        df.loc[entry_id, "starred"] = 0
     litoy.save_to_file(df)
     log_(f"Starred entry_id {entry_id}", False)
 
