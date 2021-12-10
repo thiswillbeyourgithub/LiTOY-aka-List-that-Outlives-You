@@ -17,28 +17,6 @@ from src.backend.scoring import (compute_global_score)
 from src.backend.log import log_
 
 
-def DB_file_check(path):
-    "Check if the file and database already exists, if not create the file"
-    db_location = Path(path)
-    if db_location.exists():
-        log_(f"Database file found at {path}")
-        try:
-            return True
-        except ValueError as e:
-            log_(f"ERROR: Litoy database not found in file at {path} :\
-{e}", False)
-            return False
-    else:
-        answer = input(f"No database file found at {path}, do you want me to\
- create it?\ny/n?")
-        if answer in ["y", "yes"]:
-            db_location.touch()
-            return False
-        else:
-            print("Exiting")
-            raise SystemExit()
-
-
 def importation(path, litoy):
     "Check if text file exists then import it into LiTOY"
     import_file = Path(path)

@@ -255,7 +255,7 @@ def print_stats(df, printing=True):
             log_(str(table2))
             log_(f"Progress score: {round(completion_score, 3):>20}")
     except StatisticsError as e:
-        log_(f"Not enough data points! {e}", False)
+        log_(f"Not enough data points to start reviewing: {e}", False)
         raise SystemExit()
 
 

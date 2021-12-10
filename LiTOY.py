@@ -21,7 +21,7 @@ from pygments.lexers import JavascriptLexer
 
 from user_settings import (shortcuts, default_dir, n_session, n_to_review,
                            col_rst, col_red, questions)
-from src.backend.backend import (DB_file_check, importation,
+from src.backend.backend import (importation,
                                  move_flags_at_end, add_new_entry,
                                  pick_entries,
                                  get_tags_from_content,
@@ -82,12 +82,18 @@ from src.gui.gui import launch_gui
 class LiTOYClass:
     "Class that interacts with the database using panda etc"
     def __init__(self, db_path):
-        if db_path is None:
-            self.path = args['db']
-            self.create_database()
+        self.path = db_path
+        if not Path(self.path).exists():
+            answer = input(f"No database found at {self.path}, do you want me to\
+ create it? (y/n)\n>")
+            if answer in ["y", "yes"]:
+                self.create_database()
+            else:
+                log_("Exiting.", False)
+                raise SystemExit()
         else:
-            self.path = db_path
-            self.df = pd.read_json(db_path).sort_index()
+            log_(f"Database found at {self.path}")
+            self.df = pd.read_json(self.path).sort_index()
         self.log_ = log_
         self.gui_log = lambda x, y=False: self.log_(f"GUI: {x}", y)
 
@@ -104,11 +110,12 @@ class LiTOYClass:
                 "starred", "iELO", "tELO", "DiELO", "DtELO", "gELO",
                 "review_time", "n_review", "K", "disabled"]
         df = pd.DataFrame(columns=cols).set_index("ID")
-        if Path(args['db']).exists() or Path(f"{args['db']}.temp.json").exists():
+        if Path(args['db']).exists():
             log_(f"ERROR: cannot create database : \
 it already exist: {args['db']}", False)
             raise SystemExit()
         else:
+            Path(args['db']).touch()
             self.save_to_file(df)
 
     def entry_duplicate_check(self, df, newc, newm):
@@ -256,10 +263,7 @@ if __name__ == "__main__":
         wrong_arguments_(args)
 
     # initialize litoy class:
-    if DB_file_check(args['db']) is False:
-        litoy = LiTOYClass(None)
-    else:
-        litoy = LiTOYClass(args['db'])
+    litoy = LiTOYClass(args['db'])
 
     if args['verbose'] is True:
         pprint(args)
@@ -274,7 +278,7 @@ if __name__ == "__main__":
     # I coded it that way to avoir breaking changes
     try: 
         df = litoy.df
-        if -1 not in list(df.loc[:, "gELO"]):
+        if len(df.index) > 0 and -1 not in list(df.loc[:, "gELO"]):
             log_("Recomputing global scores according to the new format \
 (-1 is now assigned to new entries, this message should appear only once for \
 a given database):", False)
