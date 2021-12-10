@@ -414,11 +414,11 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
 (h or ? for help)\n>"
 
         meta_left = json.loads(entry_left["metacontent"])
-        if "length" not in meta_left.keys():
+        meta_right = json.loads(entry_right["metacontent"])
+        if "length" not in meta_left:
             ask_user_length_cli(id_left, meta_left, litoy)
             entry_left = litoy.df.loc[id_left, :]
-        meta_right = json.loads(entry_right["metacontent"])
-        if "length" not in meta_right.keys():
+        if "length" not in meta_right:
             ask_user_length_cli(id_right, meta_right, litoy)
             entry_right = litoy.df.loc[id_right, :]
 
