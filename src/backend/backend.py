@@ -323,3 +323,32 @@ def process_review_answer(keypress, entry_left, entry_right, mode,
     litoy.save_to_file(litoy.df)
 
     log_(f"Done reviewing {id_left} and {id_right}")
+
+
+def suggest_time_answer(entry_left, entry_right):
+    """
+    suggest best answer to time questions
+    """
+    left_length = float(json.loads(entry_left["metacontent"])["length"])
+    right_length = float(json.loads(entry_right["metacontent"])["length"])
+    ratio = left_length / right_length
+    ratio2 = (left_length - right_length) / (left_length + right_length)
+    if ratio >= 2:
+        def_time_ans = "1"
+    if ratio > 1.5:
+        def_time_ans = "2"
+    if ratio > 0.65:
+        def_time_ans = "3"
+    if ratio > 0.5:
+        def_time_ans = "4"
+    if ratio <= 0.5:
+        def_time_ans = "5"
+
+    if ratio2 > 0.4:
+        def_time_ans = "5"
+    if ratio2 < -0.4:
+        def_time_ans = "1"
+
+    if abs(ratio2) < 0.1:
+        def_time_ans = "3"
+    return def_time_ans

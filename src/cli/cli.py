@@ -20,7 +20,8 @@ from src.backend.backend import (get_meta_from_content,
                                  fetch_action,
                                  action_disable,
                                  action_star,
-                                 process_review_answer)
+                                 process_review_answer,
+                                 suggest_time_answer)
 from src.backend.util import format_length, prompt_we
 from src.backend.log import log_
 from user_settings import (shortcuts, n_to_review, n_session, questions,
@@ -426,30 +427,7 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
         if mode == "time" and \
         "length" in json.loads(entry_left["metacontent"]) and \
         "length" in json.loads(entry_right["metacontent"]):
-            # auto answers time questions
-            left_length = float(json.loads(entry_left["metacontent"])["length"])
-            right_length = float(json.loads(entry_right["metacontent"])["length"])
-            ratio = left_length / right_length
-            ratio2 = (left_length - right_length) / (left_length + right_length)
-            if ratio >= 2:
-                def_time_ans = "1"
-            if ratio > 1.5:
-                def_time_ans = "2"
-            if ratio > 0.65:
-                def_time_ans = "3"
-            if ratio > 0.5:
-                def_time_ans = "4"
-            if ratio <= 0.5:
-                def_time_ans = "5"
-
-            if ratio2 > 0.4:
-                def_time_ans = "5"
-            if ratio2 < -0.4:
-                def_time_ans = "1"
-
-            if abs(ratio2) < 0.1:
-                def_time_ans = "3"
-
+            def_time_ans = suggest_time_answer(entry_left, entry_right)
         keypress = prompt_we(prompt_text,
                              completer=shortcut_auto_completer,
                              default=def_time_ans)
