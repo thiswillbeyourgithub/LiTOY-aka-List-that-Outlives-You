@@ -183,7 +183,7 @@ class main_menu(QWidget):
 
         btn_review = QPushButton("Review")
         btn_add = QPushButton("Add")
-        btn_browse = QPushButton("browse")
+        btn_browse = QPushButton("Browse")
         btn_q = QPushButton("Quit")
 
         btn_review.setAutoDefault(True)
@@ -194,7 +194,7 @@ class main_menu(QWidget):
 
         btn_review.setToolTip("Start reviewing your entries")
         btn_add.setToolTip("Add new entries to LiTOY")
-        btn_browse.setToolTip("browse entries")
+        btn_browse.setToolTip("Browse entries")
         btn_q.setToolTip("Quit")
 
         btn_review.clicked.connect(self.launch_review)
