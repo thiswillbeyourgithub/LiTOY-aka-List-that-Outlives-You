@@ -146,35 +146,7 @@ def extract_webpage(url, fallback_method=False):
     estimation of the reading time ; title of the page ; if the wayback
     machine was used
     """
-    try:
-        wayback_used = 0
-        res = requests.get(url, headers=headers, timeout=5)
-    except requests.exceptions.ConnectTimeout as e:  # if timed out
-        log_("Connection timed out, retrying once in 5 seconds...", False)
-        time.sleep(5)
-        try:
-            res = requests.get(url, headers=headers, timeout=10)
-        except requests.exceptions.ConnectTimeout as e:
-            log_(f"Connection timed out again, skipping url: {url}", False)
-            res = {"title": "connection timed out",
-                   "url": url}
-            return res
-    except requests.exceptions.ConnectionError: # if url is dead use wayback machine
-        log_(f"Using the wayback machine for {url}", False)
-        wayback_used = 1
-        wb = get_wayback_machine.get(url)
-        try:
-            url = wb.links['last memento']['url']
-        except (requests.exceptions.ConnectionError, AttributeError) as e:
-            log_(f"ERROR: url could not be found even using wayback machine : \
-{url} : {e}", False)
-            res = {"title": "web page not found",
-                   "url": url,
-                   "length": "-1",
-                   "used_wayback_machine": "wayback url not found"}
-            return res
-        res = requests.get(url, headers=headers)
-
+    wayback_used = 0
     if fallback_method is False:
         article = Article(url)
         try:
@@ -183,12 +155,39 @@ def extract_webpage(url, fallback_method=False):
             title = article.title
             text_content = " ".join(article.text.replace("\n", " ").split())
         except Exception as e:
-            log_(f"Error: {e}") 
+            log_(f"Error: {e}")
             fallback_method = True
     if fallback_method:
         log_("Using fallback extractor")
+        try:
+            req = requests.get(url, headers=headers, timeout=5)
+        except requests.exceptions.ConnectTimeout as e:  # if timed out
+            log_("Connection timed out, retrying once in 5 seconds...", False)
+            time.sleep(5)
+            try:
+                req = requests.get(url, headers=headers, timeout=10)
+            except requests.exceptions.ConnectTimeout as e:
+                log_(f"Connection timed out again, skipping url: {url}", False)
+                res = {"type": "connection timed out",
+                       "url": url}
+                return res
+        except requests.exceptions.ConnectionError: # if url is dead use wayback machine
+            log_(f"Using the wayback machine for {url}", False)
+            wayback_used = 1
+            wb = get_wayback_machine.get(url)
+            try:
+                url = wb.links['last memento']['url']
+            except (requests.exceptions.ConnectionError, AttributeError) as e:
+                log_(f"ERROR: url could not be found even using wayback machine : \
+{url} : {e}", False)
+                res = {"type": "web page not found",
+                       "url": url,
+                       "used_wayback_machine": "wayback url not found"}
+                return res
+            req = requests.get(url, headers=headers)
+
         # extracting divs and p elements and keeping the the smallest text
-        html_page = res.content
+        html_page = req.content
         soup = BeautifulSoup(html_page, 'html.parser')
         parsed_text_trial = []
         parsed_text_trial.append(' '.join([x.text.replace("\n", " ")
@@ -214,8 +213,4 @@ def extract_webpage(url, fallback_method=False):
            "length": estimatedReadingTime,
            "used_wayback_machine": wayback_used,
            "url": url}
-    if res['length'] == "-1":
-        res.pop("length")
-        res.pop("title")
-        res["type"] = "webpage not found"
     return res
