@@ -506,13 +506,6 @@ to start using LiTOY!", False)
     if args["show"] is not None:
         query = args["show"]
 
-        if query == "logs":
-            log_("Showing logs")
-            log_file = "logs/rotating_log"
-            with open(log_file) as lf:
-                print(lf.read())
-            raise SystemExit()
-
         pd.set_option('display.max_rows', None)
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', sizex)
@@ -544,6 +537,15 @@ in your db:")
             raise SystemExit()
         else:
             query = query[0][0]
+
+        if query == "logs":
+            log_("Showing logs")
+            log_file = "logs/rotating_log"
+            with open(log_file) as lf:
+                lines = lf.read()
+            print(lines)
+            raise SystemExit()
+
 
         df["tags"] = [", ".join(json.loads(x)) for x in df.loc[:, "tags"]]
 
