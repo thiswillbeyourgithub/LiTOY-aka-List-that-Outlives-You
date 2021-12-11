@@ -537,7 +537,7 @@ def review_mode_cli(litoy):
                 try:
                     path = str(json.loads(ent.metacontent)["url"])
                     if "http" in path:
-                        webbrowser.open(path)
+                        webbrowser.open(path, new=2)
                     else:
                         if platform.system() == "Linux":
                             subprocess.Popen(["xdg-open", path],

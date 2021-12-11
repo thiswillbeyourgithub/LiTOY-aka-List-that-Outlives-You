@@ -742,7 +742,7 @@ class browse_w(QWidget):
                 metacontent = json.loads(self.df.loc[entry_idx[-1], "metacontent"])
                 self.litoy.gui_log(f"Browser: openning media of entry {entry_idx[-1]}")
                 if "url" in metacontent:
-                    webbrowser.open(str(metacontent["url"]))
+                    webbrowser.open(str(metacontent["url"]), new=2)
                 else:
                     print(f"No link found for {entry_idx[-1]}")
 
