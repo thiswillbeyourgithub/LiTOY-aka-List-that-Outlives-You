@@ -21,7 +21,7 @@ from src.gui.PandasModel import PandasModel
 from src.backend.backend import (pick_entries, get_meta_from_content,
                                  add_new_entry)
 
-from src.cli.cli import print_2_entries
+from src.cli.cli import display_2_entries
 
 # MISCELANEOUS
 ##############################################################################
@@ -608,7 +608,7 @@ you're lost.")
 
         self.litoy.gui_log(f"Printing entries {self.current_disp[0]} \
 {self.current_disp[1]}")
-        to_print = print_2_entries(self.current_disp[0], self.current_disp[1],
+        to_print = display_2_entries(self.current_disp[0], self.current_disp[1],
                                    mode=self.mode, litoy=self.litoy,
                                    all_fields=self.all_fields, cli=False)
 

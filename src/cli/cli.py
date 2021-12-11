@@ -35,7 +35,7 @@ from user_settings import (shortcuts, n_to_review, n_session, questions,
 from src.cli.get_terminal_size import get_terminal_size
 
 
-def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
+def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
     """
     Show the two entries to review side by side
     This function is actually part CLI but is highjacked by the GUI to
@@ -390,7 +390,7 @@ for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
     else:
         log_(f"Entry with ID {entry_id} was NOT edited.", False)
     if shortcut_action_args:
-        print_2_entries(**shortcut_action_args, litoy=litoy)
+        display_2_entries(**shortcut_action_args, litoy=litoy)
 
 def set_user_length_cli(entry_id, meta, litoy):
     """
@@ -436,7 +436,7 @@ def review_mode_cli(litoy):
 
 
         if action not in ["show_few_fields", "show_all_fields", "show_help"]:
-            print_2_entries(entries[0].name,
+            display_2_entries(entries[0].name,
                             entries[1].name,
                             litoy=litoy,
                             mode=mode,
@@ -515,7 +515,7 @@ def review_mode_cli(litoy):
 
         elif action == "show_all_fields":
             log_("Displaying the entries in full")
-            print_2_entries(entries[0].name,
+            display_2_entries(entries[0].name,
                             entries[1].name,
                             mode,
                             litoy,
@@ -524,7 +524,7 @@ def review_mode_cli(litoy):
 
         elif action == "show_few_fields":
             log_("Displaying only most important fields of entries")
-            print_2_entries(entries[0].name,
+            display_2_entries(entries[0].name,
                             entries[1].name,
                             mode,
                             litoy)
