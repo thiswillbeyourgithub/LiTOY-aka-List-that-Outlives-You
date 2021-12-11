@@ -1,37 +1,27 @@
 #!/usr/bin/env python3.9
-import pyforest
 from glob import glob
 import argparse
-import os
-import time
 import signal
 
 import code
-import subprocess
 import threading
-import platform
 
-from itertools import chain
 from pathlib import Path
 import json
 import pandas as pd
 from pprint import pprint
 import prompt_toolkit
-from pygments.lexers import JavascriptLexer
 
-from user_settings import (shortcuts, default_dir, n_session, n_to_review,
-                           col_rst, col_red, questions)
+from user_settings import (default_dir)
 from src.backend.backend import (importation,
                                  move_flags_at_end, add_new_entry,
-                                 pick_entries,
-                                 get_tags_from_content,
                                  get_meta_from_content)
 from src.backend.scoring import compute_global_score
 from src.backend.util import (log_, debug_signal_handler, prompt_we,
                               wrong_arguments_, json_periodic_save)
-from src.cli.cli import (print_2_entries, print_podium, print_stats,
+from src.cli.cli import (print_podium, print_stats,
                          print_specific_entries, action_edit_entry,
-                         shortcut_and_action)
+                         review_mode_cli)
 
 from src.cli.get_terminal_size import get_terminal_size
 from src.gui.gui import launch_gui
@@ -502,55 +492,7 @@ Content was {entry['content']}", False)
             log_(f"ERROR: you only have {n} entries in your database, add 10 \
 to start using LiTOY!", False)
             raise SystemExit()
-        available_shortcut = list(chain.from_iterable(shortcuts.values()))
-        shortcut_auto_completer = prompt_toolkit.completion.WordCompleter(available_shortcut,
-                                                sentence=False,
-                                                match_middle=True,
-                                                ignore_case=True)
-        for session_nb in range(n_session):
-            state = "repick"  # this while loop is used to repick if the
-            # user wants to use another "left entry" when reviewing
-            while state == "repick":
-                state = "don't repick"
-                picked_ids = pick_entries(litoy.df)
-                log_(f"Picked the following entries : {picked_ids}")
-                disp_flds = "no"
-                for (progress, i) in enumerate(picked_ids[1:]):
-                    if state == "repick":
-                        break
-                    progress += 1
-                    for m in questions:
-                        if state == "repick":
-                            break
-                        print("\n"*10)
-                        print_2_entries(picked_ids[0],
-                                        i,
-                                        litoy=litoy,
-                                        mode=m,
-                                        all_fields=disp_flds)
-                        entries = [litoy.df.loc[picked_ids[0], :],
-                                   litoy.df.loc[i, :]]
-                        state = ""
-                        state = shortcut_and_action(entries,
-                                                    mode=m,
-                                                    progress=progress +
-                                                    session_nb*n_to_review,
-                                                    litoy=litoy,
-                                                    shortcut_auto_completer=shortcut_auto_completer,
-                                                    available_shortcut=available_shortcut)
-                        if state == "repick":
-                            break
-                        if state == "disable_right":
-                            break
-                        if state == "disable_left":
-                            log_("Repicking because you suspended left entry.",
-                                 False)
-                            state = "repick"
-                            break
-                if state == "repick":
-                    continue  # is finally telling the loop to repick
-        log_("Finished all reviewing session. Quitting.", False)
-        raise SystemExit()
+        review_mode_cli(litoy)
 
     if args["convert_to_excel"] is True:
         log_("Converting to excel spreadsheet format", False)

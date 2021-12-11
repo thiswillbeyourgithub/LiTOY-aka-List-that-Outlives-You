@@ -201,7 +201,6 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
-* cut shortcut_and_action into smaller function
 * implement an undo function : simple : just save the dictionary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
 * check defaults value for argparse arguments
 * use regexp instead to find the correct media

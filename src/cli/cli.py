@@ -13,6 +13,7 @@ import platform
 import subprocess
 import os
 import pdb
+from itertools import chain
 
 from src.backend.backend import (get_meta_from_content,
                                  get_tags_from_content,
@@ -22,6 +23,7 @@ from src.backend.backend import (get_meta_from_content,
                                  action_star,
                                  process_review_answer,
                                  suggest_time_answer,
+                                 pick_entries
                                  )
 from src.backend.util import format_length, prompt_we, InvalidTimestamp
 from src.backend.log import log_
@@ -50,6 +52,7 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
         storage = []
         def side_by_side(key, val1, val2):
             storage.append([key, [val1, val2]])
+    print("\n"*20)
 
 
     print(col_blu + "#" * sizex + col_rst)
@@ -405,21 +408,41 @@ How many minutes does it take? (q)\n>")
         litoy.save_to_file(litoy.df)
 
 
-def shortcut_and_action(entries, mode, progress, litoy,
-                        shortcut_auto_completer, available_shortcut):
-    """
-    makes the link between actions and their effect
-    """
+def review_mode_cli(litoy):
+    available_shortcut = list(chain.from_iterable(shortcuts.values()))
+    shortcut_auto_completer = prompt_toolkit.completion.WordCompleter(available_shortcut,
+                                            sentence=False,
+                                            match_middle=True,
+                                            ignore_case=True)
+    progress = 0
+    picked_ids = pick_entries(litoy.df)
+    id_right = picked_ids[1]
+    log_(f"Picked the following entries : {picked_ids}")
+    mode = "importance"
     action = ""
+
+    def check_if_finished(progress):
+        if progress < n_to_review*n_session:
+            return False
+        return True
+
     while True:
-        log_(f"Waiting for shortcut for {entries[0].name} vs {entries[1].name} for {mode}")
+        disp_flds = "no"
+        if progress // 2 == 1:
+            mode = "time"
+        else:
+            mode = "importance"
 
-        start_time = time.time()
-        action = ""
-        log_(f"Asking question, mode : {mode}")
-        prompt_text = f"{progress}/{n_to_review*n_session} {questions[mode]} \
-(h or ? for help)\n>"
+        entries = [litoy.df.loc[picked_ids[0], :], litoy.df.loc[id_right, :]]
 
+        if action not in ["show_few_fields", "show_all_fields", "show_help"]:
+            print_2_entries(picked_ids[0],
+                            id_right,
+                            litoy=litoy,
+                            mode=mode,
+                            all_fields=disp_flds)
+
+        # if no length specified, ask the user:
         metas = []
         for i in range(len(entries)):
             metas.append(json.loads(entries[i]["metacontent"]))
@@ -433,17 +456,23 @@ def shortcut_and_action(entries, mode, progress, litoy,
                 else:
                     entries[i] = litoy.df.loc[entries[i].name, :]
 
+        # if both length specified, auto suggest time answer:
         def_time_ans = ""
         if mode == "time" and \
         "length" in json.loads(entries[0]["metacontent"]) and \
         "length" in json.loads(entries[1]["metacontent"]):
             def_time_ans = suggest_time_answer(entries[0], entries[1])
+
+        # ask comparison question:
+        start_time = time.time()
+        prompt_text = f"{progress}/{n_to_review*n_session} {questions[mode]} (h or ? for help)\n>"
+        log_(f"Waiting for shortcut for {entries[0].name} vs {entries[1].name} for {mode}")
         keypress = prompt_we(prompt_text,
                              completer=shortcut_auto_completer,
                              default=def_time_ans)
 
         if keypress not in available_shortcut:
-            log_(f"ERROR: keypress not found : {keypress}")
+            log_(f"ERROR: keypress not found : {keypress}", False)
             action = "show_help"
         else:
             action = str(fetch_action(keypress))
@@ -452,21 +481,38 @@ def shortcut_and_action(entries, mode, progress, litoy,
         if action == "answer_level":
             process_review_answer(keypress, entries[0], entries[1], mode,
                                   start_time, litoy)
-            break
+            progress += 1
+            if check_if_finished(progress):
+                break
+
+            if id_right == picked_ids[1]:
+                id_right = picked_ids[2]
+            else:
+                picked_ids = pick_entries(litoy.df)
+                log_(f"Picked the following entries : {picked_ids}")
+            continue
 
         elif action == "skip_review":
-            log_("Skipped review", False)
-            break
+            log_("Skipped review.", False)
+            progress += 1
+            continue
 
         elif action == "show_all_fields":
             log_("Displaying the entries in full")
-            print("\n" * 10)
-            print_2_entries(int(entries[0].name), int(entries[1].name), mode, litoy, "all")
+            print_2_entries(entries[0].name,
+                            entries[1].name,
+                            mode,
+                            litoy,
+                            "all")
+            continue
 
         elif action == "show_few_fields":
             log_("Displaying only most important fields of entries")
-            print("\n" * 10)
-            print_2_entries(int(entries[0].name), int(entries[1].name), mode, litoy)
+            print_2_entries(entries[0].name,
+                            entries[1].name,
+                            mode,
+                            litoy)
+            continue
 
         elif action == "open_media":
             log_("Openning media")
@@ -488,12 +534,8 @@ def shortcut_and_action(entries, mode, progress, litoy,
                             log_("Platform system not found.", False)
                 except (KeyError, AttributeError) as e:
                     log_(f"url not found in entry {ent_id} : {e}")
-            time.sleep(1.5)  # better display
-            print("\n" * 10)
-            print_2_entries(entries[0].name,
-                            entries[1].name,
-                            mode=mode,
-                            litoy=litoy)
+            time.sleep(1)  # better display
+            continue
 
         elif "reload_media" in action:
             log_("Reloading media")
@@ -511,17 +553,14 @@ def shortcut_and_action(entries, mode, progress, litoy,
                 entries[0] = df.loc[entries[0].name, :]
                 entries[1] = df.loc[entries[1].name, :]
                 log_(f"New metacontent value for {ent_id} : {new_meta}")
-            print("\n" * 10)
-            print_2_entries(entries[0].name,
-                            entries[1].name,
-                            mode=mode,
-                            litoy=litoy)
+            continue
 
         elif action == "open debugger":
             log_("Openning debugger", False)
             print("To open a python console within the debugger, type in \
 'interact'. You can load the database as a pandas DataFrame using df=litoy.df")
             pdb.set_trace()
+            continue
 
         elif action.startswith("edit_"):
             if action.endswith("_left"):
@@ -538,22 +577,27 @@ def shortcut_and_action(entries, mode, progress, litoy,
                                       "id_left": entries[0].name,
                                       "id_right": entries[1].name,
                                       "mode": mode})
+            continue
 
         elif action.startswith("star_"):
             if action.endswith("_left"):
                 action_star(entries[0].name, litoy)
             elif action.endswith("_right"):
                 action_star(entries[1].name, litoy)
+            continue
 
         elif action.startswith("disable_"):
-            if action.endswith("_left"):
+            if action.endswith("_right"):
                 action_disable(entries[0].name, litoy)
-            elif action.endswith("_right"):
+                continue
+            elif action.endswith("_left"):
                 action_disable(entries[0].name, litoy)
             elif action.endswith("_both"):
                 action_disable(entries[1].name, litoy)
                 action_disable(entries[0].name, litoy)
-            return action
+            picked_ids = pick_entries(litoy.df)
+            log_(f"Picked the following entries : {picked_ids}")
+            continue
 
         elif action == "undo":
             print("Undo function is not yet implemented, \
@@ -564,12 +608,16 @@ def shortcut_and_action(entries, mode, progress, litoy,
         elif action == "show_help":
             log_("Printing help :", False)
             pprint(shortcuts)
+            input("Press enter to continue.")
 
         elif action == "repick":
-            log_("Repicking entries", False)
-            return "repick"
+            picked_ids = pick_entries(litoy.df)
+            log_(f"Picked the following entries : {picked_ids}")
+            continue
 
         elif action == "quit":
             log_("Shortcut : quitting")
             print("Quitting.")
             raise SystemExit()
+    log_("Finished reviewing sessions. Quitting.", False)
+    raise SystemExit()
