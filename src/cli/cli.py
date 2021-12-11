@@ -404,8 +404,9 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
     """
     action = ""
     while True:
-        entry_left = litoy.df.loc[id_left, :]
-        entry_right = litoy.df.loc[id_right, :]
+        entries = []
+        entries.append(litoy.df.loc[id_left, :])
+        entries.append(litoy.df.loc[id_right, :])
         log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
 
         start_time = time.time()
@@ -414,20 +415,18 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
         prompt_text = f"{progress}/{n_to_review*n_session} {questions[mode]} \
 (h or ? for help)\n>"
 
-        meta_left = json.loads(entry_left["metacontent"])
-        meta_right = json.loads(entry_right["metacontent"])
-        if "length" not in meta_left:
-            ask_user_length_cli(id_left, meta_left, litoy)
-            entry_left = litoy.df.loc[id_left, :]
-        if "length" not in meta_right:
-            ask_user_length_cli(id_right, meta_right, litoy)
-            entry_right = litoy.df.loc[id_right, :]
+        metas = []
+        for i in range(len(entries)):
+            metas.append(json.loads(entries[i]["metacontent"]))
+            if "length" not in metas[i]:
+                ask_user_length_cli(entries[i].name, metas[i], litoy)
+                entries[i] = litoy.df.loc[entries[i].name, :]
 
         def_time_ans = ""
         if mode == "time" and \
-        "length" in json.loads(entry_left["metacontent"]) and \
-        "length" in json.loads(entry_right["metacontent"]):
-            def_time_ans = suggest_time_answer(entry_left, entry_right)
+        "length" in json.loads(entries[0]["metacontent"]) and \
+        "length" in json.loads(entries[1]["metacontent"]):
+            def_time_ans = suggest_time_answer(entries[0], entries[1])
         keypress = prompt_we(prompt_text,
                              completer=shortcut_auto_completer,
                              default=def_time_ans)
@@ -440,7 +439,7 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
             log_(f"Shortcut found : {action}")
 
         if action == "answer_level":
-            process_review_answer(keypress, entry_left, entry_right, mode,
+            process_review_answer(keypress, entries[0], entries[1], mode,
                                   start_time, litoy)
             break
 
@@ -498,8 +497,8 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
                                                  additional_args)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
                 litoy.save_to_file(df)
-                entry_left = df.loc[id_left, :]
-                entry_right = df.loc[id_right, :]
+                entries[0] = df.loc[id_left, :]
+                entries[1] = df.loc[id_right, :]
                 log_(f"New metacontent value for {ent_id} : {new_meta}")
             print("\n" * 10)
             print_2_entries(int(id_left),
