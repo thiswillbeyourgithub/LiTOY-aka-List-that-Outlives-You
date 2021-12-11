@@ -202,7 +202,7 @@ Syntax and usage example:
 TODO and planned features:
 ======
 * implement an undo function : simple : just save the dictionary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
-* check defaults value for argparse arguments
+* split print_2_entries to a cli and a gui part
 * use regexp instead to find the correct media
 * ability to open media when editing in cli
 
