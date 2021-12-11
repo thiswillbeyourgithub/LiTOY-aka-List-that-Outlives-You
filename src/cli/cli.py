@@ -52,7 +52,7 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
         storage = []
         def side_by_side(key, val1, val2):
             storage.append([key, [val1, val2]])
-    print("\n"*20)
+    print("\n"*10)
 
 
     print(col_blu + "#" * sizex + col_rst)
