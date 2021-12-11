@@ -8,7 +8,7 @@ from contextlib import suppress
 import json
 import re
 
-from src.backend.util import format_length
+from src.backend.util import format_length, InvalidTimestamp
 from src.backend.media import (extract_youtube, extract_pdf_url,
                                extract_webpage, extract_local_video,
                                extract_pdf_local, extract_txt)
@@ -260,9 +260,14 @@ def get_meta_from_content(string, additional_args=None):
 
     set_length = re.findall(r"set_length:((?:\d+[jhm])+)", string)
     if set_length:
-        new_length = format_length(set_length[0], to_machine_readable=True)
-        log_(f"Setting length to {set_length[0]}", False)
-        res.update({"length": new_length})
+        try:
+            new_length = format_length(set_length[0], to_machine_readable=True)
+        except InvalidTimestamp as e:
+            if str(e) == "skip":
+                log_("Skipping", False)
+        else:
+            log_(f"Setting length to {set_length[0]}", False)
+            res.update({"length": new_length})
 
     if res == {}:
         log_(f"No metadata were extracted for {string}")

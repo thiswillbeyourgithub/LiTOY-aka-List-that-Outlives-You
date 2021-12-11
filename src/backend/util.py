@@ -8,6 +8,8 @@ import re
 from user_settings import json_auto_save
 from src.backend.log import log_
 
+class InvalidTimestamp(Exception):
+    pass
 
 def debug_signal_handler(signal, frame):
     """
@@ -79,16 +81,13 @@ def format_length(to_format, to_machine_readable=False):
         return length
     else:
         to_format = to_format.replace("min", "m").lower()
-        while True:
-            if to_format in ["q", "quit", "exit", "skip"]:
-                log_("Invalid timestamp format, quitting.", False)
-                raise SystemExit()
-            match = re.match(r"(\d+[jd])?(\d+h)?(\d+m)?", to_format)
-            if match.group() == "" or to_format == "":
-                to_format = prompt_we("Invalid timestamp? Enter again:\n>",
-                                      default=to_format)
-            else:
-                break
+        if to_format in ["q", "quit", "exit", "skip"]:
+            raise InvalidTimestamp("skip")
+
+        match = re.match(r"(\d+[jd])?(\d+h)?(\d+m)?", to_format)
+        if match.group() == "" or to_format == "":
+            log_("Invalid timestamp format", False)
+            raise InvalidTimestamp(to_format)
         length = 0
         days = re.findall(r"\d+[jd]", to_format)
         hours = re.findall(r"\d+h", to_format)

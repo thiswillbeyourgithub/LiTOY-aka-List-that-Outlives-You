@@ -21,8 +21,9 @@ from src.backend.backend import (get_meta_from_content,
                                  action_disable,
                                  action_star,
                                  process_review_answer,
-                                 suggest_time_answer)
-from src.backend.util import format_length, prompt_we
+                                 suggest_time_answer,
+                                 )
+from src.backend.util import format_length, prompt_we, InvalidTimestamp
 from src.backend.log import log_
 from user_settings import (shortcuts, n_to_review, n_session, questions,
                            useless_last_years, useless_first_years,
@@ -95,9 +96,16 @@ def print_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True):
     if (js[0]["title"] + js[1]["title"]) != "XX":
         side_by_side("Title", js[0]["title"], js[1]["title"])
     if (str(js[0]["length"]) + str(js[1]["length"])) != "XX":
-        side_by_side("Length",
-                     format_length(js[0]["length"]),
-                     format_length(js[1]["length"]))
+        timestamps = []
+        try:
+            timestamps.append(format_length(js[0]["length"]))
+        except InvalidTimestamp as e:
+            timestamps.append("Error")
+        try:
+            timestamps.append(format_length(js[1]["length"]))
+        except InvalidTimestamp as e:
+            timestamps.append("Error")
+        side_by_side("Length", timestamps[0], timestamps[1])
         print("." * sizex)
     if (js[0]["url"] + js[1]["url"]) != "XX":
         side_by_side("Location", js[0]["url"], js[1]["url"])
@@ -381,7 +389,7 @@ for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
     if shortcut_action_args:
         print_2_entries(**shortcut_action_args, litoy=litoy)
 
-def ask_user_length_cli(entry_id, meta, litoy):
+def set_user_length_cli(entry_id, meta, litoy):
     """
     in cli, if no length is found in the metacontent: ask the user
     """
@@ -416,8 +424,14 @@ def shortcut_and_action(entries, mode, progress, litoy,
         for i in range(len(entries)):
             metas.append(json.loads(entries[i]["metacontent"]))
             if "length" not in metas[i]:
-                ask_user_length_cli(entries[i].name, metas[i], litoy)
-                entries[i] = litoy.df.loc[entries[i].name, :]
+                try:
+                    set_user_length_cli(entries[i].name, metas[i], litoy)
+                except InvalidTimestamp as e:
+                    if str(e) == "skip":
+                        log_("Skipping.", False)
+                    continue
+                else:
+                    entries[i] = litoy.df.loc[entries[i].name, :]
 
         def_time_ans = ""
         if mode == "time" and \
