@@ -528,9 +528,10 @@ to start using LiTOY!", False)
                                         litoy=litoy,
                                         mode=m,
                                         all_fields=disp_flds)
+                        entries = [litoy.df.loc[picked_ids[0], :],
+                                   litoy.df.loc[i, :]]
                         state = ""
-                        state = shortcut_and_action(picked_ids[0],
-                                                    i,
+                        state = shortcut_and_action(entries,
                                                     mode=m,
                                                     progress=progress +
                                                     session_nb*n_to_review,

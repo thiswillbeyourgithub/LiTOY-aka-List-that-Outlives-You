@@ -397,17 +397,14 @@ How many minutes does it take? (q)\n>")
         litoy.save_to_file(litoy.df)
 
 
-def shortcut_and_action(id_left, id_right, mode, progress, litoy,
+def shortcut_and_action(entries, mode, progress, litoy,
                         shortcut_auto_completer, available_shortcut):
     """
     makes the link between actions and their effect
     """
     action = ""
     while True:
-        entries = []
-        entries.append(litoy.df.loc[id_left, :])
-        entries.append(litoy.df.loc[id_right, :])
-        log_(f"Waiting for shortcut for {id_left} vs {id_right} for {mode}")
+        log_(f"Waiting for shortcut for {entries[0].name} vs {entries[1].name} for {mode}")
 
         start_time = time.time()
         action = ""
@@ -450,16 +447,16 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
         elif action == "show_all_fields":
             log_("Displaying the entries in full")
             print("\n" * 10)
-            print_2_entries(int(id_left), int(id_right), mode, litoy, "all")
+            print_2_entries(int(entries[0].name), int(entries[1].name), mode, litoy, "all")
 
         elif action == "show_few_fields":
             log_("Displaying only most important fields of entries")
             print("\n" * 10)
-            print_2_entries(int(id_left), int(id_right), mode, litoy)
+            print_2_entries(int(entries[0].name), int(entries[1].name), mode, litoy)
 
         elif action == "open_media":
             log_("Openning media")
-            for ent_id in [id_left, id_right]:
+            for ent_id in [entries[0].name, entries[1].name]:
                 ent = litoy.df.loc[ent_id, :]
                 try:
                     path = str(json.loads(ent.metacontent)["url"])
@@ -479,8 +476,8 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
                     log_(f"url not found in entry {ent_id} : {e}")
             time.sleep(1.5)  # better display
             print("\n" * 10)
-            print_2_entries(int(id_left),
-                            int(id_right),
+            print_2_entries(entries[0].name,
+                            entries[1].name,
                             mode=mode,
                             litoy=litoy)
 
@@ -489,7 +486,7 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
             additional_args = {}
             if action == "reload_media_fallback_method":
                 additional_args.update({"simple_method": False})
-            for ent_id in [id_left, id_right]:
+            for ent_id in [entries[0].name, entries[1].name]:
                 df = litoy.df.copy()
                 df.loc[ent_id, "content"] = move_flags_at_end(df.loc[ent_id,
                                                                      "content"])
@@ -497,12 +494,12 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
                                                  additional_args)
                 df.loc[ent_id, "metacontent"] = json.dumps(new_meta)
                 litoy.save_to_file(df)
-                entries[0] = df.loc[id_left, :]
-                entries[1] = df.loc[id_right, :]
+                entries[0] = df.loc[entries[0].name, :]
+                entries[1] = df.loc[entries[1].name, :]
                 log_(f"New metacontent value for {ent_id} : {new_meta}")
             print("\n" * 10)
-            print_2_entries(int(id_left),
-                            int(id_right),
+            print_2_entries(entries[0].name,
+                            entries[1].name,
                             mode=mode,
                             litoy=litoy)
 
@@ -514,31 +511,34 @@ def shortcut_and_action(id_left, id_right, mode, progress, litoy,
 
         elif action.startswith("edit_"):
             if action.endswith("_left"):
-                action_edit_entry(id_left,
+                action_edit_entry(entries[0].name,
                                   litoy=litoy,
-                                  shortcut_action_args={"id_left": id_left,
-                                                        "id_right": id_right,
-                                                        "mode": mode})
+                                  shortcut_action_args={
+                                      "id_left": entries[0].name,
+                                      "id_right": entries[1].name,
+                                      "mode": mode})
             elif action.endswith("_right"):
-                action_edit_entry(id_right, litoy=litoy, shortcut_action_args={
-                                                        "id_left": id_left,
-                                                        "id_right": id_right,
-                                                        "mode": mode})
+                action_edit_entry(entries[1].name,
+                                  litoy=litoy,
+                                  shortcut_action_args={
+                                      "id_left": entries[0].name,
+                                      "id_right": entries[1].name,
+                                      "mode": mode})
 
         elif action.startswith("star_"):
             if action.endswith("_left"):
-                action_star(id_left, litoy)
+                action_star(entries[0].name, litoy)
             elif action.endswith("_right"):
-                action_star(id_right, litoy)
+                action_star(entries[1].name, litoy)
 
         elif action.startswith("disable_"):
             if action.endswith("_left"):
-                action_disable(id_left, litoy)
+                action_disable(entries[0].name, litoy)
             elif action.endswith("_right"):
-                action_disable(id_left, litoy)
+                action_disable(entries[0].name, litoy)
             elif action.endswith("_both"):
-                action_disable(id_right, litoy)
-                action_disable(id_left, litoy)
+                action_disable(entries[1].name, litoy)
+                action_disable(entries[0].name, litoy)
             return action
 
         elif action == "undo":
