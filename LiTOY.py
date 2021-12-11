@@ -523,8 +523,8 @@ to start using LiTOY!", False)
                         if state == "repick":
                             break
                         print("\n"*10)
-                        print_2_entries(int(picked_ids[0]),
-                                        int(i),
+                        print_2_entries(picked_ids[0],
+                                        i,
                                         litoy=litoy,
                                         mode=m,
                                         all_fields=disp_flds)
