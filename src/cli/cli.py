@@ -414,30 +414,30 @@ def review_mode_cli(litoy):
                                             sentence=False,
                                             match_middle=True,
                                             ignore_case=True)
-    progress = 0
+    progress = 1
     picked_ids = pick_entries(litoy.df)
-    id_right = picked_ids[1]
+    entries = [litoy.df.loc[picked_ids[0], :],
+               litoy.df.loc[picked_ids[1], :]]
     log_(f"Picked the following entries : {picked_ids}")
     mode = "importance"
     action = ""
 
     def check_if_finished(progress):
-        if progress < n_to_review*n_session:
+        if progress <= n_to_review*n_session:
             return False
         return True
 
     while True:
         disp_flds = "no"
-        if progress // 2 == 1:
+        if progress % 2 == 0:
             mode = "time"
         else:
             mode = "importance"
 
-        entries = [litoy.df.loc[picked_ids[0], :], litoy.df.loc[id_right, :]]
 
         if action not in ["show_few_fields", "show_all_fields", "show_help"]:
-            print_2_entries(picked_ids[0],
-                            id_right,
+            print_2_entries(entries[0].name,
+                            entries[1].name,
                             litoy=litoy,
                             mode=mode,
                             all_fields=disp_flds)
@@ -482,19 +482,35 @@ def review_mode_cli(litoy):
             process_review_answer(keypress, entries[0], entries[1], mode,
                                   start_time, litoy)
             progress += 1
+
             if check_if_finished(progress):
                 break
 
-            if id_right == picked_ids[1]:
-                id_right = picked_ids[2]
-            else:
-                picked_ids = pick_entries(litoy.df)
-                log_(f"Picked the following entries : {picked_ids}")
+            if mode == "time":
+                if entries[1].name == picked_ids[1]:
+                    entries[1] = litoy.df.loc[picked_ids[2], :]
+                else:
+                    picked_ids = pick_entries(litoy.df)
+                    entries = [litoy.df.loc[picked_ids[0], :],
+                               litoy.df.loc[picked_ids[1], :]]
+                    log_(f"Picked the following entries : {picked_ids}")
             continue
 
         elif action == "skip_review":
             log_("Skipped review.", False)
+
+            if check_if_finished(progress):
+                break
+
             progress += 1
+            if mode == "time":
+                if entries[1].name == picked_ids[1]:
+                    entries[1] = litoy.df.loc[picked_ids[2], :]
+                else:
+                    picked_ids = pick_entries(litoy.df)
+                    entries = [litoy.df.loc[picked_ids[0], :],
+                               litoy.df.loc[picked_ids[1], :]]
+                    log_(f"Picked the following entries : {picked_ids}")
             continue
 
         elif action == "show_all_fields":
@@ -595,7 +611,9 @@ def review_mode_cli(litoy):
             elif action.endswith("_both"):
                 action_disable(entries[1].name, litoy)
                 action_disable(entries[0].name, litoy)
+
             picked_ids = pick_entries(litoy.df)
+            entries[1] = litoy.df.loc[picked_ids[1], :]
             log_(f"Picked the following entries : {picked_ids}")
             continue
 
@@ -612,6 +630,7 @@ def review_mode_cli(litoy):
 
         elif action == "repick":
             picked_ids = pick_entries(litoy.df)
+            entries[1] = litoy.df.loc[picked_ids[1], :]
             log_(f"Picked the following entries : {picked_ids}")
             continue
 
