@@ -101,11 +101,17 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
     if (str(js[0]["length"]) + str(js[1]["length"])) != "XX":
         timestamps = []
         try:
-            timestamps.append(format_length(js[0]["length"]))
+            if js[0]["length"] == "X":
+                timestamps.append("X")
+            else:
+                timestamps.append(format_length(js[0]["length"]))
         except InvalidTimestamp as e:
             timestamps.append("Error")
         try:
-            timestamps.append(format_length(js[1]["length"]))
+            if js[1]["length"] == "X":
+                timestamps.append("X")
+            else:
+                timestamps.append(format_length(js[1]["length"]))
         except InvalidTimestamp as e:
             timestamps.append("Error")
         side_by_side("Length", timestamps[0], timestamps[1])

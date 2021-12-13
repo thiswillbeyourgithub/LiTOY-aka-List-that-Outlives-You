@@ -64,10 +64,7 @@ def format_length(to_format, to_machine_readable=False):
     to_machine_readable=True means 2h0m => 120
     """
     if to_machine_readable is False:
-        minutes = to_format
-        if minutes == "X":
-            return "X"
-        minutes = int(float(minutes))
+        minutes = int(float(to_format))
         days = int(minutes // 60 // 24)
         hours = int(minutes // 60 - days * 24)
         minutes = minutes % 60
@@ -77,7 +74,7 @@ def format_length(to_format, to_machine_readable=False):
         if hours != 0:
             length += str(hours) + "h"
         if minutes != 0:
-            length += str(minutes) + "min"
+            length += str(minutes) + "m"
         return length
     else:
         to_format = to_format.replace("min", "m").lower()
@@ -100,7 +97,7 @@ def format_length(to_format, to_machine_readable=False):
             length += int(minutes[0][:-1])
         if length == 0:
             print("Invalid time stamp!")
-            breakpoint()
+            raise InvalidTimestamp("skip")
         return str(length)
 
 
