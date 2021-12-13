@@ -8,7 +8,6 @@ import pdftotext
 import get_wayback_machine
 from bs4 import BeautifulSoup
 from moviepy.editor import VideoFileClip
-from tqdm import tqdm
 from newspaper import Article
 from ebooklib import epub
 
