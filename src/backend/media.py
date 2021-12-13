@@ -21,7 +21,7 @@ def extract_epub(url):
         items = [x for x in book.get_items()]
         text_content = ""
         for item in items:
-            if "text" in item.get_name().lower():
+            if hasattr(item, "get_body_content"):
                  html = item.get_body_content()
                  soup = BeautifulSoup(html, "html.parser")
                  text_content += soup.text.replace("\n", " ")
@@ -34,7 +34,7 @@ def extract_epub(url):
                "title": book.title.replace("\n", ""),
                "url": url}
     except Exception as e:
-        log_("Error: {e}", False)
+        log_(f"Error: {e}", False)
         res = {"type": "epub (exception)",
                "url": url}
     return res
