@@ -268,6 +268,9 @@ def get_meta_from_content(string, additional_args=None):
         else:
             log_(f"Setting length to {set_length[0]}", False)
             res.update({"length": new_length})
+    else:
+        if "length" in res:
+            log_(f"Detected length: {format_length(res['length'])}", False)
 
     if res == {}:
         log_(f"No metadata were extracted for {string}")
