@@ -23,8 +23,8 @@ average_word_length = 6
 
 # absolute path for autocompletion of local files, None to speed up
 # litoy by disabling path autocompletion
-#default_dir = "/home/"
-default_dir = None
+#default_dir = None
+default_dir = "~/Documents/Perso/Books Epubs/"
 
 # used when reviewing:
 questions = {

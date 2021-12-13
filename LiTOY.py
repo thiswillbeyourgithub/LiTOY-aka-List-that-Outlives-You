@@ -322,10 +322,12 @@ Press enter twice between lines to solve buggy display."
                 "asynchronous loading of paths for autocompletion"
                 file_list = []
                 for ext in ["pdf", "md", "mp4", "mov", "avi", "webm"]:
-                    file_list.extend(glob(f"/{default_dir}/**/*.{ext}", recursive=True))
+                    file_list.extend(glob(f"{default_dir}/**/*.{ext}", recursive=True))
                 for i in range(len(file_list)):  # local paths have to be between "
                     file_list[i] = "\"" + file_list[i].replace("//", "/") + "\""
                 autocomplete_list.extend(file_list)
+            if "~" in default_dir:
+                default_dir = default_dir.replace("~", str(Path.home()))
             autocomplete_thread = threading.Thread(target=load_autocomplete_list)
             autocomplete_thread.start()
 
