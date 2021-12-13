@@ -39,32 +39,38 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
     """
     Show the two entries to review side by side
     This function is actually part CLI but is highjacked by the GUI to
-    easily extract all the information to show to the user
+    easily extract all the information to show to the user in two columns
     """
-    global sizex, sizey
-    (sizex, sizey) = get_terminal_size()  # dynamic sizing
 
     if cli:
-        global print, side_by_side
+        (sizex, sizey) = get_terminal_size()  # dynamic sizing
+        global sizex, sizey
+        side_by_side = print_side_by_side
+        def cli_p(string):
+            print(string)
+
     else:  # highjacking this function to get all the values to print
-        def print(string):
+        sizex = sizey = 1
+        def cli_p(string):
             pass
-        storage = []
+
+        pile = []
         def side_by_side(key, val1, val2):
-            storage.append([key, [val1, val2]])
-    print("\n"*10)
+            pile.append([key, [val1, val2]])
+    cli_p("\n"*10)
 
 
-    print(col_blu + "#" * sizex + col_rst)
-    print_memento_mori()
-    print(col_blu + "#" * sizex + col_rst)
+    cli_p(col_blu + "#" * sizex + col_rst)
+    if cli:
+        print_memento_mori()
+    cli_p(col_blu + "#" * sizex + col_rst)
 
     entry_left = litoy.df.loc[id_left, :].copy()
     entry_right = litoy.df.loc[id_right, :].copy()
 
     if all_fields != "all":
         side_by_side("ID", id_left, id_right)
-        print("." * sizex)
+        cli_p("." * sizex)
 
         if "".join(entry_left.tags + entry_right.tags) != "":
             tag_left = ', '.join(json.loads(entry_left.tags))
@@ -77,7 +83,7 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
         side_by_side("iELO", entry_left.iELO, entry_right.iELO)
         side_by_side("tELO", entry_left.tELO, entry_right.tELO)
         side_by_side("K factor", entry_left.K, entry_right.K)
-        print("." * sizex)
+        cli_p("." * sizex)
         side_by_side("Entry", entry_left.content, entry_right.content)
 
     # print all fields, useful for debugging
@@ -95,7 +101,7 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
                 js[x][y] = "X"
             else:
                 js[x][y] == str(js[x][y])
-    print("." * sizex)
+    cli_p("." * sizex)
     if (js[0]["title"] + js[1]["title"]) != "XX":
         side_by_side("Title", js[0]["title"], js[1]["title"])
     if (str(js[0]["length"]) + str(js[1]["length"])) != "XX":
@@ -115,7 +121,7 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
         except InvalidTimestamp as e:
             timestamps.append("Error")
         side_by_side("Length", timestamps[0], timestamps[1])
-        print("." * sizex)
+        cli_p("." * sizex)
     if (js[0]["url"] + js[1]["url"]) != "XX":
         side_by_side("Location", js[0]["url"], js[1]["url"])
     if (js[0]["channel"] + js[1]["channel"]) != "XX":
@@ -123,10 +129,10 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
     if (js[0]["type"] + js[1]["type"]) != "XX":
         side_by_side("Media type", js[0]["type"], js[1]["type"])
 
-    print(col_blu + "#" * sizex + col_rst)
+    cli_p(col_blu + "#" * sizex + col_rst)
 
     if cli is False:
-        return storage
+        return pile
 
 
 def print_memento_mori():
@@ -159,7 +165,7 @@ def print_memento_mori():
               col_rst)
 
 
-def side_by_side(rowname, a, b, space=2, col=""):
+def print_side_by_side(rowname, a, b, space=2, col=""):
     """
     from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
     """
