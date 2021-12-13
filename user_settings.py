@@ -18,7 +18,7 @@ n_session = 4
 n_to_review = 2
 
 # for reading time estimation:
-wpm = 200
+wpm = 230
 average_word_length = 6
 
 # absolute path for autocompletion of local files, None to speed up
