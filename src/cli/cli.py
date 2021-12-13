@@ -43,8 +43,8 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
     """
 
     if cli:
-        (sizex, sizey) = get_terminal_size()  # dynamic sizing
         global sizex, sizey
+        (sizex, sizey) = get_terminal_size()  # dynamic sizing
         side_by_side = print_side_by_side
         def cli_p(string):
             print(string)
