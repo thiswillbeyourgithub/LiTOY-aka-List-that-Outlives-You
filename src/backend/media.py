@@ -10,9 +10,36 @@ from bs4 import BeautifulSoup
 from moviepy.editor import VideoFileClip
 from tqdm import tqdm
 from newspaper import Article
+from ebooklib import epub
 
 from user_settings import average_word_length, headers, wpm
 from src.backend.log import log_
+
+def extract_epub(url):
+    "extracts book duration and title from epub file"
+    try:
+        book = epub.read_epub(url)
+        items = [x for x in book.get_items()]
+        text_content = ""
+        for item in items:
+            if "text" in item.get_name().lower():
+                 html = item.get_body_content()
+                 soup = BeautifulSoup(html, "html.parser")
+                 text_content += soup.text.replace("\n", " ")
+
+        total_words = len(text_content) / average_word_length
+        estimatedReadingTime = str(round(total_words / wpm, 1))
+
+        res = {"type": "epub",
+               "length": estimatedReadingTime,
+               "title": book.title.replace("\n", ""),
+               "url": url}
+    except Exception as e:
+        log_("Error: {e}", False)
+        res = {"type": "epub (exception)",
+               "url": url}
+    return res
+
 
 
 def extract_youtube(url):

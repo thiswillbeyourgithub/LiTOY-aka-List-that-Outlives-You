@@ -58,7 +58,7 @@ FAQ
 
 **What are answer level number?** If you answer 1 it means you favor the entry on the left compared to the one on the right. 5 means you favor the right one. 3 is obviously the middle ground but is not the same as skipping the fight. Of course, all this is relative to the question that is being considered.
 
-**Any killer features you want to brag about?** LiTOY automatically retrieves lots of metadata from the links. Like reading time from a pdf, a webpage, duration of a video etc. Also, it's mostly in one single file, making it somewhat easier to understand how it works and to maintain.
+**Any killer features you want to brag about?** LiTOY automatically retrieves lots of metadata from the links. Like reading time from a pdf, an epub file, a webpage (via its url), the duration of a video (local or youtube) etc. Also, it's mostly in one single file, making it somewhat easier to understand how it works and to maintain.
 
 **Is there a way to ask litoy to fetch metadata for a video that is not on youtube?** Yes, just add somewhere `type:video` in the entry. you can also use `type:local_video` for local files using `ffmpeg`. Don't forget to use quotation marks (`"`) for local files and use `<TAB>` for path autocompletion.
 

@@ -11,7 +11,8 @@ import re
 from src.backend.util import format_length, InvalidTimestamp
 from src.backend.media import (extract_youtube, extract_pdf_url,
                                extract_webpage, extract_local_video,
-                               extract_pdf_local, extract_txt)
+                               extract_pdf_local, extract_txt,
+                               extract_epub)
 from user_settings import (shortcuts, n_to_review, default_score, K_values)
 from src.backend.scoring import (compute_global_score, expected_elo,
                                  update_elo, adjust_K)
@@ -247,6 +248,11 @@ def get_meta_from_content(string, additional_args=None):
                         log_(f"Extracting info from local video {part}")
                         res = extract_local_video(part)
                         break
+
+                elif "epub" in part:
+                    log_(f"Extracting epub from {part}")
+                    res = extract_epub(part)
+                    break
 
                 elif ".pdf" in part:
                     log_(f"Extracting pdf from {part}")
