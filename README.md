@@ -201,12 +201,13 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* don't backup the db on every freaking run
+* read the log and find if you should add more verbosity
 * implement an undo function : simple : just save the dictionary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
 * use regexp instead to find the correct media
 * merge and split display_2_entries and side_by_side in a backend + cli part
 * ability to open media when editing in cli
 
-* gui: use qstackedwidget to handle the main window
 * gui: add: shortcut to add media
 * gui: reviewer: figure out why there is a warning about setting a layout over another layout
 * gui: reviewer: handle input
