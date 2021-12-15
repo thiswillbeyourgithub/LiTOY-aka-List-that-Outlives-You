@@ -12,7 +12,7 @@ import pandas as pd
 from pprint import pprint
 import prompt_toolkit
 
-from user_settings import (default_dir)
+from user_settings import (default_dir, col_yel, col_rst, col_red)
 from src.backend.backend import (importation,
                                  move_flags_at_end, add_new_entry,
                                  get_meta_from_content)
@@ -337,13 +337,14 @@ Press enter twice between lines to solve buggy display."
                                       sentence=False) # I would prefer 
 # setting sentence to True but it seems to only autocomplete once
 
-        input_prompt = f"Current tags: {cur_tags}\n\
-Put local links between \"\" quotation signs!\n\
-Use <TAB> to autocomplete paths or tags\n\
-Text content of the entry?\n>"
-        second_prompt = "\nEnter content of the next entry:  (n/no/q/'' to exit, <TAB> to autocomplete)\n>"
+        cur_tags_print = col_red + f"{col_yel}, {col_red}".join(cur_tags) + col_yel
+        print(f"{col_yel}Current tags: {cur_tags_print}\n\
+* Put local links between quotation \"\" symbols!\n\
+* no/q/*empty* to exit\n\
+* Use <TAB> to autocomplete paths or tags.{col_rst}")
+        prompt_msg = "\nNew entry content:\n>"
         while True:
-            new_content = prompt_we(input_prompt,
+            new_content = prompt_we(prompt_msg,
                                     default=default_prompt,
                                     completer=auto_complete,
                                     complete_while_typing=False,
@@ -369,7 +370,6 @@ Text content of the entry?\n>"
                         default_prompt = ""
             else:
                 print("Database already contains this entry, not added.")
-            input_prompt = second_prompt
 
     if args['search_query'] is not None:
         log_("Searching entries")
