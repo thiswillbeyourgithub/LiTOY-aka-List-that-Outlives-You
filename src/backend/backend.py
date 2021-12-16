@@ -46,7 +46,7 @@ def move_flags_at_end(string):
     'do something it's important tags:reading
     """
     match = re.findall(r"tags:\w+", string)
-    match.extend(re.findall("set_length:[0-9jhm]+", string))
+    match.extend(re.findall("set_length:[0-9jdhm]+", string))
     if "" in match:
         match.remove("")
     for m in match:
@@ -264,7 +264,7 @@ def get_meta_from_content(string, additional_args=None):
                     res = extract_txt(part)
                     break
 
-    set_length = re.findall(r"set_length:((?:\d+[jhm])+)", string)
+    set_length = re.findall(r"set_length:((?:\d+[djhm])+)", string)
     if set_length:
         try:
             new_length = format_length(set_length[0], to_machine_readable=True)
