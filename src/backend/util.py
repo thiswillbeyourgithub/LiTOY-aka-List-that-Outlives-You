@@ -78,11 +78,11 @@ def format_length(to_format, to_machine_readable=False):
         return length
     else:
         to_format = to_format.replace("min", "m").lower()
-        if to_format in ["q", "quit", "exit", "skip"]:
+        if to_format in ["", "q", "quit", "exit", "skip"]:
             raise InvalidTimestamp("skip")
 
         match = re.match(r"(\d+[jd])?(\d+h)?(\d+m)?", to_format)
-        if match.group() == "" or to_format == "":
+        if match.group() == "":
             log_("Invalid timestamp format", False)
             raise InvalidTimestamp(to_format)
         length = 0
