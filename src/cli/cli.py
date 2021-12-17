@@ -220,63 +220,67 @@ def print_stats(df, printing=True):
     df_virg = df[df['n_review'] == 0]
     df_nvirg = df[df['n_review'] != 0]
     try:
-        table = PrettyTable()
-        table.field_names = ["", "value"]
-        table.align[""] = "l"
-        table.align["value"] = "r"
-        table.add_row(["Number of entries in LiTOY:", len(df)])
-        table.add_row(["Number of non disabled entries in LiTOY:", len(df_nd)])
-        table.add_row(["Number of entries that have never been reviewed:",
-                       len(df_virg)])
-        table.add_row(["Total number of review:",
-                       round(df_nd.n_review.sum(), 1)])
-        table.add_row(["Average number of review:",
-                       round(df_nd['n_review'].mean(), 2)])
-
-        table2 = PrettyTable()
-        table2.field_names = ["", "average", "sd", "median"]
-        table2.align[""] = "l"
-        table2.align["average"] = "r"
-        table2.align["sd"] = "r"
-        table2.align["median"] = "r"
-        table2.add_row(["Importance score:",
-                       round(df_nd.iELO.mean(), 1),
-                       round(df_nd.iELO.std(), 2),
-                       round(median(df_nd.iELO), 2)])
-        table2.add_row(["Time score:", round(df_nd.tELO.mean(), 1),
-                       round(df_nd.tELO.std(), 2),
-                       round(median(df_nd.tELO), 2)])
-        table2.add_row(["Global score:", round(df_nvirg.gELO.mean(), 1),
-                       round(df_nvirg.gELO.std(), 2),
-                       round(median(df_nvirg.gELO), 2)])
-
         all_delta_elos = list(df_nd.DiELO + df_nd.DtELO)
-        table2.add_row(["Delta scores:", round(mean(all_delta_elos), 1),
-                       round(stdev(all_delta_elos), 2), round(median(all_delta_elos), 2)])
-        table2.add_row(["K value:", round(df_nd.K.mean(), 1),
-                       round(df_nd.K.std(), 2), round(df_nd.K.median())])
-        table2.add_row(["Time spent reviewing:",
-                        round(df_nd.review_time.median(), 1),
-                        round(df_nd.review_time.std(), 2),
-                        round(median(df_nd.review_time), 2)])
-
         completion_score = round(mean([
                                        mean(all_delta_elos),
                                        median(all_delta_elos)
                                      ]
                                       ) / len(df_nd.index), 3)
+        durations = [float(json.loads(x)["length"]) for x in df["metacontent"] if "length" in json.loads(x)]
+        table = PrettyTable()
+        table.field_names = ["", "value"]
+        table.align[""] = "l"
+        table.align["value"] = "l"
+        table.add_row(["Entries:", len(df)])
+        table.add_row(["Nondisabled entries:", len(df_nd)])
+        table.add_row(["Never reviewed entries:",
+                       len(df_virg)])
+        table.add_row(["Total reviews:",
+                       round(df_nd.n_review.sum(), 1)])
+        table.add_row(["Average number of review:",
+                       round(df_nd['n_review'].mean(), 2)])
+        table.add_row(["Total duration:", format_length(sum(durations))])
+        table.add_row(["Progress score (lower is better):", completion_score])
+
+        table2 = PrettyTable()
+        table2.field_names = ["", "average", "sd", "median"]
+        table2.align[""] = "l"
+        table2.align["average"] = "l"
+        table2.align["sd"] = "l"
+        table2.align["median"] = "l"
+        table2.add_row(["Importance score:",
+                       int(df_nd.iELO.mean()),
+                       int(df_nd.iELO.std()),
+                       int(median(df_nd.iELO))])
+        table2.add_row(["Time score:", int(df_nd.tELO.mean()),
+                       int(df_nd.tELO.std()),
+                       int(median(df_nd.tELO))])
+        table2.add_row(["Global score:", int(df_nvirg.gELO.mean()),
+                       int(df_nvirg.gELO.std()),
+                       int(median(df_nvirg.gELO))])
+
+        table2.add_row(["Delta scores:", int(mean(all_delta_elos)),
+                       int(stdev(all_delta_elos)), int(median(all_delta_elos))])
+        table2.add_row(["K value:", int(df_nd.K.mean()),
+                       int(df_nd.K.std()), int(df_nd.K.median())])
+        table2.add_row(["Time spent reviewing:",
+                        int(df_nd.review_time.median()),
+                        int(df_nd.review_time.std()),
+                        int(median(df_nd.review_time))])
+        table2.add_row(["Duration:",
+                        format_length(mean(durations)),
+                        format_length(stdev(durations)),
+                        format_length(median(durations))])
+
         if printing is True:
             print(table)
             print("")
             print(table2)
-            print(f"Progress score: {completion_score:>20}")
-            print("(lower is better)")
         else:
             table.border = False
             table2.border = False
             log_(str(table))
             log_(str(table2))
-            log_(f"Progress score: {round(completion_score, 3):>20}")
     except StatisticsError as e:
         log_(f"Not enough data points to start reviewing: {e}", False)
         raise SystemExit()
