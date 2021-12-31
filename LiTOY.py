@@ -383,6 +383,8 @@ Press enter twice between lines to solve buggy display."
             if len(match) == 0:
                 log_("No matching entries found.", False)
                 query = prompt_we("New search query > ")
+                if query in ["q", "quit", "exit"]:
+                    raise SystemExit()
                 continue
 
             pd.set_option('display.max_rows', None)
