@@ -619,14 +619,14 @@ def review_mode_cli(litoy):
             continue
 
         elif action.startswith("disable_"):
-            if action.endswith("_right"):
+            if action.endswith("_left"):
                 action_disable(entries[0].name, litoy)
-                continue
-            elif action.endswith("_left"):
-                action_disable(entries[0].name, litoy)
-            elif action.endswith("_both"):
+            elif action.endswith("_right"):
                 action_disable(entries[1].name, litoy)
+                continue
+            elif action.endswith("_both"):
                 action_disable(entries[0].name, litoy)
+                action_disable(entries[1].name, litoy)
 
             picked_ids = pick_entries(litoy.df)
             entries[1] = litoy.df.loc[picked_ids[1], :]
