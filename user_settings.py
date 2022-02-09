@@ -6,6 +6,8 @@ user_age            = 24
 user_life_expected  = 90
 
 gui_font_size = 12
+keyboard = "azerty"  # "azerty" or "qwerty", for rating questions: a/z mean
+# 0/1 on azerty but should be q/w on qwerty
 
 # save very often a copy of the whole database as a json file:
 json_auto_save = True
