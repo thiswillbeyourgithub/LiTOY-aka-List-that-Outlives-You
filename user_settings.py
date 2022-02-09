@@ -1,9 +1,9 @@
 # lifebar arguments :
 disable_lifebar     = False
 useless_first_years = 15
-useless_last_years  = 25
-user_age            = 24
-user_life_expected  = 90
+useless_last_years  = 15
+user_age            = 25
+user_life_expected  = 75
 
 gui_font_size = 12
 keyboard = "azerty"  # "azerty" or "qwerty", for rating questions: a/z mean
