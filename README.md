@@ -201,6 +201,8 @@ Syntax and usage example:
 
 TODO and planned features:
 ======
+* implement an argument -f for "--filter_by_tags" and is then passed to --show or --review
+* implement date of birth instead of age
 * don't backup the db on every freaking run
 * read the log and find if you should add more verbosity
 * implement an undo function : simple : just save the dictionary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
