@@ -629,7 +629,7 @@ def review_mode_cli(litoy):
                 action_disable(entries[1].name, litoy)
 
             picked_ids = pick_entries(litoy.df)
-            entries[1] = litoy.df.loc[picked_ids[1], :]
+            entries[0] = litoy.df.loc[picked_ids[0], :]
             log_(f"Picked the following entries : {picked_ids}")
             continue
 
