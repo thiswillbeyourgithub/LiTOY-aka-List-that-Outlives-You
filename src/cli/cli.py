@@ -460,17 +460,18 @@ def review_mode_cli(litoy):
 
         # if no length specified, ask the user:
         metas = []
-        for i in range(len(entries)):
-            metas.append(json.loads(entries[i]["metacontent"]))
-            if "length" not in metas[i]:
-                try:
-                    set_user_length_cli(entries[i].name, metas[i], litoy)
-                except InvalidTimestamp as e:
-                    if str(e) == "skip":
-                        log_("Skipping.", False)
-                    continue
-                else:
-                    entries[i] = litoy.df.loc[entries[i].name, :]
+        if mode == "importance":  # ask only once
+            for i in range(len(entries)):
+                metas.append(json.loads(entries[i]["metacontent"]))
+                if "length" not in metas[i]:
+                    try:
+                        set_user_length_cli(entries[i].name, metas[i], litoy)
+                    except InvalidTimestamp as e:
+                        if str(e) == "skip":
+                            log_("Skipping.", False)
+                        continue
+                    else:
+                        entries[i] = litoy.df.loc[entries[i].name, :]
 
         # if both length specified, auto suggest time answer:
         def_time_ans = ""
