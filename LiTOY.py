@@ -387,18 +387,20 @@ Press enter twice between lines to solve buggy display."
                     raise SystemExit()
                 continue
 
-            pd.set_option('display.max_rows', None)
-            pd.set_option('display.max_columns', None)
-            pd.set_option('display.width', None)
-            pd.set_option('display.max_colwidth', None)
-            if args["verbose"] is False:
-                print(df.loc[match, "content"])
-            else:
+            if args["verbose"] is True:
+                pd.set_option('display.max_rows', None)
+                pd.set_option('display.max_columns', None)
+                pd.set_option('display.width', None)
+                pd.set_option('display.max_colwidth', None)
                 print(df.loc[match, :])
-            pd.reset_option('display.max_rows')
-            pd.reset_option('display.max_columns')
-            pd.reset_option('display.width')
-            pd.reset_option('display.max_colwidth')
+                pd.reset_option('display.max_rows')
+                pd.reset_option('display.max_columns')
+                pd.reset_option('display.width')
+                pd.reset_option('display.max_colwidth')
+            else:
+                max_len = len(str(max(match)))
+                for m in match:
+                    print(f"{df.loc[m].name:0{max_len}d} | {df.loc[m, 'content']}")
 
             complete_list = ["quit", "exit", "search_again"]
             complete_list += [f'{x}: {df.loc[x, "content"]}' for x in match]
