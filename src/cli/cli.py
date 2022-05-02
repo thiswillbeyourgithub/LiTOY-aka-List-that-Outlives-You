@@ -624,7 +624,6 @@ def review_mode_cli(litoy):
                 action_disable(entries[0].name, litoy)
             elif action.endswith("_right"):
                 action_disable(entries[1].name, litoy)
-                continue
             elif action.endswith("_both"):
                 action_disable(entries[0].name, litoy)
                 action_disable(entries[1].name, litoy)
