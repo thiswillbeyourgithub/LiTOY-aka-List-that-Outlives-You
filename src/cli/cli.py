@@ -611,6 +611,10 @@ def review_mode_cli(litoy):
                                       "id_left": entries[0].name,
                                       "id_right": entries[1].name,
                                       "mode": mode})
+            # reload entries
+            entries = [litoy.df.loc[picked_ids[0], :],
+                       litoy.df.loc[picked_ids[1], :]]
+
             continue
 
         elif action.startswith("star_"):
