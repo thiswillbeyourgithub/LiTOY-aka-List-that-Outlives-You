@@ -208,8 +208,8 @@ TODO and planned features:
     * maybe LiTOY should actually be a logseq addon?
 * implement an argument -f for "--filter_by_tags" and is then passed to --show or --review
 * implement date of birth instead of age
-* don't backup the db on every freaking run
-* read the log and find if you should add more verbosity
+* don't backup the db on every run
+* read the log and find if you should make it more verbose or not
 * implement an undo function : simple : just save the dictionary of each pair during the last few reviews and roll them back one by one : implement a new method to do a rollback, and save each former dataframe in the litoy class
 * use regexp instead to find the correct media
 * merge and split display_2_entries and side_by_side in a backend + cli part
@@ -231,13 +231,10 @@ TODO and planned features:
 * gui: settings: ask people what module to use to manage settings and settings panel
 * gui: settings: syntax highlighting
 
-* create a video to show how it works
 * investigate support for arbitrary additional fields
 * implement a two letter shortcut code to answer importance and time at the same time
-* use static type hints
-* create a desktop file to make it easily executable on linux
+* use type hints
 * make it into a pip package on PyPI
-* talk about it on LW and answer to this guy https://www.lesswrong.com/posts/54Bw7Yxouzdg5KxsF/how-do-you-organise-your-reading
 
 Acknowledgements
 ===============
