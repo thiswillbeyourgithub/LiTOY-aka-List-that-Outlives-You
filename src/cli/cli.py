@@ -454,10 +454,10 @@ def review_mode_cli(litoy):
 
         if action not in ["show_few_fields", "show_all_fields", "show_help"]:
             display_2_entries(entries[0].name,
-                            entries[1].name,
-                            litoy=litoy,
-                            mode=mode,
-                            all_fields=disp_flds)
+                              entries[1].name,
+                              litoy=litoy,
+                              mode=mode,
+                              all_fields=disp_flds)
 
         # if no length specified, ask the user:
         metas = []
@@ -534,18 +534,18 @@ def review_mode_cli(litoy):
         elif action == "show_all_fields":
             log_("Displaying the entries in full")
             display_2_entries(entries[0].name,
-                            entries[1].name,
-                            mode,
-                            litoy,
-                            "all")
+                              entries[1].name,
+                              mode,
+                              litoy,
+                              "all")
             continue
 
         elif action == "show_few_fields":
             log_("Displaying only most important fields of entries")
             display_2_entries(entries[0].name,
-                            entries[1].name,
-                            mode,
-                            litoy)
+                              entries[1].name,
+                              mode,
+                              litoy)
             continue
 
         elif action == "open_media":
