@@ -5,28 +5,27 @@ useless_last_years  = 15
 user_age            = 25
 user_life_expected  = 75
 
-gui_font_size = 12
-keyboard = "azerty"  # "azerty" or "qwerty", for rating questions: a/z mean
-# 0/1 on azerty but should be q/w on qwerty
+gui_font_size = 18
+keyboard = "azerty"
 
 # save very often a copy of the whole database as a json file:
 json_auto_save = True
 
 # number of session of review, each session is composed of n_to_review reviews
-# so total number of reviews is n_session*n_to_review (default=4)
+# so total number of reviews is n_session*n_to_review
 n_session = 4
 
-# number of right pick to compare again left pick in each review (default=2):
+# number of entries to pick for review at each launch (default=5):
 n_to_review = 2
 
 # for reading time estimation:
-wpm = 230
+wpm = 200
 average_word_length = 6
 
 # absolute path for autocompletion of local files, None to speed up
 # litoy by disabling path autocompletion
-#default_dir = None
-default_dir = "~/Documents/Perso/Books Epubs/"
+#default_dir = "/home/"
+default_dir = None
 
 # used when reviewing:
 questions = {
@@ -59,7 +58,7 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "quit"             : ["quit", "q", "exit", ":q"] }
 
 # ELO :
-K_values           =  sorted([100, 99, 80, 79, 60, 59, 40, 39, 25], reverse=True)
+K_values           =  sorted([100, 100, 80, 80, 60, 60, 40, 40, 25], reverse=True)
 # if you decide to change the setting, be careful : each new term has to be
 # different and lower than the last one
 default_score      =  1000  # default 1000

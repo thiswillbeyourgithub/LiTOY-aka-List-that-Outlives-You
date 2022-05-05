@@ -1,5 +1,8 @@
-personnal_database.xlsx
+personnal_database.json
+dummy_data.json
 __pycache__/
 logs/*
 personnal_entry.md
 unused/
+*.xlsx
+session.nvim

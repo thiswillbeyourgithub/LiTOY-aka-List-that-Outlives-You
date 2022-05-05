@@ -11,3 +11,6 @@ pygments
 XlsxWriter == 1.4.3
 pandas == 1.2.3
 pdftotext == 2.1.5
+newspaper3k == 0.2.8
+PyQt5 == 5.14.2
+EbookLib==0.17.1
