@@ -32,7 +32,7 @@ Current state
 =============
 * This is a personal project that I use daily.
 * PRs and issues are extremely appreciated.
-* Note that I am currently making a gui for LiTOY.
+* I started coding a gui but it is not usable yet and probably won't be as I plan to restart this project from scratch to implement it as a [LogSeq](https://github.com/logseq/logseq/) addon.
 * Here's a screenshot:
     ![screenshot.png](github_content/screenshot.png)
 
@@ -42,8 +42,6 @@ FAQ
 **What does LiTOY stand for?** It stands for `List that Outlives You`. It is used as a [memento mori](https://en.wikipedia.org/wiki/Memento_mori)
 
 **Where does the idea come from?** From Gwern's [media resorted](https://www.gwern.net/Resorter).
-
-**Do you have plan for a graphical interface (gui) ?** Yes, creating a PyQt GUI for LiTOY is in the works and will ultimately replace the CLI version. Take a look at the `gui_dev` branch if you want a preview;
 
 **What should I know if I want to contribute?** The code is as PEP compliant as possible, no docstrings are missing. Type hinting is planned but not done. PRs and issues are extremely welcome, I can be very reactive so don't hesitate to suggest features by opening a github issue, etc.
 
@@ -205,7 +203,8 @@ Syntax and usage example:
 TODO and planned features:
 ======
 * add argument to export to markdown to use in [logseq](https://github.com/logseq/logseq) or Obsidian
-    * maybe LiTOY should actually be a logseq addon?
+    * maybe LiTOY should actually be a logseq addon? **If so, the rest of the TODOlist is not really to take into account anymore!**
+
 * implement an argument -f for "--filter_by_tags" and is then passed to --show or --review
 * implement date of birth instead of age
 * don't backup the db on every run
