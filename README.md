@@ -202,6 +202,7 @@ Syntax and usage example:
 TODO and planned features:
 ======
 * add argument to export to markdown to use in [logseq](https://github.com/logseq/logseq) or Obsidian
+    * maybe LiTOY should actually be a logseq addon?
 * implement an argument -f for "--filter_by_tags" and is then passed to --show or --review
 * implement date of birth instead of age
 * don't backup the db on every freaking run
