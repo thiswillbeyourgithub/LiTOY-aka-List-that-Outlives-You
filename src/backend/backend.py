@@ -359,12 +359,12 @@ def suggest_time_answer(entry_left, entry_right):
         return "3"
 
     if ratio >= 2:
-        return "1"
+        return "5"
     if ratio > 1.5:
-        return "2"
+        return "4"
     if ratio <= 1.5 and ratio >= 0.5:
         return "3"
     if ratio >= 0.5:
-        return "4"
+        return "2"
     else: # ratio < 0.5
-        return "5"
+        return "1"
