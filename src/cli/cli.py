@@ -632,6 +632,10 @@ def review_mode_cli(litoy):
             elif action.endswith("_both"):
                 action_disable(entries[0].name, litoy)
                 action_disable(entries[1].name, litoy)
+            if mode == "importance":
+                progress += 2
+            else:
+                progress += 1
 
             picked_ids = pick_entries(litoy.df)
             entries[0] = litoy.df.loc[picked_ids[0], :]
