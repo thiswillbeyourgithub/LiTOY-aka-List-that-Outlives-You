@@ -416,7 +416,8 @@ def set_user_length_cli(entry_id, meta, litoy):
     input_length = prompt_we(f"No length specified for entry #{entry_id}. \
 How many minutes does it take? (q)\n>")
     if input_length not in ["q", "quit", "exit"]:
-        assert "set_length:" not in litoy.df.loc[entry_id, "content"]
+        if "set_length:" in litoy.df.loc[entry_id, "content"]:
+            log_("WARNING: setting a length even though there is already one specified in `content`", False)
         formatted = format_length(input_length, to_machine_readable=True)
         meta["length"] = formatted
         litoy.df.loc[entry_id, "metacontent"] = json.dumps(meta)
