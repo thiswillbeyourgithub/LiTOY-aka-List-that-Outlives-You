@@ -355,7 +355,7 @@ def suggest_time_answer(entry_left, entry_right):
     diff = abs(left_length - right_length)
     ratio = left_length / right_length
 
-    if diff < 300:  # if difference less than 5 minutes
+    if diff < 5:  # if difference less than 5 minutes
         return "3"
 
     if ratio >= 2:
