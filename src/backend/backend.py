@@ -355,16 +355,18 @@ def suggest_time_answer(entry_left, entry_right):
     diff = abs(left_length - right_length)
     ratio = left_length / right_length
 
+    log_(f"Ratio: {ratio}", False)
+
     if diff < 5:  # if difference less than 5 minutes
         return "3"
 
-    if ratio >= 2:
+    if ratio >= 1.5:  # 6/2 or more
         return "5"
-    if ratio > 1.5:
+    if ratio > 1.25:  # 5/4
         return "4"
-    if ratio <= 1.5 and ratio >= 0.5:
+    if ratio <= 1.25 and ratio >= 0.75:  # 3/4 to 5/4
         return "3"
-    if ratio >= 0.5:
+    if ratio >= 0.66:  # 2/4
         return "2"
-    else: # ratio < 0.5
+    else:  # 1/4 or less
         return "1"
