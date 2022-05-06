@@ -625,21 +625,23 @@ def review_mode_cli(litoy):
             continue
 
         elif action.startswith("disable_"):
+            picked_ids = pick_entries(litoy.df)
+            log_(f"Picked the following entries : {picked_ids}")
             if action.endswith("_left"):
                 action_disable(entries[0].name, litoy)
+                entries[0] = litoy.df.loc[picked_ids[0], :]
             elif action.endswith("_right"):
                 action_disable(entries[1].name, litoy)
+                entries[1] = litoy.df.loc[picked_ids[1], :]
             elif action.endswith("_both"):
                 action_disable(entries[0].name, litoy)
                 action_disable(entries[1].name, litoy)
+                entries = [litoy.df.loc[picked_ids[0], :],
+                           litoy.df.loc[picked_ids[1], :]]
             if mode == "importance":
                 progress += 2
             else:
                 progress += 1
-
-            picked_ids = pick_entries(litoy.df)
-            entries[0] = litoy.df.loc[picked_ids[0], :]
-            log_(f"Picked the following entries : {picked_ids}")
             continue
 
         elif action == "undo":
