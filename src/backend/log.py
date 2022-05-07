@@ -12,7 +12,9 @@ def create_logger():
     source:
     https://stackoverflow.com/questions/24505145/how-to-limit-log-file-size-in-python
     """
-    Path("../.. /logs").mkdir(parents=True, exist_ok=True)
+    Path("../../logs").mkdir(parents=True, exist_ok=True)
+    if not Path("../../logs/rotating_log").exists():
+        Path("../../logs/rotating_log").touch()
     logging.basicConfig(level=logging.INFO,
                         filename='logs/rotating_log',
                         filemode='a',
