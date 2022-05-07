@@ -641,10 +641,6 @@ def review_mode_cli(litoy):
                 action_disable(entries[1].name, litoy)
                 entries = [litoy.df.loc[picked_ids[0], :],
                            litoy.df.loc[picked_ids[1], :]]
-            if mode == "importance":
-                progress += 2
-            else:
-                progress += 1
             continue
 
         elif action == "undo":
