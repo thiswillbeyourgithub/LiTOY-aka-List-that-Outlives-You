@@ -6,13 +6,19 @@ import signal
 import code
 import threading
 
+import shutil
 from pathlib import Path
 import json
 import pandas as pd
 from pprint import pprint
 import prompt_toolkit
 
-from user_settings import (default_dir, col_yel, col_rst, col_red)
+try:
+    from user_settings import (default_dir, col_yel, col_rst, col_red)
+except ModuleNotFoundError:
+    shutil.copy("src/backend/default_user_settings.py", "user_settings.py")
+    from user_settings import (default_dir, col_yel, col_rst, col_red)
+
 from src.backend.backend import (importation,
                                  move_flags_at_end, add_new_entry,
                                  get_meta_from_content)
