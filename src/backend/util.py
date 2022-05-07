@@ -99,5 +99,3 @@ def format_length(to_format, to_machine_readable=False):
             print("Invalid time stamp!")
             raise InvalidTimestamp("skip")
         return str(length)
-
-

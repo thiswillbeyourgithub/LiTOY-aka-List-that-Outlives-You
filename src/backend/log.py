@@ -42,6 +42,3 @@ def log_(string, onlyLogging=True):
     log.info(f"{time.asctime()}: {prefix}{string}")
     if onlyLogging is False: # or args["verbose"] is True:
         tqdm.write(string)
-
-
-
