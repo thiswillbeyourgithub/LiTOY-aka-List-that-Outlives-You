@@ -6,8 +6,6 @@ user_age            = 25
 user_life_expected  = 75
 
 gui_font_size = 12
-keyboard = "azerty"  # "azerty" or "qwerty", for rating questions: a/z mean
-# 0/1 on azerty but should be q/w on qwerty
 
 # save very often a copy of the whole database as a json file:
 json_auto_save = True
@@ -16,7 +14,7 @@ json_auto_save = True
 # so total number of reviews is n_session*n_to_review (default=4)
 n_session = 4
 
-# number of right pick to compare again left pick in each review (default=2):
+# number of right pick to compare against left pick in each session (default=2):
 n_to_review = 2
 
 # for reading time estimation:
@@ -39,7 +37,7 @@ questions = {
 
 shortcuts = {"skip_review"      : ["s", "-"],
              "answer_level"     : ["1", "2", "3", "4", "5",
-                                   "a", "z", "e", "r", "t"],
+                                   "a", "z", "e", "r", "t", "q", "w"],
              "edit_left"        : ["el", "edit_left"],
              "edit_right"       : ["er", "edit_right"],
              "reload_media"     : ["reload_media"],
@@ -56,7 +54,7 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "repick"           : ["repick", "repick_entries"],
              "show_help"        : ["h", "H", "?", "help", "info"],
              "open debugger"    : ["debug"],
-             "quit"             : ["quit", "q", "exit", ":q"] }
+             "quit"             : ["quit", "exit"] }
 
 # ELO :
 K_values           =  sorted([100, 99, 80, 79, 60, 59, 40, 39, 25], reverse=True)

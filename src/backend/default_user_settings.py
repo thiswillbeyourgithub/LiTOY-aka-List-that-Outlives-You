@@ -6,7 +6,6 @@ user_age            = 25
 user_life_expected  = 75
 
 gui_font_size = 12
-keyboard = "azerty"
 
 # save very often a copy of the whole database as a json file:
 json_auto_save = True
@@ -38,7 +37,7 @@ questions = {
 
 shortcuts = {"skip_review"      : ["s", "-"],
              "answer_level"     : ["1", "2", "3", "4", "5",
-                                   "a", "z", "e", "r", "t"],
+                                   "a", "z", "e", "r", "t", "q", "w"],
              "edit_left"        : ["el", "edit_left"],
              "edit_right"       : ["er", "edit_right"],
              "reload_media"     : ["reload_media"],

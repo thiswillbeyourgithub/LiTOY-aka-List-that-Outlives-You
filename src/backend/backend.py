@@ -13,8 +13,7 @@ from src.backend.media import (extract_youtube, extract_pdf_url,
                                extract_webpage, extract_local_video,
                                extract_pdf_local, extract_txt,
                                extract_epub)
-from user_settings import (shortcuts, n_to_review, default_score, K_values,
-                           keyboard)
+from user_settings import (shortcuts, n_to_review, default_score, K_values)
 from src.backend.scoring import (compute_global_score, expected_elo,
                                  update_elo, adjust_K)
 from src.backend.log import log_
@@ -292,12 +291,7 @@ def process_review_answer(keypress, entry_left, entry_right, mode,
     """
     id_left = entry_left.name
     id_right = entry_right.name
-    if keyboard == "azerty":
-        mapping = {"a": 1, "z": 2, "e": 3, "r": 4, "t": 5}
-    elif keyboard == "qwerty":
-        mapping = {"q": 1, "w": 2, "e": 3, "r": 4, "t": 5}
-    else:
-        raise Exception(f"keyboard is not 'azerty' or 'qwerty' but '{keyboard}'")
+    mapping = {"a": 1, "z": 2, "e": 3, "r": 4, "t": 5, "q": 1, "w": 2}
 
     if keypress in mapping:
         keypress = mapping[keypress]
