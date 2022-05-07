@@ -5,21 +5,21 @@ useless_last_years  = 15
 user_age            = 25
 user_life_expected  = 75
 
-gui_font_size = 18
+gui_font_size = 12
 keyboard = "azerty"
 
 # save very often a copy of the whole database as a json file:
 json_auto_save = True
 
 # number of session of review, each session is composed of n_to_review reviews
-# so total number of reviews is n_session*n_to_review
+# so total number of reviews is n_session*n_to_review (default=4)
 n_session = 4
 
-# number of entries to pick for review at each launch (default=5):
+# number of right pick to compare against left pick in each session (default=2):
 n_to_review = 2
 
 # for reading time estimation:
-wpm = 200
+wpm = 230
 average_word_length = 6
 
 # absolute path for autocompletion of local files, None to speed up
@@ -55,10 +55,10 @@ shortcuts = {"skip_review"      : ["s", "-"],
              "repick"           : ["repick", "repick_entries"],
              "show_help"        : ["h", "H", "?", "help", "info"],
              "open debugger"    : ["debug"],
-             "quit"             : ["quit", "q", "exit", ":q"] }
+             "quit"             : ["quit", "exit"] }
 
 # ELO :
-K_values           =  sorted([100, 100, 80, 80, 60, 60, 40, 40, 25], reverse=True)
+K_values           =  sorted([100, 99, 80, 79, 60, 59, 40, 39, 25], reverse=True)
 # if you decide to change the setting, be careful : each new term has to be
 # different and lower than the last one
 default_score      =  1000  # default 1000
