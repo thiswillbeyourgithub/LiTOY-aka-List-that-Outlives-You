@@ -255,9 +255,12 @@ def print_stats(df, printing=True):
         table2.add_row(["Time score:", int(df_nd.tELO.mean()),
                        int(df_nd.tELO.std()),
                        int(median(df_nd.tELO))])
-        table2.add_row(["Global score:", int(df_nvirg.gELO.mean()),
-                       int(df_nvirg.gELO.std()),
-                       int(median(df_nvirg.gELO))])
+        try:
+            table2.add_row(["Global score:", int(df_nvirg.gELO.mean()),
+                           int(df_nvirg.gELO.std()),
+                           int(median(df_nvirg.gELO))])
+        except ValueError as e:
+            log_(f"Global score not found when showing stats: {str(e)}")
 
         table2.add_row(["Delta scores:", int(mean(all_delta_elos)),
                        int(stdev(all_delta_elos)), int(median(all_delta_elos))])
