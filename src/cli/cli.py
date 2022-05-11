@@ -416,7 +416,7 @@ def set_user_length_cli(entry_id, meta, litoy):
     in cli, if no length is found in the metacontent: ask the user
     """
     log_(f"Asking user to complete length for ID {entry_id}")
-    input_length = prompt_we(f"No length specified for entry #{entry_id}. \
+    input_length = prompt_we(f"No length specified for entry number [{entry_id}]. \
 How many minutes does it take? (q)\n>")
     if input_length not in ["q", "quit", "exit"]:
         if "set_length:" in litoy.df.loc[entry_id, "content"]:
