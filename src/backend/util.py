@@ -81,8 +81,8 @@ def format_length(to_format, to_machine_readable=False):
         if to_format in ["", "q", "quit", "exit", "skip"]:
             raise InvalidTimestamp("skip")
 
-        match = re.match(r"(\d+[jd])?(\d+h)?(\d+m)?", to_format)
-        if match.group() == "":
+        match = re.match(r"(\d+[jdhm])+|\d+", to_format)
+        if not hasattr(match, "group") or match.group() == "":
             log_("Invalid timestamp format", False)
             raise InvalidTimestamp(to_format)
         length = 0
