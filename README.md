@@ -234,6 +234,7 @@ TODO and planned features:
 * implement a two letter shortcut code to answer importance and time at the same time
 * use type hints
 * make it into a pip package on PyPI
+* if this ends up interesting: send an email to gwern about it
 
 Acknowledgements
 ===============
