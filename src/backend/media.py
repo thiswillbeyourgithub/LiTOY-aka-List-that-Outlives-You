@@ -186,6 +186,8 @@ def extract_webpage(url, simple_method=True):
             article.download()
             article.parse()
             title = article.title
+            if title == "WWW Error Blocked Diagnostic":
+                raise Exception("Exception, found title: 'WWW Error Blocked Diagnostic'")
             text_content = " ".join(article.text.replace("\n", " ").split())
         except Exception as e:
             log_(f"Error: {e}")
