@@ -64,7 +64,8 @@ default_score      =  1000  # default 1000
 global_weights     =  (0.66, 0.33)  # gELO = 1st number*iELO + 2nd*tELO
 
 # to avoid getting flagged for abusive web scraping
-headers = {"User-Agent": "Mozilla/5.0"}
+headers = {"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"}
+
 
 # VT100 color code: from https://wiki.bash-hackers.org/scripting/terminalcodes
 col_red = "\033[91m"
