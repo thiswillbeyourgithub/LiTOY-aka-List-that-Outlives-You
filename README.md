@@ -43,6 +43,8 @@ FAQ
 
 **Where does the idea come from?** From Gwern's [media resorted](https://www.gwern.net/Resorter).
 
+**Do you know of any similar project?** Aside from Gwern, I discovered mid 2022 that EA user [NunoSempere](https://forum.effectivealtruism.org/users/nunosempere) created a similar tool (albeit way more professionaly coded!). [The link is here](https://forum.effectivealtruism.org/posts/9hQFfmbEiAoodstDA/simple-comparison-polling-to-create-utility-functions).
+
 **What should I know if I want to contribute?** The code is as PEP compliant as possible, no docstrings are missing. Type hinting is planned but not done. PRs and issues are extremely welcome, I can be very reactive so don't hesitate to suggest features by opening a github issue, etc.
 
 **Do you accept criticism and/or contribution?** All help and criticisms are very appreciated.
