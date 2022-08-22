@@ -248,6 +248,7 @@ def extract_webpage(url, simple_method=True):
     total_words = len(text_content) / average_word_length
     estimatedReadingTime = str(round(total_words / wpm, 1))
     title = title.replace("\n", "").replace("\\n", "").strip()
+    log_(f"Found title: {title}")
     res = {"title": title,
            "type": "webpage",
            "length": estimatedReadingTime,
