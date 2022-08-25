@@ -201,7 +201,7 @@ parser.add_argument("--review", "-r",
                     dest='review_mode',
                     required=False,
                     action="store_true",
-                    help="began review session")
+                    help="begin review session")
 parser.add_argument("--show", "-s",
                     dest='show',
                     required=False,
