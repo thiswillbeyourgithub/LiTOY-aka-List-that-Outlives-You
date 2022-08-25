@@ -55,7 +55,7 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
             pass
 
         pile = []
-        def side_by_side(key, val1, val2):
+        def side_by_side(key, val1, val2, *args, **kwargs):
             pile.append([key, [val1, val2]])
     cli_p("\n"*10)
 
@@ -103,7 +103,7 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
                 js[x][y] == str(js[x][y])
     cli_p("." * sizex)
     if (js[0]["title"] + js[1]["title"]) != "XX":
-        side_by_side("Title", js[0]["title"], js[1]["title"])
+        side_by_side("Title", js[0]["title"], js[1]["title"], bold=True)
     if (str(js[0]["length"]) + str(js[1]["length"])) != "XX":
         timestamps = []
         try:
@@ -120,7 +120,7 @@ def display_2_entries(id_left, id_right, mode, litoy, all_fields=False, cli=True
                 timestamps.append(format_length(js[1]["length"]))
         except InvalidTimestamp as e:
             timestamps.append("Error")
-        side_by_side("Length", timestamps[0], timestamps[1])
+        side_by_side("Length", timestamps[0], timestamps[1], bold=True)
         cli_p("." * sizex)
     if (js[0]["url"] + js[1]["url"]) != "XX":
         side_by_side("Location", js[0]["url"], js[1]["url"])
@@ -165,7 +165,7 @@ def print_memento_mori():
               col_rst)
 
 
-def print_side_by_side(rowname, a, b, space=2, col=""):
+def print_side_by_side(rowname, a, b, space=2, col="", bold=False):
     """
     from https://stackoverflow.com/questions/53401383/how-to-print-two-strings-large-text-side-by-side-in-python
     """
@@ -173,6 +173,8 @@ def print_side_by_side(rowname, a, b, space=2, col=""):
     a = str(a)
     b = str(b)
     col_width = int((int(sizex) - len(rowname)) / 2 - int(space) * 2)
+    if bold:
+        col += col_bold
     inc = 0
     while a or b:
         inc += 1
