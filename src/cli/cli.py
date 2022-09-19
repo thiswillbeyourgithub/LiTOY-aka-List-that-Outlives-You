@@ -31,7 +31,8 @@ from user_settings import (shortcuts, n_to_review, n_session, questions,
                            useless_last_years, useless_first_years,
                            user_life_expected, user_age, disable_lifebar,
                            col_red, col_gre, col_yel, col_rst, col_mgt_fg,
-                           col_blink, col_bold, col_uline, spacer, col_blu)
+                           col_blink, col_bold, col_uline, spacer, col_blu,
+                           vi_mode)
 from src.cli.get_terminal_size import get_terminal_size
 
 
@@ -397,7 +398,7 @@ have to enter them in the 'content' field." + col_rst)
                  False)
             continue
         new_value = str(prompt_we("Enter the desired new value \
-for field '" + chosenfield +"'\n>", default=old_value, **additional_args))
+for field '" + chosenfield +"'\n>", default=old_value, vi_mode=vi_mode, **additional_args))
 
         if chosenfield == "content":
             new_value = move_flags_at_end(new_value)

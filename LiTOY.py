@@ -14,7 +14,7 @@ from pprint import pprint
 import prompt_toolkit
 
 try:
-    from user_settings import (default_dir, col_yel, col_rst, col_red)
+    from user_settings import (default_dir, col_yel, col_rst, col_red, vi_mode)
 except ModuleNotFoundError:
     shutil.copy("src/backend/default_user_settings.py", "user_settings.py")
     from user_settings import (default_dir, col_yel, col_rst, col_red)
@@ -351,6 +351,7 @@ Press enter twice between lines to solve buggy display."
         prompt_msg = "\nNew entry content:\n>"
         while True:
             new_content = prompt_we(prompt_msg,
+                                    vi_mode=vi_mode,
                                     default=default_prompt,
                                     completer=auto_complete,
                                     complete_while_typing=False,

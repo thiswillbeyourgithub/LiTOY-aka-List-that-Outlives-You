@@ -7,6 +7,9 @@ user_life_expected  = 75
 
 gui_font_size = 12
 
+# wether to use vi mode or not
+vi_mode=True
+
 # save very often a copy of the whole database as a json file:
 json_auto_save = True
 
