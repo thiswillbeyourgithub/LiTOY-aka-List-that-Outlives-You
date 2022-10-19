@@ -323,17 +323,19 @@ Press enter twice between lines to solve buggy display."
         cur_tags = litoy.get_tags(litoy.df)
         autocomplete_list = ["tags:"+tags for tags in cur_tags] + ["set_length:"]
 
-        if default_dir is not None:
+        if default_dir is not [None]:
             def load_autocomplete_list():
                 "asynchronous loading of paths for autocompletion"
                 file_list = []
                 for ext in ["pdf", "epub", "md", "mp4", "mov", "avi", "webm"]:
-                    file_list.extend(glob(f"{default_dir}/**/*.{ext}", recursive=True))
+                    for def_dir in default_dir:
+                        file_list.extend(glob(f"{def_dir}/**/*.{ext}", recursive=True))
                 for i in range(len(file_list)):  # local paths have to be between "
                     file_list[i] = "\"" + file_list[i].replace("//", "/") + "\""
                 autocomplete_list.extend(file_list)
-            if "~" in default_dir:
-                default_dir = default_dir.replace("~", str(Path.home()))
+            for i in range(len(default_dir)):
+                if "~" in default_dir[i]:
+                    default_dir[i] = default_dir[i].replace("~", str(Path.home()))
             autocomplete_thread = threading.Thread(target=load_autocomplete_list)
             autocomplete_thread.start()
 
