@@ -353,6 +353,8 @@ def suggest_time_answer(entry_left, entry_right):
         return ""
     diff = abs(left_length - right_length)
 
+    log_(f"Ratio: {round(ratio, 3)}", False)
+
     if diff < 5:  # if difference less than 5 minutes
         return "3"
 
