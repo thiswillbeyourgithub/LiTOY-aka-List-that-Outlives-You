@@ -346,8 +346,12 @@ def suggest_time_answer(entry_left, entry_right):
     """
     left_length = float(json.loads(entry_left["metacontent"])["length"])
     right_length = float(json.loads(entry_right["metacontent"])["length"])
+    try:
+        ratio = left_length / right_length
+    except Exception as err:
+        log_(f"Exception when suggesting time value: '{err}'", False)
+        return ""
     diff = abs(left_length - right_length)
-    ratio = left_length / right_length
 
     if diff < 5:  # if difference less than 5 minutes
         return "3"
