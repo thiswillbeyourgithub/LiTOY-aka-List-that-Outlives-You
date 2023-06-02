@@ -30,8 +30,9 @@ The idea behind LiTOY is simple:
 
 Current state
 =============
-* This is a personal project that I use daily.
+* This is a personal project that I've used daily for a while. I don't anymore but still think the idea is good. It should be a plugin for knowledge management app or todo list, like taskwarrior, logseq etc.
 * PRs and issues are extremely appreciated.
+* This project was among my first coding project so it's quite naive and mistakes happened. The gui branch is more up to date if anyone is interested in the code.
 * I started coding a gui but it is not usable yet and probably won't be as I plan to restart this project from scratch to implement it as a [LogSeq](https://github.com/logseq/logseq/) addon.
 * Here's a screenshot:
     ![screenshot.png](github_content/screenshot.png)
