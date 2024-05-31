@@ -1,5 +1,7 @@
 # LiTOY - a List That Outlives You.
 
+# This project has been unused for quite some time, but the idea remains sound so I made a minimalist remake: [mini_LiTOY](https://github.com/thiswillbeyourgithub/mini_LiTOY)
+
 Table of contents
 -----------------
 * [What is LiTOY?](#What-is-LiTOY)
